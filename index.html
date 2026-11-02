@@ -1,1 +1,1032 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>XPAYPOINT - Top Up & PPOB</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-slate-900 flex justify-center min-h-[100dvh] font-sans antialiased text-slate-100">
 
+    <!-- MAIN APP CONTAINER -->
+    <div class="w-full max-w-md bg-slate-950 min-h-[100dvh] flex flex-col relative shadow-2xl border-x border-slate-800/80">
+        
+        <!-- ==================== VIEW 1: HOME PAGE ==================== -->
+        <div id="view-home" class="flex-1 flex flex-col overflow-y-auto no-scrollbar pb-20">
+            <!-- Header & Saldo -->
+            <div class="bg-gradient-to-b from-blue-950 via-slate-900 to-slate-950 p-5 border-b border-slate-800/60 sticky top-0 backdrop-blur-md z-40">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-blue-500/20">
+                            X
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-400 font-medium">Selamat datang,</p>
+                            <h1 class="text-base font-bold text-white tracking-wide" id="display-username">Tamu (Belum Login)</h1>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="openAuthModal()" class="px-3 py-1.5 bg-blue-600/20 border border-blue-500/40 text-blue-400 rounded-xl text-xs font-semibold hover:bg-blue-600 hover:text-white transition" id="btn-auth-header">
+                            Login / Daftar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Saldo Card -->
+                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl backdrop-blur-xl flex justify-between items-center">
+                    <div>
+                        <div class="flex items-center gap-1.5 text-xs text-slate-400 font-medium mb-1">
+                            <span>Saldo Xpaycoin</span>
+                            <i class="fas fa-coins text-amber-400"></i>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-2xl font-black tracking-tight text-white" id="user-balance">0</span>
+                            <span class="text-xs text-slate-500 font-medium">XPC</span>
+                        </div>
+                    </div>
+                    <button onclick="alert('Fitur Deposit Saldo via Xendit')" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-lg shadow-blue-600/30 transition flex items-center gap-2">
+                        <i class="fas fa-plus-circle"></i> Top Up
+                    </button>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="p-5 space-y-6 flex-1">
+                <!-- Promo Banner -->
+                <div class="w-full h-36 bg-gradient-to-r from-indigo-900 via-purple-900 to-slate-900 rounded-2xl border border-indigo-500/20 shadow-lg p-5 flex flex-col justify-between relative overflow-hidden">
+                    <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl"></div>
+                    <span class="bg-blue-500/20 text-blue-400 text-[10px] font-bold px-2.5 py-1 rounded-full w-max border border-blue-500/30">PROMO SPESIAL</span>
+                    <div>
+                        <h2 class="text-lg font-bold text-white">Diskon Top Up Game 20%</h2>
+                        <p class="text-xs text-slate-400 mt-0.5">Gunakan Xpaycoin & dapatkan cashback instant</p>
+                    </div>
+                </div>
+
+                <!-- Kategori Layanan (Grid Menu) -->
+                <div>
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Layanan Utama</h3>
+                    <div class="grid grid-cols-4 gap-4">
+                        
+                        <!-- Game Top Up -->
+                        <button onclick="showView('view-game')" class="flex flex-col items-center gap-2 group">
+                            <div class="w-14 h-14 bg-slate-900 border border-slate-800 rounded-2xl flex items-center justify-center text-blue-400 text-xl shadow-md group-hover:border-blue-500/50 group-hover:bg-blue-500/10 transition">
+                                <i class="fas fa-gamepad"></i>
+                            </div>
+                            <span class="text-[11px] font-medium text-slate-300">Game Top Up</span>
+                        </button>
+
+                        <!-- Pulsa & Data -->
+                        <button onclick="showView('view-pulsa')" class="flex flex-col items-center gap-2 group">
+                            <div class="w-14 h-14 bg-slate-900 border border-slate-800 rounded-2xl flex items-center justify-center text-emerald-400 text-xl shadow-md group-hover:border-emerald-500/50 group-hover:bg-emerald-500/10 transition">
+                                <i class="fas fa-mobile-screen"></i>
+                            </div>
+                            <span class="text-[11px] font-medium text-slate-300">Pulsa & Data</span>
+                        </button>
+
+                        <!-- Token PLN -->
+                        <button onclick="showView('view-pln')" class="flex flex-col items-center gap-2 group">
+                            <div class="w-14 h-14 bg-slate-900 border border-slate-800 rounded-2xl flex items-center justify-center text-amber-400 text-xl shadow-md group-hover:border-amber-500/50 group-hover:bg-amber-500/10 transition">
+                                <i class="fas fa-bolt"></i>
+                            </div>
+                            <span class="text-[11px] font-medium text-slate-300">Token PLN</span>
+                        </button>
+
+                        <!-- Voucher Game -->
+                        <button onclick="showView('view-voucher')" class="flex flex-col items-center gap-2 group">
+                            <div class="w-14 h-14 bg-slate-900 border border-slate-800 rounded-2xl flex items-center justify-center text-rose-400 text-xl shadow-md group-hover:border-rose-500/50 group-hover:bg-rose-500/10 transition">
+                                <i class="fas fa-ticket"></i>
+                            </div>
+                            <span class="text-[11px] font-medium text-slate-300">Voucher</span>
+                        </button>
+
+                        <!-- Streaming -->
+                        <button onclick="showView('view-streaming')" class="flex flex-col items-center gap-2 group">
+                            <div class="w-14 h-14 bg-slate-900 border border-slate-800 rounded-2xl flex items-center justify-center text-purple-400 text-xl shadow-md group-hover:border-purple-500/50 group-hover:bg-purple-500/10 transition">
+                                <i class="fas fa-tv"></i>
+                            </div>
+                            <span class="text-[11px] font-medium text-slate-300">Streaming</span>
+                        </button>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Legal Footer -->
+            <footer class="p-6 border-t border-slate-900 bg-slate-950 mt-auto text-center space-y-4">
+                <div class="flex justify-center gap-6 text-xs text-slate-500 font-medium">
+                    <a href="#" class="hover:text-slate-300 transition">Syarat & Ketentuan</a>
+                    <a href="#" class="hover:text-slate-300 transition">Kebijakan Privasi</a>
+                    <a href="#" onclick="showView('view-chat')" class="hover:text-slate-300 transition">Bantuan CS</a>
+                </div>
+                
+                <div class="flex items-center justify-center gap-2 text-slate-500 text-xs">
+                    <span class="inline-flex items-center gap-1.5 bg-slate-900 border border-slate-800 px-3 py-1 rounded-full">
+                        <i class="fas fa-shield-halved text-amber-400 text-[10px]"></i> Cloudflare Protected
+                    </span>
+                    <span class="inline-flex items-center gap-1.5 bg-slate-900 border border-slate-800 px-3 py-1 rounded-full">
+                        <i class="fas fa-database text-emerald-400 text-[10px]"></i> Supabase DB
+                    </span>
+                </div>
+
+                <div class="space-y-1 pt-2">
+                    <p class="text-xs text-slate-400 font-semibold">© XPAYPOINT by Google AI</p>
+                    <p class="text-[10px] text-slate-600">Dilindungi oleh Cloudflare & Supabase</p>
+                </div>
+            </footer>
+        </div>
+
+        <!-- ==================== VIEW 2: GAME TOP UP ==================== -->
+        <div id="view-game" class="hidden flex-1 flex-col overflow-y-auto no-scrollbar pb-20">
+            <div class="p-4 bg-slate-900 border-b border-slate-800 flex items-center gap-3 sticky top-0 z-40">
+                <button onclick="showView('view-home')" class="w-9 h-9 rounded-xl bg-slate-800 flex items-center justify-center text-slate-300 hover:text-white">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h2 class="text-base font-bold text-white">Top Up Game</h2>
+            </div>
+            <div class="p-5 space-y-5">
+                <!-- Input User ID -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase">1. Lengkapi Data Akun</h3>
+                    <div class="grid grid-cols-3 gap-2">
+                        <input type="text" id="game-user-id" placeholder="User ID" class="col-span-2 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500">
+                        <input type="text" id="game-zone-id" placeholder="Zone ID" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500">
+                    </div>
+                </div>
+                <!-- Nominal Items -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase">2. Pilih Nominal MLBB</h3>
+                    <div class="grid grid-cols-2 gap-3" id="game-products">
+                        <div onclick="selectProduct(this, '86 Diamonds MLBB', 20000)" class="product-card border border-slate-800 bg-slate-950 rounded-xl p-3 cursor-pointer hover:border-blue-500 transition">
+                            <p class="text-xs font-bold text-white">86 Diamonds</p>
+                            <p class="text-xs text-blue-400 font-semibold mt-1">Rp 20.000</p>
+                        </div>
+                        <div onclick="selectProduct(this, '172 Diamonds MLBB', 40000)" class="product-card border border-slate-800 bg-slate-950 rounded-xl p-3 cursor-pointer hover:border-blue-500 transition">
+                            <p class="text-xs font-bold text-white">172 Diamonds</p>
+                            <p class="text-xs text-blue-400 font-semibold mt-1">Rp 40.000</p>
+                        </div>
+                        <div onclick="selectProduct(this, '257 Diamonds MLBB', 60000)" class="product-card border border-slate-800 bg-slate-950 rounded-xl p-3 cursor-pointer hover:border-blue-500 transition">
+                            <p class="text-xs font-bold text-white">257 Diamonds</p>
+                            <p class="text-xs text-blue-400 font-semibold mt-1">Rp 60.000</p>
+                        </div>
+                        <div onclick="selectProduct(this, '706 Diamonds MLBB', 160000)" class="product-card border border-slate-800 bg-slate-950 rounded-xl p-3 cursor-pointer hover:border-blue-500 transition">
+                            <p class="text-xs font-bold text-white">706 Diamonds</p>
+                            <p class="text-xs text-blue-400 font-semibold mt-1">Rp 160.000</p>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="triggerCheckout()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl text-xs transition">Beli Sekarang</button>
+            </div>
+        </div>
+
+        <!-- ==================== VIEW 3: PULSA & DATA ==================== -->
+        <div id="view-pulsa" class="hidden flex-1 flex-col overflow-y-auto no-scrollbar pb-20">
+            <div class="p-4 bg-slate-900 border-b border-slate-800 flex items-center gap-3 sticky top-0 z-40">
+                <button onclick="showView('view-home')" class="w-9 h-9 rounded-xl bg-slate-800 flex items-center justify-center text-slate-300 hover:text-white">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h2 class="text-base font-bold text-white">Pulsa & Paket Data</h2>
+            </div>
+            <div class="p-5 space-y-5">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase">Nomor HP</h3>
+                    <input type="tel" placeholder="08xxxxxxxxxx" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-emerald-500">
+                </div>
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase">Pilih Nominal Pulsa</h3>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div onclick="selectProduct(this, 'Pulsa 10.000 All Op', 11000)" class="product-card border border-slate-800 bg-slate-950 rounded-xl p-3 cursor-pointer hover:border-emerald-500 transition">
+                            <p class="text-xs font-bold text-white">Pulsa 10.000</p>
+                            <p class="text-xs text-emerald-400 font-semibold mt-1">Rp 11.000</p>
+                        </div>
+                        <div onclick="selectProduct(this, 'Pulsa 25.000 All Op', 26000)" class="product-card border border-slate-800 bg-slate-950 rounded-xl p-3 cursor-pointer hover:border-emerald-500 transition">
+                            <p class="text-xs font-bold text-white">Pulsa 25.000</p>
+                            <p class="text-xs text-emerald-400 font-semibold mt-1">Rp 26.000</p>
+                        </div>
+                        <div onclick="selectProduct(this, 'Pulsa 50.000 All Op', 51000)" class="product-card border border-slate-800 bg-slate-950 rounded-xl p-3 cursor-pointer hover:border-emerald-500 transition">
+                            <p class="text-xs font-bold text-white">Pulsa 50.000</p>
+                            <p class="text-xs text-emerald-400 font-semibold mt-1">Rp 51.000</p>
+                        </div>
+                        <div onclick="selectProduct(this, 'Paket Data 10GB 30 Hari', 35000)" class="product-card border border-slate-800 bg-slate-950 rounded-xl p-3 cursor-pointer hover:border-emerald-500 transition">
+                            <p class="text-xs font-bold text-white">Data 10 GB (30hr)</p>
+                            <p class="text-xs text-emerald-400 font-semibold mt-1">Rp 35.000</p>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="triggerCheckout()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-xs transition">Beli Sekarang</button>
+            </div>
+        </div>
+
+        <!-- ==================== VIEW 4: TOKEN PLN ==================== -->
+        <div id="view-pln" class="hidden flex-1 flex-col overflow-y-auto no-scrollbar pb-20">
+            <div class="p-4 bg-slate-900 border-b border-slate-800 flex items-center gap-3 sticky top-0 z-40">
+                <button onclick="showView('view-home')" class="w-9 h-9 rounded-xl bg-slate-800 flex items-center justify-center text-slate-300 hover:text-white">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h2 class="text-base font-bold text-white">Token Listrik PLN</h2>
+            </div>
+            <div class="p-5 space-y-5">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase">No. Meter / ID Pelanggan</h3>
+                    <input type="number" placeholder="Masukkan ID Pelanggan PLN" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-amber-500">
+                </div>
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase">Pilih Nominal Token</h3>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div onclick="selectProduct(this, 'Token PLN 20.000', 21500)" class="product-card border border-slate-800 bg-slate-950 rounded-xl p-3 cursor-pointer hover:border-amber-500 transition">
+                            <p class="text-xs font-bold text-white">PLN 20.000</p>
+                            <p class="text-xs text-amber-400 font-semibold mt-1">Rp 21.500</p>
+                        </div>
+                        <div onclick="selectProduct(this, 'Token PLN 50.000', 51500)" class="product-card border border-slate-800 bg-slate-950 rounded-xl p-3 cursor-pointer hover:border-amber-500 transition">
+                            <p class="text-xs font-bold text-white">PLN 50.000</p>
+                            <p class="text-xs text-amber-400 font-semibold mt-1">Rp 51.500</p>
+                        </div>
+                        <div onclick="selectProduct(this, 'Token PLN 100.000', 101500)" class="product-card border border-slate-800 bg-slate-950 rounded-xl p-3 cursor-pointer hover:border-amber-500 transition">
+                            <p class="text-xs font-bold text-white">PLN 100.000</p>
+                            <p class="text-xs text-amber-400 font-semibold mt-1">Rp 101.500</p>
+                        </div>
+                        <div onclick="selectProduct(this, 'Token PLN 200.000', 201500)" class="product-card border border-slate-800 bg-slate-950 rounded-xl p-3 cursor-pointer hover:border-amber-500 transition">
+                            <p class="text-xs font-bold text-white">PLN 200.000</p>
+                            <p class="text-xs text-amber-400 font-semibold mt-1">Rp 201.500</p>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="triggerCheckout()" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 rounded-xl text-xs transition">Beli Sekarang</button>
+            </div>
+        </div>
+
+        <!-- ==================== VIEW 5: VOUCHER ==================== -->
+        <div id="view-voucher" class="hidden flex-1 flex-col overflow-y-auto no-scrollbar pb-20">
+            <div class="p-4 bg-slate-900 border-b border-slate-800 flex items-center gap-3 sticky top-0 z-40">
+                <button onclick="showView('view-home')" class="w-9 h-9 rounded-xl bg-slate-800 flex items-center justify-center text-slate-300 hover:text-white">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h2 class="text-base font-bold text-white">Voucher Digital</h2>
+            </div>
+            <div class="p-5 space-y-5">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase">Pilih Voucher</h3>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div onclick="selectProduct(this, 'Google Play 50rb', 52000)" class="product-card border border-slate-800 bg-slate-950 rounded-xl p-3 cursor-pointer hover:border-rose-500 transition">
+                            <p class="text-xs font-bold text-white">Google Play 50rb</p>
+                            <p class="text-xs text-rose-400 font-semibold mt-1">Rp 52.000</p>
+                        </div>
+                        <div onclick="selectProduct(this, 'Steam Wallet $10', 165000)" class="product-card border border-slate-800 bg-slate-950 rounded-xl p-3 cursor-pointer hover:border-rose-500 transition">
+                            <p class="text-xs font-bold text-white">Steam Wallet $10</p>
+                            <p class="text-xs text-rose-400 font-semibold mt-1">Rp 165.000</p>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="triggerCheckout()" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-bold py-3 rounded-xl text-xs transition">Beli Sekarang</button>
+            </div>
+        </div>
+
+        <!-- ==================== VIEW 6: STREAMING ==================== -->
+        <div id="view-streaming" class="hidden flex-1 flex-col overflow-y-auto no-scrollbar pb-20">
+            <div class="p-4 bg-slate-900 border-b border-slate-800 flex items-center gap-3 sticky top-0 z-40">
+                <button onclick="showView('view-home')" class="w-9 h-9 rounded-xl bg-slate-800 flex items-center justify-center text-slate-300 hover:text-white">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h2 class="text-base font-bold text-white">Paket Streaming</h2>
+            </div>
+            <div class="p-5 space-y-5">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase">Pilih Akun Premium</h3>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div onclick="selectProduct(this, 'Netflix Premium 1 Bln', 45000)" class="product-card border border-slate-800 bg-slate-950 rounded-xl p-3 cursor-pointer hover:border-purple-500 transition">
+                            <p class="text-xs font-bold text-white">Netflix Premium</p>
+                            <p class="text-xs text-purple-400 font-semibold mt-1">Rp 45.000 / bln</p>
+                        </div>
+                        <div onclick="selectProduct(this, 'Disney+ Hotstar 1 Bln', 39000)" class="product-card border border-slate-800 bg-slate-950 rounded-xl p-3 cursor-pointer hover:border-purple-500 transition">
+                            <p class="text-xs font-bold text-white">Disney+ Hotstar</p>
+                            <p class="text-xs text-purple-400 font-semibold mt-1">Rp 39.000 / bln</p>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="triggerCheckout()" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded-xl text-xs transition">Beli Sekarang</button>
+            </div>
+        </div>
+
+        <!-- ==================== VIEW 7: FULL CHAT CS AI ==================== -->
+        <div id="view-chat" class="hidden flex-1 flex-col h-[100dvh] bg-slate-950 z-50">
+            <div class="p-4 bg-slate-900 border-b border-slate-800 flex items-center justify-between shadow-md">
+                <div class="flex items-center gap-3">
+                    <button onclick="showView('view-home')" class="w-9 h-9 rounded-xl bg-slate-800 flex items-center justify-center text-slate-300 hover:text-white">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <div>
+                        <h2 class="text-sm font-bold text-white leading-tight">XPAY CS AI Support</h2>
+                        <span class="text-[11px] text-emerald-400 flex items-center gap-1">Online 24/7</span>
+                    </div>
+                </div>
+                <button onclick="clearChat()" class="text-slate-400 hover:text-rose-400 text-xs px-2.5 py-1.5 rounded-lg border border-slate-800">
+                    <i class="fas fa-trash-can"></i> Reset
+                </button>
+            </div>
+            <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar">
+                <div class="flex gap-3">
+                    <div class="w-8 h-8 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 shrink-0">
+                        <i class="fas fa-robot text-xs"></i>
+                    </div>
+                    <div class="bg-slate-900 border border-slate-800 text-slate-200 text-xs p-3.5 rounded-2xl rounded-tl-none max-w-[85%] leading-relaxed">
+                        Halo! Saya Asisten AI XPAYPOINT. Ada yang bisa saya bantu terkait transaksi atau saldo Anda hari ini?
+                    </div>
+                </div>
+            </div>
+            <div class="p-3 bg-slate-900 border-t border-slate-800 flex items-center gap-2">
+                <input type="text" id="chat-input" placeholder="Tulis pertanyaan Anda..." class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none" onkeypress="if(event.key==='Enter') sendMessage()">
+                <button onclick="sendMessage()" class="w-11 h-11 bg-blue-600 text-white rounded-xl flex items-center justify-center text-sm shadow-md shrink-0">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- ==================== MODAL AUTH (LOGIN/DAFTAR) ==================== -->
+        <div id="modal-auth" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div class="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl p-6 relative">
+                <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                    <i class="fas fa-xmark text-lg"></i>
+                </button>
+                <h3 class="text-lg font-bold text-white mb-4">Masuk / Daftar Akun</h3>
+                <div class="space-y-3">
+                    <input type="email" id="auth-email" placeholder="Email Anda" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none">
+                    <input type="password" id="auth-password" placeholder="Kata Sandi" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none">
+                    <button onclick="handleLogin()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl text-xs transition">Masuk Sekarang</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== MODAL CHECKOUT ==================== -->
+        <div id="modal-checkout" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div class="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl p-6 relative space-y-4">
+                <button onclick="closeCheckout()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                    <i class="fas fa-xmark text-lg"></i>
+                </button>
+                <h3 class="text-base font-bold text-white">Konfirmasi Pembelian</h3>
+                <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 space-y-2 text-xs">
+                    <div class="flex justify-between text-slate-400">
+                        <span>Produk:</span>
+                        <span id="checkout-title" class="font-bold text-white">-</span>
+                    </div>
+                    <div class="flex justify-between text-slate-400">
+                        <span>Total Harga:</span>
+                        <span id="checkout-price" class="font-bold text-emerald-400">-</span>
+                    </div>
+                </div>
+                <button onclick="processOrder()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl text-xs transition">Bayar Sekarang</button>
+            </div>
+        </div>
+
+        <!-- ==================== BOTTOM NAVIGATION BAR ==================== -->
+        <div id="bottom-nav" class="fixed bottom-0 w-full max-w-md bg-slate-900/95 border-t border-slate-800 flex justify-around py-2.5 backdrop-blur-xl z-40">
+            <button onclick="showView('view-home')" class="flex flex-col items-center gap-1 text-blue-400">
+                <i class="fas fa-house text-base"></i>
+                <span class="text-[10px] font-semibold">Beranda</span>
+            </button>
+            <button onclick="alert('Menu Riwayat')" class="flex flex-col items-center gap-1 text-slate-400 hover:text-white transition">
+                <i class="fas fa-clock-rotate-left text-base"></i>
+                <span class="text-[10px] font-semibold">Riwayat</span>
+            </button>
+            <button onclick="showView('view-chat')" class="flex flex-col items-center gap-1 text-slate-400 hover:text-white transition">
+                <i class="fas fa-headset text-base"></i>
+                <span class="text-[10px] font-semibold">Bantuan AI</span>
+            </button>
+            <button onclick="openAuthModal()" class="flex flex-col items-center gap-1 text-slate-400 hover:text-white transition">
+                <i class="fas fa-user text-base"></i>
+                <span class="text-[10px] font-semibold">Profil</span>
+            </button>
+        </div>
+
+    </div>
+
+    <!-- SCRIPT APPLICATION LOGIC -->
+    <script>
+        // Placeholder Kredensial Supabase
+        const SUPABASE_URL = 'https://xyzcompany.supabase.co';
+        const SUPABASE_KEY = 'eyJhb...'; 
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let selectedItem = null;
+
+        function showView(viewId) {
+            const views = ['view-home', 'view-game', 'view-pulsa', 'view-pln', 'view-voucher', 'view-streaming', 'view-chat'];
+            views.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.add('hidden');
+            });
+            const activeEl = document.getElementById(viewId);
+            if (activeEl) {
+                activeEl.classList.remove('hidden');
+                if (viewId === 'view-chat') {
+                    activeEl.classList.add('flex');
+                    document.getElementById('bottom-nav').classList.add('hidden');
+                } else {
+                    document.getElementById('bottom-nav').classList.remove('hidden');
+                }
+            }
+        }
+
+        function selectProduct(element, title, price) {
+            document.querySelectorAll('.product-card').forEach(el => el.classList.remove('border-blue-500', 'border-emerald-500', 'border-amber-500', 'border-rose-500', 'border-purple-500'));
+            element.classList.add('border-blue-500');
+            selectedItem = { title, price };
+        }
+
+        function triggerCheckout() {
+            if (!selectedItem) {
+                alert('Silakan pilih salah satu nominal produk terlebih dahulu!');
+                return;
+            }
+            document.getElementById('checkout-title').innerText = selectedItem.title;
+            document.getElementById('checkout-price').innerText = 'Rp ' + selectedItem.price.toLocaleString('id-ID');
+            document.getElementById('modal-checkout').classList.remove('hidden');
+        }
+
+        function closeCheckout() {
+            document.getElementById('modal-checkout').classList.add('hidden');
+        }
+
+        function processOrder() {
+            alert('Transaksi berhasil dikirim ke sistem!');
+            closeCheckout();
+        }
+
+        function openAuthModal() {
+            document.getElementById('modal-auth').classList.remove('hidden');
+        }
+
+        function closeAuthModal() {
+            document.getElementById('modal-auth').classList.add('hidden');
+        }
+
+        function handleLogin() {
+            const email = document.getElementById('auth-email').value;
+            if (!email) {
+                alert('Masukkan email terlebih dahulu');
+                return;
+            }
+            document.getElementById('display-username').innerText = email.split('@')[0];
+            document.getElementById('btn-auth-header').innerText = 'Terverifikasi';
+            document.getElementById('user-balance').innerText = '50.000';
+            closeAuthModal();
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            if (!message) return;
+
+            const container = document.getElementById('chat-messages');
+            container.innerHTML += `
+                <div class="flex justify-end">
+                    <div class="bg-blue-600 text-white text-xs p-3.5 rounded-2xl rounded-tr-none max-w-[85%]">${message}</div>
+                </div>
+            `;
+            input.value = '';
+
+            setTimeout(() => {
+                container.innerHTML += `
+                    <div class="flex gap-3">
+                        <div class="w-8 h-8 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 shrink-0"><i class="fas fa-robot text-xs"></i></div>
+                        <div class="bg-slate-900 border border-slate-800 text-slate-200 text-xs p-3.5 rounded-2xl rounded-tl-none max-w-[85%]">Pesan Anda diterima. Tim CS & AI XPAYPOINT siap melayani transaksi Anda.</div>
+                    </div>
+                `;
+                container.scrollTop = container.scrollHeight;
+            }, 800);
+        }
+
+        function clearChat() {
+            document.getElementById('chat-messages').innerHTML = `
+                <div class="flex gap-3">
+                    <div class="w-8 h-8 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 shrink-0"><i class="fas fa-robot text-xs"></i></div>
+                    <div class="bg-slate-900 border border-slate-800 text-slate-200 text-xs p-3.5 rounded-2xl rounded-tl-none max-w-[85%]">Percakapan telah dibersihkan.</div>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>XPAYPOINT - Top Up & PPOB</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-slate-900 flex justify-center min-h-[100dvh] font-sans antialiased text-slate-100">
+
+    <!-- MAIN APP CONTAINER -->
+    <div class="w-full max-w-md bg-slate-950 min-h-[100dvh] flex flex-col relative shadow-2xl border-x border-slate-800/80">
+        
+        <!-- ==================== VIEW 1: HOME PAGE ==================== -->
+        <div id="view-home" class="flex-1 flex flex-col overflow-y-auto no-scrollbar pb-20">
+            <!-- Header & Saldo -->
+            <div class="bg-gradient-to-b from-blue-950 via-slate-900 to-slate-950 p-5 border-b border-slate-800/60 sticky top-0 backdrop-blur-md z-40">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-blue-500/20">
+                            X
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-400 font-medium">Selamat datang,</p>
+                            <h1 class="text-base font-bold text-white tracking-wide" id="display-username">Tamu (Belum Login)</h1>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="openAuthModal()" class="px-3 py-1.5 bg-blue-600/20 border border-blue-500/40 text-blue-400 rounded-xl text-xs font-semibold hover:bg-blue-600 hover:text-white transition" id="btn-auth-header">
+                            Login / Daftar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Saldo Card -->
+                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl backdrop-blur-xl flex justify-between items-center">
+                    <div>
+                        <div class="flex items-center gap-1.5 text-xs text-slate-400 font-medium mb-1">
+                            <span>Saldo Xpaycoin</span>
+                            <i class="fas fa-coins text-amber-400"></i>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-2xl font-black tracking-tight text-white" id="user-balance">0</span>
+                            <span class="text-xs text-slate-500 font-medium">XPC</span>
+                        </div>
+                    </div>
+                    <button onclick="alert('Fitur Deposit Saldo via Xendit')" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-lg shadow-blue-600/30 transition flex items-center gap-2">
+                        <i class="fas fa-plus-circle"></i> Top Up
+                    </button>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="p-5 space-y-6 flex-1">
+                <!-- Promo Banner -->
+                <div class="w-full h-36 bg-gradient-to-r from-indigo-900 via-purple-900 to-slate-900 rounded-2xl border border-indigo-500/20 shadow-lg p-5 flex flex-col justify-between relative overflow-hidden">
+                    <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl"></div>
+                    <span class="bg-blue-500/20 text-blue-400 text-[10px] font-bold px-2.5 py-1 rounded-full w-max border border-blue-500/30">PROMO SPESIAL</span>
+                    <div>
+                        <h2 class="text-lg font-bold text-white">Diskon Top Up Game 20%</h2>
+                        <p class="text-xs text-slate-400 mt-0.5">Gunakan Xpaycoin & dapatkan cashback instant</p>
+                    </div>
+                </div>
+
+                <!-- Kategori Layanan (Grid Menu) -->
+                <div>
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Layanan Utama</h3>
+                    <div class="grid grid-cols-4 gap-4">
+                        
+                        <!-- Game Top Up -->
+                        <button onclick="showView('view-game')" class="flex flex-col items-center gap-2 group">
+                            <div class="w-14 h-14 bg-slate-900 border border-slate-800 rounded-2xl flex items-center justify-center text-blue-400 text-xl shadow-md group-hover:border-blue-500/50 group-hover:bg-blue-500/10 transition">
+                                <i class="fas fa-gamepad"></i>
+                            </div>
+                            <span class="text-[11px] font-medium text-slate-300">Game Top Up</span>
+                        </button>
+
+                        <!-- Pulsa & Data -->
+                        <button onclick="showView('view-pulsa')" class="flex flex-col items-center gap-2 group">
+                            <div class="w-14 h-14 bg-slate-900 border border-slate-800 rounded-2xl flex items-center justify-center text-emerald-400 text-xl shadow-md group-hover:border-emerald-500/50 group-hover:bg-emerald-500/10 transition">
+                                <i class="fas fa-mobile-screen"></i>
+                            </div>
+                            <span class="text-[11px] font-medium text-slate-300">Pulsa & Data</span>
+                        </button>
+
+                        <!-- Token PLN -->
+                        <button onclick="showView('view-pln')" class="flex flex-col items-center gap-2 group">
+                            <div class="w-14 h-14 bg-slate-900 border border-slate-800 rounded-2xl flex items-center justify-center text-amber-400 text-xl shadow-md group-hover:border-amber-500/50 group-hover:bg-amber-500/10 transition">
+                                <i class="fas fa-bolt"></i>
+                            </div>
+                            <span class="text-[11px] font-medium text-slate-300">Token PLN</span>
+                        </button>
+
+                        <!-- Voucher Game -->
+                        <button onclick="showView('view-voucher')" class="flex flex-col items-center gap-2 group">
+                            <div class="w-14 h-14 bg-slate-900 border border-slate-800 rounded-2xl flex items-center justify-center text-rose-400 text-xl shadow-md group-hover:border-rose-500/50 group-hover:bg-rose-500/10 transition">
+                                <i class="fas fa-ticket"></i>
+                            </div>
+                            <span class="text-[11px] font-medium text-slate-300">Voucher</span>
+                        </button>
+
+                        <!-- Streaming -->
+                        <button onclick="showView('view-streaming')" class="flex flex-col items-center gap-2 group">
+                            <div class="w-14 h-14 bg-slate-900 border border-slate-800 rounded-2xl flex items-center justify-center text-purple-400 text-xl shadow-md group-hover:border-purple-500/50 group-hover:bg-purple-500/10 transition">
+                                <i class="fas fa-tv"></i>
+                            </div>
+                            <span class="text-[11px] font-medium text-slate-300">Streaming</span>
+                        </button>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Legal Footer -->
+            <footer class="p-6 border-t border-slate-900 bg-slate-950 mt-auto text-center space-y-4">
+                <div class="flex justify-center gap-6 text-xs text-slate-500 font-medium">
+                    <a href="#" class="hover:text-slate-300 transition">Syarat & Ketentuan</a>
+                    <a href="#" class="hover:text-slate-300 transition">Kebijakan Privasi</a>
+                    <a href="#" onclick="showView('view-chat')" class="hover:text-slate-300 transition">Bantuan CS</a>
+                </div>
+                
+                <div class="flex items-center justify-center gap-2 text-slate-500 text-xs">
+                    <span class="inline-flex items-center gap-1.5 bg-slate-900 border border-slate-800 px-3 py-1 rounded-full">
+                        <i class="fas fa-shield-halved text-amber-400 text-[10px]"></i> Cloudflare Protected
+                    </span>
+                    <span class="inline-flex items-center gap-1.5 bg-slate-900 border border-slate-800 px-3 py-1 rounded-full">
+                        <i class="fas fa-database text-emerald-400 text-[10px]"></i> Supabase DB
+                    </span>
+                </div>
+
+                <div class="space-y-1 pt-2">
+                    <p class="text-xs text-slate-400 font-semibold">© XPAYPOINT by Google AI</p>
+                    <p class="text-[10px] text-slate-600">Dilindungi oleh Cloudflare & Supabase</p>
+                </div>
+            </footer>
+        </div>
+
+        <!-- ==================== VIEW 2: GAME TOP UP ==================== -->
+        <div id="view-game" class="hidden flex-1 flex-col overflow-y-auto no-scrollbar pb-20">
+            <div class="p-4 bg-slate-900 border-b border-slate-800 flex items-center gap-3 sticky top-0 z-40">
+                <button onclick="showView('view-home')" class="w-9 h-9 rounded-xl bg-slate-800 flex items-center justify-center text-slate-300 hover:text-white">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h2 class="text-base font-bold text-white">Top Up Game</h2>
+            </div>
+            <div class="p-5 space-y-5">
+                <!-- Input User ID -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase">1. Lengkapi Data Akun</h3>
+                    <div class="grid grid-cols-3 gap-2">
+                        <input type="text" id="game-user-id" placeholder="User ID" class="col-span-2 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500">
+                        <input type="text" id="game-zone-id" placeholder="Zone ID" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500">
+                    </div>
+                </div>
+                <!-- Nominal Items -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase">2. Pilih Nominal MLBB</h3>
+                    <div class="grid grid-cols-2 gap-3" id="game-products">
+                        <div onclick="selectProduct(this, '86 Diamonds MLBB', 20000)" class="product-card border border-slate-800 bg-slate-950 rounded-xl p-3 cursor-pointer hover:border-blue-500 transition">
+                            <p class="text-xs font-bold text-white">86 Diamonds</p>
+                            <p class="text-xs text-blue-400 font-semibold mt-1">Rp 20.000</p>
+                        </div>
+                        <div onclick="selectProduct(this, '172 Diamonds MLBB', 40000)" class="product-card border border-slate-800 bg-slate-950 rounded-xl p-3 cursor-pointer hover:border-blue-500 transition">
+                            <p class="text-xs font-bold text-white">172 Diamonds</p>
+                            <p class="text-xs text-blue-400 font-semibold mt-1">Rp 40.000</p>
+                        </div>
+                        <div onclick="selectProduct(this, '257 Diamonds MLBB', 60000)" class="product-card border border-slate-800 bg-slate-950 rounded-xl p-3 cursor-pointer hover:border-blue-500 transition">
+                            <p class="text-xs font-bold text-white">257 Diamonds</p>
+                            <p class="text-xs text-blue-400 font-semibold mt-1">Rp 60.000</p>
+                        </div>
+                        <div onclick="selectProduct(this, '706 Diamonds MLBB', 160000)" class="product-card border border-slate-800 bg-slate-950 rounded-xl p-3 cursor-pointer hover:border-blue-500 transition">
+                            <p class="text-xs font-bold text-white">706 Diamonds</p>
+                            <p class="text-xs text-blue-400 font-semibold mt-1">Rp 160.000</p>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="triggerCheckout()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl text-xs transition">Beli Sekarang</button>
+            </div>
+        </div>
+
+        <!-- ==================== VIEW 3: PULSA & DATA ==================== -->
+        <div id="view-pulsa" class="hidden flex-1 flex-col overflow-y-auto no-scrollbar pb-20">
+            <div class="p-4 bg-slate-900 border-b border-slate-800 flex items-center gap-3 sticky top-0 z-40">
+                <button onclick="showView('view-home')" class="w-9 h-9 rounded-xl bg-slate-800 flex items-center justify-center text-slate-300 hover:text-white">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h2 class="text-base font-bold text-white">Pulsa & Paket Data</h2>
+            </div>
+            <div class="p-5 space-y-5">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase">Nomor HP</h3>
+                    <input type="tel" placeholder="08xxxxxxxxxx" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-emerald-500">
+                </div>
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase">Pilih Nominal Pulsa</h3>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div onclick="selectProduct(this, 'Pulsa 10.000 All Op', 11000)" class="product-card border border-slate-800 bg-slate-950 rounded-xl p-3 cursor-pointer hover:border-emerald-500 transition">
+                            <p class="text-xs font-bold text-white">Pulsa 10.000</p>
+                            <p class="text-xs text-emerald-400 font-semibold mt-1">Rp 11.000</p>
+                        </div>
+                        <div onclick="selectProduct(this, 'Pulsa 25.000 All Op', 26000)" class="product-card border border-slate-800 bg-slate-950 rounded-xl p-3 cursor-pointer hover:border-emerald-500 transition">
+                            <p class="text-xs font-bold text-white">Pulsa 25.000</p>
+                            <p class="text-xs text-emerald-400 font-semibold mt-1">Rp 26.000</p>
+                        </div>
+                        <div onclick="selectProduct(this, 'Pulsa 50.000 All Op', 51000)" class="product-card border border-slate-800 bg-slate-950 rounded-xl p-3 cursor-pointer hover:border-emerald-500 transition">
+                            <p class="text-xs font-bold text-white">Pulsa 50.000</p>
+                            <p class="text-xs text-emerald-400 font-semibold mt-1">Rp 51.000</p>
+                        </div>
+                        <div onclick="selectProduct(this, 'Paket Data 10GB 30 Hari', 35000)" class="product-card border border-slate-800 bg-slate-950 rounded-xl p-3 cursor-pointer hover:border-emerald-500 transition">
+                            <p class="text-xs font-bold text-white">Data 10 GB (30hr)</p>
+                            <p class="text-xs text-emerald-400 font-semibold mt-1">Rp 35.000</p>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="triggerCheckout()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-xs transition">Beli Sekarang</button>
+            </div>
+        </div>
+
+        <!-- ==================== VIEW 4: TOKEN PLN ==================== -->
+        <div id="view-pln" class="hidden flex-1 flex-col overflow-y-auto no-scrollbar pb-20">
+            <div class="p-4 bg-slate-900 border-b border-slate-800 flex items-center gap-3 sticky top-0 z-40">
+                <button onclick="showView('view-home')" class="w-9 h-9 rounded-xl bg-slate-800 flex items-center justify-center text-slate-300 hover:text-white">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h2 class="text-base font-bold text-white">Token Listrik PLN</h2>
+            </div>
+            <div class="p-5 space-y-5">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase">No. Meter / ID Pelanggan</h3>
+                    <input type="number" placeholder="Masukkan ID Pelanggan PLN" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-amber-500">
+                </div>
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase">Pilih Nominal Token</h3>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div onclick="selectProduct(this, 'Token PLN 20.000', 21500)" class="product-card border border-slate-800 bg-slate-950 rounded-xl p-3 cursor-pointer hover:border-amber-500 transition">
+                            <p class="text-xs font-bold text-white">PLN 20.000</p>
+                            <p class="text-xs text-amber-400 font-semibold mt-1">Rp 21.500</p>
+                        </div>
+                        <div onclick="selectProduct(this, 'Token PLN 50.000', 51500)" class="product-card border border-slate-800 bg-slate-950 rounded-xl p-3 cursor-pointer hover:border-amber-500 transition">
+                            <p class="text-xs font-bold text-white">PLN 50.000</p>
+                            <p class="text-xs text-amber-400 font-semibold mt-1">Rp 51.500</p>
+                        </div>
+                        <div onclick="selectProduct(this, 'Token PLN 100.000', 101500)" class="product-card border border-slate-800 bg-slate-950 rounded-xl p-3 cursor-pointer hover:border-amber-500 transition">
+                            <p class="text-xs font-bold text-white">PLN 100.000</p>
+                            <p class="text-xs text-amber-400 font-semibold mt-1">Rp 101.500</p>
+                        </div>
+                        <div onclick="selectProduct(this, 'Token PLN 200.000', 201500)" class="product-card border border-slate-800 bg-slate-950 rounded-xl p-3 cursor-pointer hover:border-amber-500 transition">
+                            <p class="text-xs font-bold text-white">PLN 200.000</p>
+                            <p class="text-xs text-amber-400 font-semibold mt-1">Rp 201.500</p>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="triggerCheckout()" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 rounded-xl text-xs transition">Beli Sekarang</button>
+            </div>
+        </div>
+
+        <!-- ==================== VIEW 5: VOUCHER ==================== -->
+        <div id="view-voucher" class="hidden flex-1 flex-col overflow-y-auto no-scrollbar pb-20">
+            <div class="p-4 bg-slate-900 border-b border-slate-800 flex items-center gap-3 sticky top-0 z-40">
+                <button onclick="showView('view-home')" class="w-9 h-9 rounded-xl bg-slate-800 flex items-center justify-center text-slate-300 hover:text-white">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h2 class="text-base font-bold text-white">Voucher Digital</h2>
+            </div>
+            <div class="p-5 space-y-5">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase">Pilih Voucher</h3>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div onclick="selectProduct(this, 'Google Play 50rb', 52000)" class="product-card border border-slate-800 bg-slate-950 rounded-xl p-3 cursor-pointer hover:border-rose-500 transition">
+                            <p class="text-xs font-bold text-white">Google Play 50rb</p>
+                            <p class="text-xs text-rose-400 font-semibold mt-1">Rp 52.000</p>
+                        </div>
+                        <div onclick="selectProduct(this, 'Steam Wallet $10', 165000)" class="product-card border border-slate-800 bg-slate-950 rounded-xl p-3 cursor-pointer hover:border-rose-500 transition">
+                            <p class="text-xs font-bold text-white">Steam Wallet $10</p>
+                            <p class="text-xs text-rose-400 font-semibold mt-1">Rp 165.000</p>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="triggerCheckout()" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-bold py-3 rounded-xl text-xs transition">Beli Sekarang</button>
+            </div>
+        </div>
+
+        <!-- ==================== VIEW 6: STREAMING ==================== -->
+        <div id="view-streaming" class="hidden flex-1 flex-col overflow-y-auto no-scrollbar pb-20">
+            <div class="p-4 bg-slate-900 border-b border-slate-800 flex items-center gap-3 sticky top-0 z-40">
+                <button onclick="showView('view-home')" class="w-9 h-9 rounded-xl bg-slate-800 flex items-center justify-center text-slate-300 hover:text-white">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h2 class="text-base font-bold text-white">Paket Streaming</h2>
+            </div>
+            <div class="p-5 space-y-5">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase">Pilih Akun Premium</h3>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div onclick="selectProduct(this, 'Netflix Premium 1 Bln', 45000)" class="product-card border border-slate-800 bg-slate-950 rounded-xl p-3 cursor-pointer hover:border-purple-500 transition">
+                            <p class="text-xs font-bold text-white">Netflix Premium</p>
+                            <p class="text-xs text-purple-400 font-semibold mt-1">Rp 45.000 / bln</p>
+                        </div>
+                        <div onclick="selectProduct(this, 'Disney+ Hotstar 1 Bln', 39000)" class="product-card border border-slate-800 bg-slate-950 rounded-xl p-3 cursor-pointer hover:border-purple-500 transition">
+                            <p class="text-xs font-bold text-white">Disney+ Hotstar</p>
+                            <p class="text-xs text-purple-400 font-semibold mt-1">Rp 39.000 / bln</p>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="triggerCheckout()" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded-xl text-xs transition">Beli Sekarang</button>
+            </div>
+        </div>
+
+        <!-- ==================== VIEW 7: FULL CHAT CS AI ==================== -->
+        <div id="view-chat" class="hidden flex-1 flex-col h-[100dvh] bg-slate-950 z-50">
+            <div class="p-4 bg-slate-900 border-b border-slate-800 flex items-center justify-between shadow-md">
+                <div class="flex items-center gap-3">
+                    <button onclick="showView('view-home')" class="w-9 h-9 rounded-xl bg-slate-800 flex items-center justify-center text-slate-300 hover:text-white">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <div>
+                        <h2 class="text-sm font-bold text-white leading-tight">XPAY CS AI Support</h2>
+                        <span class="text-[11px] text-emerald-400 flex items-center gap-1">Online 24/7</span>
+                    </div>
+                </div>
+                <button onclick="clearChat()" class="text-slate-400 hover:text-rose-400 text-xs px-2.5 py-1.5 rounded-lg border border-slate-800">
+                    <i class="fas fa-trash-can"></i> Reset
+                </button>
+            </div>
+            <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar">
+                <div class="flex gap-3">
+                    <div class="w-8 h-8 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 shrink-0">
+                        <i class="fas fa-robot text-xs"></i>
+                    </div>
+                    <div class="bg-slate-900 border border-slate-800 text-slate-200 text-xs p-3.5 rounded-2xl rounded-tl-none max-w-[85%] leading-relaxed">
+                        Halo! Saya Asisten AI XPAYPOINT. Ada yang bisa saya bantu terkait transaksi atau saldo Anda hari ini?
+                    </div>
+                </div>
+            </div>
+            <div class="p-3 bg-slate-900 border-t border-slate-800 flex items-center gap-2">
+                <input type="text" id="chat-input" placeholder="Tulis pertanyaan Anda..." class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none" onkeypress="if(event.key==='Enter') sendMessage()">
+                <button onclick="sendMessage()" class="w-11 h-11 bg-blue-600 text-white rounded-xl flex items-center justify-center text-sm shadow-md shrink-0">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- ==================== MODAL AUTH (LOGIN/DAFTAR) ==================== -->
+        <div id="modal-auth" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div class="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl p-6 relative">
+                <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                    <i class="fas fa-xmark text-lg"></i>
+                </button>
+                <h3 class="text-lg font-bold text-white mb-4">Masuk / Daftar Akun</h3>
+                <div class="space-y-3">
+                    <input type="email" id="auth-email" placeholder="Email Anda" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none">
+                    <input type="password" id="auth-password" placeholder="Kata Sandi" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none">
+                    <button onclick="handleLogin()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl text-xs transition">Masuk Sekarang</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== MODAL CHECKOUT ==================== -->
+        <div id="modal-checkout" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div class="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl p-6 relative space-y-4">
+                <button onclick="closeCheckout()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                    <i class="fas fa-xmark text-lg"></i>
+                </button>
+                <h3 class="text-base font-bold text-white">Konfirmasi Pembelian</h3>
+                <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 space-y-2 text-xs">
+                    <div class="flex justify-between text-slate-400">
+                        <span>Produk:</span>
+                        <span id="checkout-title" class="font-bold text-white">-</span>
+                    </div>
+                    <div class="flex justify-between text-slate-400">
+                        <span>Total Harga:</span>
+                        <span id="checkout-price" class="font-bold text-emerald-400">-</span>
+                    </div>
+                </div>
+                <button onclick="processOrder()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl text-xs transition">Bayar Sekarang</button>
+            </div>
+        </div>
+
+        <!-- ==================== BOTTOM NAVIGATION BAR ==================== -->
+        <div id="bottom-nav" class="fixed bottom-0 w-full max-w-md bg-slate-900/95 border-t border-slate-800 flex justify-around py-2.5 backdrop-blur-xl z-40">
+            <button onclick="showView('view-home')" class="flex flex-col items-center gap-1 text-blue-400">
+                <i class="fas fa-house text-base"></i>
+                <span class="text-[10px] font-semibold">Beranda</span>
+            </button>
+            <button onclick="alert('Menu Riwayat')" class="flex flex-col items-center gap-1 text-slate-400 hover:text-white transition">
+                <i class="fas fa-clock-rotate-left text-base"></i>
+                <span class="text-[10px] font-semibold">Riwayat</span>
+            </button>
+            <button onclick="showView('view-chat')" class="flex flex-col items-center gap-1 text-slate-400 hover:text-white transition">
+                <i class="fas fa-headset text-base"></i>
+                <span class="text-[10px] font-semibold">Bantuan AI</span>
+            </button>
+            <button onclick="openAuthModal()" class="flex flex-col items-center gap-1 text-slate-400 hover:text-white transition">
+                <i class="fas fa-user text-base"></i>
+                <span class="text-[10px] font-semibold">Profil</span>
+            </button>
+        </div>
+
+    </div>
+
+    <!-- SCRIPT APPLICATION LOGIC -->
+    <script>
+        // Placeholder Kredensial Supabase
+        const SUPABASE_URL = 'https://xyzcompany.supabase.co';
+        const SUPABASE_KEY = 'eyJhb...'; 
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let selectedItem = null;
+
+        function showView(viewId) {
+            const views = ['view-home', 'view-game', 'view-pulsa', 'view-pln', 'view-voucher', 'view-streaming', 'view-chat'];
+            views.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.add('hidden');
+            });
+            const activeEl = document.getElementById(viewId);
+            if (activeEl) {
+                activeEl.classList.remove('hidden');
+                if (viewId === 'view-chat') {
+                    activeEl.classList.add('flex');
+                    document.getElementById('bottom-nav').classList.add('hidden');
+                } else {
+                    document.getElementById('bottom-nav').classList.remove('hidden');
+                }
+            }
+        }
+
+        function selectProduct(element, title, price) {
+            document.querySelectorAll('.product-card').forEach(el => el.classList.remove('border-blue-500', 'border-emerald-500', 'border-amber-500', 'border-rose-500', 'border-purple-500'));
+            element.classList.add('border-blue-500');
+            selectedItem = { title, price };
+        }
+
+        function triggerCheckout() {
+            if (!selectedItem) {
+                alert('Silakan pilih salah satu nominal produk terlebih dahulu!');
+                return;
+            }
+            document.getElementById('checkout-title').innerText = selectedItem.title;
+            document.getElementById('checkout-price').innerText = 'Rp ' + selectedItem.price.toLocaleString('id-ID');
+            document.getElementById('modal-checkout').classList.remove('hidden');
+        }
+
+        function closeCheckout() {
+            document.getElementById('modal-checkout').classList.add('hidden');
+        }
+
+        function processOrder() {
+            alert('Transaksi berhasil dikirim ke sistem!');
+            closeCheckout();
+        }
+
+        function openAuthModal() {
+            document.getElementById('modal-auth').classList.remove('hidden');
+        }
+
+        function closeAuthModal() {
+            document.getElementById('modal-auth').classList.add('hidden');
+        }
+
+        function handleLogin() {
+            const email = document.getElementById('auth-email').value;
+            if (!email) {
+                alert('Masukkan email terlebih dahulu');
+                return;
+            }
+            document.getElementById('display-username').innerText = email.split('@')[0];
+            document.getElementById('btn-auth-header').innerText = 'Terverifikasi';
+            document.getElementById('user-balance').innerText = '50.000';
+            closeAuthModal();
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            if (!message) return;
+
+            const container = document.getElementById('chat-messages');
+            container.innerHTML += `
+                <div class="flex justify-end">
+                    <div class="bg-blue-600 text-white text-xs p-3.5 rounded-2xl rounded-tr-none max-w-[85%]">${message}</div>
+                </div>
+            `;
+            input.value = '';
+
+            setTimeout(() => {
+                container.innerHTML += `
+                    <div class="flex gap-3">
+                        <div class="w-8 h-8 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 shrink-0"><i class="fas fa-robot text-xs"></i></div>
+                        <div class="bg-slate-900 border border-slate-800 text-slate-200 text-xs p-3.5 rounded-2xl rounded-tl-none max-w-[85%]">Pesan Anda diterima. Tim CS & AI XPAYPOINT siap melayani transaksi Anda.</div>
+                    </div>
+                `;
+                container.scrollTop = container.scrollHeight;
+            }, 800);
+        }
+
+        function clearChat() {
+            document.getElementById('chat-messages').innerHTML = `
+                <div class="flex gap-3">
+                    <div class="w-8 h-8 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 shrink-0"><i class="fas fa-robot text-xs"></i></div>
+                    <div class="bg-slate-900 border border-slate-800 text-slate-200 text-xs p-3.5 rounded-2xl rounded-tl-none max-w-[85%]">Percakapan telah dibersihkan.</div>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
