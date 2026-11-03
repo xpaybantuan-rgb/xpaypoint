@@ -20,13 +20,42 @@
 .modalgame{display:flex;align-items:center;gap:13px;padding:12px;background:#ffffff08;border:1px solid var(--line);border-radius:14px;margin-bottom:18px}.modalbadge{width:54px;height:54px;border-radius:12px;display:grid;place-items:center;font:700 19px 'Space Grotesk';background:linear-gradient(135deg,#425c2d,#182315);color:var(--lime)}
 .field{display:block;margin:14px 0}.field span{display:block;font-size:12px;color:#b5c0ad;font-weight:700;margin-bottom:8px}.field input{width:100%;background:#090d08;border:1px solid #34402e;border-radius:11px;padding:14px;color:white;outline:none}.field input:focus{border-color:var(--lime)}.modalhint{color:#899584;font-size:12px;line-height:1.6;margin:13px 0 18px}.modal .btn{width:100%}
 @media(max-width:600px){.modal{padding:19px}.modalhead h3{font-size:20px}}
+
+.balance{display:block;font:700 25px 'Space Grotesk';color:var(--lime);margin:9px 0}
+.account-grid{grid-template-columns:repeat(3,1fr)}
+.orders-panel{margin-top:16px;padding:22px;background:var(--panel);border:1px solid var(--line);border-radius:17px}
+.orders-panel h3{font:700 20px 'Space Grotesk'}
+.orders-list{color:var(--muted);font-size:13px}
+.order-row{display:flex;justify-content:space-between;gap:15px;padding:13px 0;border-top:1px solid var(--line)}
+.order-row b{color:var(--text);display:block}
+.order-row small{color:var(--muted)}
+.product-list{display:grid;gap:9px;margin:12px 0}
+.product-option{display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;background:#0a0e09;border:1px solid var(--line);border-radius:12px;padding:13px;color:var(--text);cursor:pointer}
+.product-option.selected{border-color:var(--lime);background:#c5ff5510}
+.product-option b{font-size:13px}.product-option strong{color:var(--lime);white-space:nowrap}
+.product-empty{padding:16px;border:1px dashed var(--line);border-radius:12px;color:var(--muted);font-size:13px;line-height:1.6}
+.auth-switch{text-align:center;color:var(--muted);font-size:13px;margin:17px 0 0}
+.auth-switch button{border:0;background:none;color:var(--lime);font-weight:800;cursor:pointer}
+.game-image{width:100%;height:100%;object-fit:cover;display:block}
+[hidden]{display:none!important}
+@media(max-width:600px){.account-grid{grid-template-columns:1fr}.order-row{flex-direction:column;gap:5px}}
 </style>
 </head>
 <body>
-<header class="topbar"><div class="wrap nav"><a class="brand" href="#">XPAY<span>POINT</span></a><nav class="navlinks"><a href="#games">Game</a><a href="#benefit">Keunggulan</a><a href="#coin">XPAYCOIN</a></nav><div class="navright"><button class="btn ghost" onclick="alert('Fitur akun akan dihubungkan ke Supabase pada tahap integrasi.')">Masuk</button><button class="btn primary" onclick="document.querySelector('#games').scrollIntoView({behavior:'smooth'})">Top Up</button></div></div></header>
+<header class="topbar"><div class="wrap nav"><a class="brand" href="#">XPAY<span>POINT</span></a><nav class="navlinks"><a href="#games">Game</a><a href="#benefit">Keunggulan</a><a href="#coin">XPAYCOIN</a></nav><div class="navright"><button class="btn ghost" id="authBtn">Masuk</button><button class="btn primary" onclick="document.querySelector('#games').scrollIntoView({behavior:'smooth'})">Top Up</button></div></div></header>
 <main><section class="wrap hero"><div><div class="eyebrow"><i class="dot"></i> GAME TOP UP STORE</div><h1>Main terus.<br>Top up <em>sat-set.</em></h1><p class="lead">Isi ulang game favoritmu dengan pengalaman yang simpel, cepat, dan nyaman. Pilih game, tentukan produk, lalu lanjutkan pembayaran.</p><div class="heroactions"><button class="btn primary" onclick="document.querySelector('#games').scrollIntoView({behavior:'smooth'})">Cari Game Sekarang ↗</button><button class="btn ghost" onclick="document.querySelector('#benefit').scrollIntoView({behavior:'smooth'})">Kenapa XPAYPOINT?</button></div><div class="stats"><div class="stat"><strong>24/7</strong><small>Akses kapan saja</small></div><div class="stat"><strong>Praktis</strong><small>Alur mudah</small></div><div class="stat"><strong>Support</strong><small>Bantuan pelanggan</small></div></div></div><div class="heroart"><div class="orb"></div><div class="orbtext">XP</div><div class="floatcard fc1"><b>⚡ Proses praktis</b><small>Alur top up sederhana</small></div><div class="floatcard fc2"><b>✦ XPAYCOIN</b><small>Reward pelanggan</small></div></div></section>
 <section class="wrap section" id="games"><div class="sectionhead"><div><h2>Pilih game favoritmu</h2><p>Temukan game dan mulai top up.</p></div><label class="search">⌕ <input id="search" type="search" placeholder="Cari nama game..."></label></div><div class="filters" id="filters"><button class="chip active" data-cat="Semua">Semua</button><button class="chip" data-cat="Mobile">Mobile</button><button class="chip" data-cat="PC">PC</button><button class="chip" data-cat="Lainnya">Lainnya</button></div><div class="games" id="gamesGrid"></div></section>
 <section class="wrap section" id="benefit"><div class="sectionhead"><div><h2>Top up tanpa ribet</h2><p>Pengalaman belanja game yang kami utamakan.</p></div></div><div class="benefits"><article class="benefit"><div class="ico">⚡</div><b>Alur simpel</b><p>Pilih game dan produk dengan tampilan yang jelas dan mudah dipahami.</p></article><article class="benefit"><div class="ico">◈</div><b>Pembayaran praktis</b><p>Metode pembayaran akan ditampilkan sesuai kanal yang aktif di XPAYPOINT.</p></article><article class="benefit"><div class="ico">☻</div><b>Bantuan pelanggan</b><p>Butuh bantuan? Tim XPAYPOINT siap membantu melalui kanal dukungan resmi.</p></article></div></section>
+
+<section class="wrap section" id="accountPanel" hidden>
+ <div class="sectionhead"><div><h2>Akun XPAYPOINT</h2><p>Saldo, riwayat pesanan, dan aktivitas akunmu.</p></div><button class="btn ghost" id="logoutBtn">Keluar</button></div>
+ <div class="benefits account-grid">
+  <article class="benefit"><div class="ico">◈</div><b>XP Deposit</b><strong id="depositBalance" class="balance">Rp0</strong><p>Saldo deposit untuk pembayaran.</p></article>
+  <article class="benefit"><div class="ico">✦</div><b>XP Rewards</b><strong id="rewardsBalance" class="balance">0 XC</strong><p>1 XC bernilai Rp1.</p></article>
+  <article class="benefit"><div class="ico">▤</div><b>Pesanan saya</b><strong id="orderCount" class="balance">0</strong><p>Riwayat transaksi akunmu.</p></article>
+ </div>
+ <div class="orders-panel"><h3>Riwayat pesanan</h3><div id="ordersList" class="orders-list">Masuk untuk melihat pesanan.</div></div>
+</section>
 <section class="wrap section" id="coin"><div class="coinbanner"><div><h2>Kenalan dengan XPAYCOIN</h2><p>Saldo dan reward pelanggan dalam satu pengalaman XPAYPOINT.</p></div><div class="coinmark">XC ✦</div></div></section>
 <div class="modalback" id="gameModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
  <div class="modal">
@@ -34,37 +63,128 @@
   <div class="modalgame"><div class="modalbadge" id="modalBadge">XP</div><div><b id="modalGameName">Pilih game</b><div><small style="color:var(--muted)">Isi data akun game kamu</small></div></div></div>
   <label class="field"><span>User ID</span><input id="playerId" autocomplete="off" placeholder="Masukkan User ID"></label>
   <label class="field" id="serverField"><span>Zone / Server ID <small style="font-weight:400">(jika diperlukan)</small></span><input id="serverId" autocomplete="off" placeholder="Masukkan Zone / Server ID"></label>
-  <p class="modalhint">Ini masih preview tampilan. Katalog nominal, pengecekan ID, harga real-time, dan pembayaran akan disambungkan setelah backend XPAYPOINT siap.</p>
-  <button class="btn primary" id="continueTopup">Lanjutkan <span aria-hidden="true">↗</span></button>
+  <div id="productList" class="product-list"><p class="modalhint">Memuat nominal...</p></div><p class="modalhint" id="productHint">Pilih nominal yang tersedia untuk melanjutkan.</p>
+  <button class="btn primary" id="continueTopup">Lanjut ke pembayaran <span aria-hidden="true">↗</span></button>
  </div>
 </div>
 </main>
-<footer class="footer"><div class="wrap"><div class="footrow"><a class="brand" href="#">XPAY<span>POINT</span></a><span>Top up game jadi lebih simpel.</span><span>© 2026 XPAYPOINT</span></div><p class="notice">Preview desain. Login, katalog live, harga, pembayaran, pesanan, XPAYCOIN, dan AI belum diaktifkan pada halaman ini.</p></div></footer>
-<script>
-const games=[
- ["Mobile Legends","Mobile","ML","g1"],["Free Fire","Mobile","FF","g2"],["Free Fire MAX","Mobile","FF MAX","g2"],["PUBG Mobile","Mobile","PUBG","g3"],["Genshin Impact","Mobile","GI","g4"],["Honor of Kings","Mobile","HOK","g5"],["Magic Chess: Go Go","Mobile","MC","g1"],["Valorant","PC","VAL","g6"],["Blood Strike","Mobile","BS","g7"],["Call of Duty Mobile","Mobile","CODM","g7"],["Roblox","Lainnya","RBLX","g8"]
-];
-let category="Semua",selectedGame=null;
-const modal=document.querySelector("#gameModal");
+
+<div class="modalback" id="authModal" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+ <div class="modal">
+  <div class="modalhead"><h3 id="authTitle">Masuk XPAYPOINT</h3><button class="closemodal" id="closeAuth" aria-label="Tutup">×</button></div>
+  <form id="authForm">
+   <label class="field"><span>Email</span><input id="authEmail" type="email" autocomplete="email" required placeholder="email@contoh.com"></label>
+   <label class="field"><span>Password</span><input id="authPassword" type="password" autocomplete="current-password" minlength="6" required placeholder="Minimal 6 karakter"></label>
+   <p class="modalhint" id="authMessage" aria-live="polite"></p>
+   <button class="btn primary" id="authSubmit" type="submit">Masuk</button>
+  </form>
+  <p class="auth-switch"><span id="authSwitchText">Belum punya akun?</span> <button type="button" id="authSwitch">Daftar sekarang</button></p>
+ </div>
+</div>
+<footer class="footer"><div class="wrap"><div class="footrow"><a class="brand" href="#">XPAY<span>POINT</span></a><span>Top up game jadi lebih simpel.</span><span>© 2026 XPAYPOINT</span></div><p class="notice">XPAYPOINT • Layanan pelanggan dan transaksi mengikuti status sistem yang aktif.</p></div></footer>
+<script type="module">
+
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+const SUPABASE_URL = 'https://rjgeitbkpcyymgemcztx.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_1b6C4q5vgbX0XfP_EV5yjQ_Qk9Cq4lR';
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+let games=[], category='Semua', selectedGame=null, products=[], selectedProduct=null, currentUser=null, signUpMode=false;
+const modal=document.querySelector('#gameModal'), authModal=document.querySelector('#authModal');
+const money = n => new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(n||0));
+const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fallback=[['Mobile Legends','Mobile','ML','g1'],['Free Fire','Mobile','FF','g2'],['Free Fire MAX','Mobile','FF MAX','g2'],['PUBG Mobile','Mobile','PUBG','g3'],['Genshin Impact','Mobile','GI','g4'],['Honor of Kings','Mobile','HOK','g5'],['Magic Chess: Go Go','Mobile','MC','g1'],['Valorant','PC','VAL','g6'],['Blood Strike','Mobile','BS','g7'],['Call of Duty Mobile','Mobile','CODM','g7'],['Roblox','Lainnya','RBLX','g8']];
 function render(){
- const q=document.querySelector("#search").value.toLowerCase();
- const list=games.filter(g=>(category==="Semua"||g[1]===category)&&g[0].toLowerCase().includes(q));
- document.querySelector("#gamesGrid").innerHTML=list.length?list.map((g,i)=>'<article class="game" tabindex="0" role="button" data-game="'+games.indexOf(g)+'" aria-label="Pilih '+g[0]+'"><div class="gameart '+g[3]+'"><span>'+g[2]+'</span></div><div class="gamebody"><b>'+g[0]+'</b><small>'+g[1]+'</small><div class="choose">PILIH GAME <span>↗</span></div></div></article>').join(""):'<div class="empty">Game tidak ditemukan. Coba kata kunci lain.</div>';
+ const q=document.querySelector('#search').value.toLowerCase();
+ const list=games.filter(g=>(category==='Semua'||g.category===category)&&g.name.toLowerCase().includes(q));
+ document.querySelector('#gamesGrid').innerHTML=list.length?list.map(g=>{
+  const art=g.image_url?'<img class="game-image" src="'+esc(g.image_url)+'" alt="'+esc(g.name)+'" loading="lazy">':'<span>'+esc((g.name.split(/\s+/).map(x=>x[0]).join('').slice(0,5)).toUpperCase())+'</span>';
+  return '<article class="game" tabindex="0" role="button" data-game="'+esc(g.id)+'" aria-label="Pilih '+esc(g.name)+'"><div class="gameart '+(g.art||'g1')+'">'+art+'</div><div class="gamebody"><b>'+esc(g.name)+'</b><small>'+esc(g.category)+'</small><div class="choose">PILIH GAME <span>↗</span></div></div></article>';
+ }).join(''):'<div class="empty">Game tidak ditemukan. Coba kata kunci lain.</div>';
+}
+async function loadGames(){
+ const {data,error}=await supabase.from('xpaypoint_games').select('id,slug,name,category,image_url,is_active,sort_order').eq('is_active',true).order('sort_order');
+ if(error){console.error(error);games=fallback.map((g,i)=>({id:null,name:g[0],category:g[1],art:g[3]}));}
+ else games=(data||[]).map(g=>({...g,art:(fallback.find(f=>f[0]===g.name)||[])[3]||'g1'}));
+ render();
 }
 function openGame(g){
- selectedGame=g;document.querySelector("#modalGameName").textContent=g[0];document.querySelector("#modalBadge").textContent=g[2];
- document.querySelector("#playerId").value="";document.querySelector("#serverId").value="";
- document.querySelector("#serverField").style.display=["Mobile Legends","Genshin Impact","Honor of Kings"].includes(g[0])?"block":"none";
- modal.classList.add("open");document.body.style.overflow="hidden";setTimeout(()=>document.querySelector("#playerId").focus(),80);
+ selectedGame=g;selectedProduct=null;products=[];
+ document.querySelector('#modalGameName').textContent=g.name;
+ document.querySelector('#modalBadge').textContent=g.name.split(/\s+/).map(x=>x[0]).join('').slice(0,4).toUpperCase();
+ document.querySelector('#playerId').value='';document.querySelector('#serverId').value='';
+ document.querySelector('#serverField').style.display=['Mobile Legends','Genshin Impact','Honor of Kings'].includes(g.name)?'block':'none';
+ document.querySelector('#productList').innerHTML='<p class="modalhint">Memuat nominal...</p>';
+ document.querySelector('#productHint').textContent='Pilih nominal yang tersedia untuk melanjutkan.';
+ modal.classList.add('open');document.body.style.overflow='hidden';
+ loadProducts(g);setTimeout(()=>document.querySelector('#playerId').focus(),80);
 }
-function closeGame(){modal.classList.remove("open");document.body.style.overflow="";}
-document.querySelector("#search").addEventListener("input",render);
-document.querySelector("#filters").addEventListener("click",e=>{const b=e.target.closest("button[data-cat]");if(!b)return;category=b.dataset.cat;document.querySelectorAll(".chip").forEach(x=>x.classList.toggle("active",x===b));render();});
-document.querySelector("#gamesGrid").addEventListener("click",e=>{const card=e.target.closest("[data-game]");if(card)openGame(games[Number(card.dataset.game)]);});
-document.querySelector("#gamesGrid").addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target.matches("[data-game]")){e.preventDefault();openGame(games[Number(e.target.dataset.game)]);}});
-document.querySelector("#closeModal").addEventListener("click",closeGame);
-modal.addEventListener("click",e=>{if(e.target===modal)closeGame();});
-document.addEventListener("keydown",e=>{if(e.key==="Escape")closeGame();});
-document.querySelector("#continueTopup").addEventListener("click",()=>{const id=document.querySelector("#playerId").value.trim();if(!id){document.querySelector("#playerId").focus();document.querySelector("#playerId").style.borderColor="#ff7474";return;}alert("Data akun tersimpan sementara di preview. Tahap pilih nominal dan pembayaran akan aktif setelah integrasi backend.");});
-render();
+async function loadProducts(g){
+ if(!g.id){document.querySelector('#productList').innerHTML='<div class="product-empty">Katalog belum terhubung ke database.</div>';return;}
+ const {data,error}=await supabase.from('xpaypoint_products').select('id,name,description,sell_price,nominal_value').eq('game_id',g.id).eq('is_active',true).order('sort_order');
+ if(error){document.querySelector('#productList').innerHTML='<div class="product-empty">Katalog gagal dimuat. Coba beberapa saat lagi.</div>';return;}
+ products=data||[];
+ if(!products.length){document.querySelector('#productList').innerHTML='<div class="product-empty">Nominal untuk '+esc(g.name)+' belum tersedia. Produk akan tampil otomatis setelah katalog VIPayment dan harga jual dimasukkan ke panel pengelolaan.</div>';return;}
+ document.querySelector('#productList').innerHTML=products.map(p=>'<button type="button" class="product-option" data-product="'+esc(p.id)+'"><span><b>'+esc(p.name)+'</b><br><small>'+esc(p.description||'')+'</small></span><strong>'+money(p.sell_price)+'</strong></button>').join('');
+}
+function closeGame(){modal.classList.remove('open');document.body.style.overflow='';}
+function showAuth(){authModal.classList.add('open');document.body.style.overflow='hidden';}
+function closeAuth(){authModal.classList.remove('open');document.body.style.overflow='';}
+function setAuthMode(signup){
+ signUpMode=signup;document.querySelector('#authTitle').textContent=signup?'Buat akun XPAYPOINT':'Masuk XPAYPOINT';
+ document.querySelector('#authSubmit').textContent=signup?'Daftar':'Masuk';
+ document.querySelector('#authSwitchText').textContent=signup?'Sudah punya akun?':'Belum punya akun?';
+ document.querySelector('#authSwitch').textContent=signup?'Masuk':'Daftar sekarang';
+ document.querySelector('#authPassword').autocomplete=signup?'new-password':'current-password';
+ document.querySelector('#authMessage').textContent='';
+}
+async function refreshAccount(){
+ const btn=document.querySelector('#authBtn');
+ btn.textContent=currentUser?'Akun Saya':'Masuk';
+ document.querySelector('#accountPanel').hidden=!currentUser;
+ if(!currentUser)return;
+ const [walletRes,ordersRes]=await Promise.all([
+  supabase.from('xpaypoint_wallets').select('deposit_balance,rewards_balance').eq('user_id',currentUser.id).maybeSingle(),
+  supabase.from('xpaypoint_orders').select('order_code,game_name_snapshot,product_name_snapshot,payable_amount,status,created_at').eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(10)
+ ]);
+ const wallet=walletRes.data||{};
+ document.querySelector('#depositBalance').textContent=money(wallet.deposit_balance||0);
+ document.querySelector('#rewardsBalance').textContent=Number(wallet.rewards_balance||0).toLocaleString('id-ID')+' XC';
+ const orders=ordersRes.data||[];
+ document.querySelector('#orderCount').textContent=orders.length;
+ document.querySelector('#ordersList').innerHTML=orders.length?orders.map(o=>'<div class="order-row"><div><b>'+esc(o.game_name_snapshot)+' — '+esc(o.product_name_snapshot)+'</b><small>'+esc(o.order_code)+' • '+new Date(o.created_at).toLocaleString('id-ID')+'</small></div><div><b>'+money(o.payable_amount)+'</b><small>'+esc(o.status.replaceAll('_',' '))+'</small></div></div>').join(''):'Belum ada pesanan.';
+}
+supabase.auth.onAuthStateChange((_event,session)=>{currentUser=session?.user||null;setTimeout(refreshAccount,0);});
+document.querySelector('#authBtn').addEventListener('click',()=>currentUser?document.querySelector('#accountPanel').scrollIntoView({behavior:'smooth'}):showAuth());
+document.querySelector('#closeAuth').addEventListener('click',closeAuth);
+document.querySelector('#authSwitch').addEventListener('click',()=>setAuthMode(!signUpMode));
+document.querySelector('#authForm').addEventListener('submit',async e=>{
+ e.preventDefault();const email=document.querySelector('#authEmail').value.trim(),password=document.querySelector('#authPassword').value;
+ const submit=document.querySelector('#authSubmit'),message=document.querySelector('#authMessage');
+ submit.disabled=true;message.textContent='Memproses...';
+ const result=signUpMode?await supabase.auth.signUp({email,password}):await supabase.auth.signInWithPassword({email,password});
+ submit.disabled=false;
+ if(result.error){message.textContent=result.error.message;return;}
+ if(signUpMode&&!result.data.session){message.textContent='Pendaftaran berhasil. Cek email untuk verifikasi akun sebelum masuk.';return;}
+ message.textContent='Berhasil masuk.';currentUser=result.data.user;await refreshAccount();setTimeout(closeAuth,500);
+});
+document.querySelector('#logoutBtn').addEventListener('click',async()=>{await supabase.auth.signOut();currentUser=null;await refreshAccount();});
+document.querySelector('#search').addEventListener('input',render);
+document.querySelector('#filters').addEventListener('click',e=>{const b=e.target.closest('button[data-cat]');if(!b)return;category=b.dataset.cat;document.querySelectorAll('.chip').forEach(x=>x.classList.toggle('active',x===b));render();});
+document.querySelector('#gamesGrid').addEventListener('click',e=>{const card=e.target.closest('[data-game]');if(card){const g=games.find(x=>x.id===card.dataset.game);if(g)openGame(g);}});
+document.querySelector('#gamesGrid').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('[data-game]')){e.preventDefault();const g=games.find(x=>x.id===e.target.dataset.game);if(g)openGame(g);}});
+document.querySelector('#productList').addEventListener('click',e=>{const b=e.target.closest('[data-product]');if(!b)return;selectedProduct=products.find(p=>p.id===b.dataset.product);document.querySelectorAll('.product-option').forEach(x=>x.classList.toggle('selected',x===b));});
+document.querySelector('#closeModal').addEventListener('click',closeGame);
+modal.addEventListener('click',e=>{if(e.target===modal)closeGame();});
+authModal.addEventListener('click',e=>{if(e.target===authModal)closeAuth();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeGame();closeAuth();}});
+document.querySelector('#continueTopup').addEventListener('click',()=>{
+ const id=document.querySelector('#playerId').value.trim();
+ if(!id){document.querySelector('#playerId').focus();document.querySelector('#playerId').style.borderColor='#ff7474';return;}
+ if(!selectedProduct){document.querySelector('#productHint').textContent='Pilih nominal yang tersedia terlebih dahulu.';return;}
+ if(!currentUser){closeGame();showAuth();document.querySelector('#authMessage').textContent='Masuk atau daftar untuk melanjutkan.';return;}
+ alert('Produk sudah dipilih. Checkout Kasera Pay dan proses otomatis VIPayment belum diaktifkan karena kredensial gateway/supplier belum terpasang. Tidak ada pembayaran atau pesanan palsu yang dibuat.');
+});
+async function init(){const {data}=await supabase.auth.getSession();currentUser=data.session?.user||null;await loadGames();await refreshAccount();}
+init();
+
 </script></body></html>
