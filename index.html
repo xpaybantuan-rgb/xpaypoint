@@ -1049,7 +1049,7 @@ async function aiAsk(t,img){
   const ctrl=new AbortController(); const limit=setTimeout(()=>ctrl.abort(),25000);
   const done=()=>{ clearInterval(timer); clearTimeout(limit); wait.remove(); };
   try{
-    const r=await fetch(AI_URL,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({messages:aiHist.slice(-10),image:image,count:msgCount}),signal:ctrl.signal});
+    const r=await fetch(AI_URL,{method:"POST",headers:{"content-type":"application/json",...(lsGet("xp-sb-token",null)?{Authorization:"Bearer "+lsGet("xp-sb-token",null)}:{})},body:JSON.stringify({messages:aiHist.slice(-10),image:image,count:msgCount}),signal:ctrl.signal});
     const j=await r.json().catch(()=>({})); done();
     if(r.status===429){ aiAdd("bot","⏳ Pesan terlalu cepat Kak, tunggu sebentar ya."); setTimeout(()=>aiBusyState(false),5000); return; }
     if(j.reply){
