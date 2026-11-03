@@ -964,7 +964,7 @@ async function sendWa(){
   t+=`\nMetode pembayaran: ${payName}`;
   if(payName==="XPAYCOIN") t+=" (saldo XPAYCOIN sudah dipotong)";
   if(SB_OK){
-    sbFetch("/rest/v1/orders",{method:"POST",noAuth:true,headers:{Prefer:"return=minimal"},body:{game:cur.name,item:label,price:price,player_id:uid,zone:zone||null,pay_method:payName}}).catch(()=>{});
+    sbFetch("/rest/v1/orders",{method:"POST",noAuth:true,headers:{Prefer:"return=minimal"},body:{user_id:(sbSession()&&sbSession().id)||null,game:cur.name,item:label,price:price,player_id:uid,zone:zone||null,pay_method:payName}}).catch(()=>{});
   }
   const url=`https://wa.me/${WA}?text=${encodeURIComponent(t)}`;
   popup=window.open(url,"_blank");
