@@ -942,8 +942,8 @@ $("admin").onclick=e=>{
   if(e.target.closest(".crumbtn")||e.target.closest(".x")){ ovClose('admin'); return; }
   if(e.target.closest("#logout")){ xpcLogout(); ovClose('admin'); return; }
   const ok=e.target.closest("[data-ok]"), no=e.target.closest("[data-no]");
-  if(ok) adminTopup("xpc_confirm_topup",+ok.dataset.ok);
-  else if(no) adminTopup("xpc_cancel_topup",+no.dataset.no);
+  if(ok) adminTopup("xpc_confirm_topup",ok.dataset.ok);
+  else if(no) adminTopup("xpc_cancel_topup",no.dataset.no);
 };
 
 // ===== CHECKOUT =====
