@@ -926,12 +926,39 @@ async function renderAdmin(){
       <div class="stat"><small>Nominal</small><b>${totalNom}</b></div>
       <div class="stat"><small>Pesanan</small><b>${ord.length}</b></div>
       <div class="stat"><small>Hari ini</small><b>${todayCount}</b></div></div>
+      <section class="card-box" style="padding:14px;margin:14px 0">
+        <h4 style="margin:0 0 8px">Katalog VIPayment</h4>
+        <p class="hint" style="margin:0 0 12px">Sinkronkan daftar produk dan harga supplier ke katalog sementara. Belum ditampilkan ke pembeli.</p>
+        <button class="btn" id="vipSyncBtn" type="button">⟳ Sinkronkan Produk VIPayment</button>
+        <p class="hint" id="vipSyncStatus" style="margin:10px 0 0" aria-live="polite"></p>
+      </section>
       <h4 class="step">Permintaan isi XPAYCOIN (menunggu)</h4><div class="card-box">${pendRows}</div>
       <h4 class="step">Pesanan terakhir</h4><div class="card-box">${rows}</div>
       <h4 class="step">Daftar game &amp; harga mulai</h4><div class="card-box">${gl}</div>`;
   }catch(e){
     box.innerHTML=head+'<p class="err">Gagal memuat data. Cek koneksi dan pastikan login admin benar.</p>';
   }
+}
+async function runVipaymentSync(btn){
+  const status=$("vipSyncStatus");
+  const token=lsGet("xp-sb-token",null);
+  if(!token){ status.textContent="Sesi admin habis. Login ulang."; return; }
+  btn.disabled=true; btn.textContent="Menghubungkan ke VIPayment...";
+  status.textContent="Sedang mengambil katalog supplier. Tunggu sebentar...";
+  try{
+    const response=await fetch(SB_URL+"/functions/v1/vipayment-sync",{
+      method:"POST",
+      headers:{apikey:SB_KEY,Authorization:"Bearer "+token,"Content-Type":"application/json"},
+      body:JSON.stringify({})
+    });
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok || !result.success) throw new Error(result.error||("HTTP "+response.status));
+    status.textContent="Berhasil! "+result.received+" produk diterima · "+result.available+" tersedia · "+result.empty+" kosong · tier "+result.selected_price_tier+".";
+    btn.textContent="⟳ Sinkronkan Ulang";
+  }catch(error){
+    status.textContent="Gagal: "+(error.message||"Koneksi bermasalah");
+    btn.textContent="Coba Sinkronkan Lagi";
+  }finally{ btn.disabled=false; }
 }
 async function adminTopup(fn,id){
   try{ await sbFetch("/rest/v1/rpc/"+fn,{method:"POST",body:{p_id:id}}); }
@@ -942,6 +969,8 @@ $("admin").onclick=e=>{
   if(e.target.closest(".crumbtn")||e.target.closest(".x")){ ovClose('admin'); return; }
   if(e.target.closest("#logout")){ xpcLogout(); ovClose('admin'); return; }
   const ok=e.target.closest("[data-ok]"), no=e.target.closest("[data-no]");
+  const sync=e.target.closest("#vipSyncBtn");
+  if(sync){ runVipaymentSync(sync); return; }
   if(ok) adminTopup("xpc_confirm_topup",ok.dataset.ok);
   else if(no) adminTopup("xpc_cancel_topup",no.dataset.no);
 };
