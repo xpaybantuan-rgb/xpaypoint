@@ -992,7 +992,6 @@ async function sendWa(){
 
   if(payName==="QRIS"){
     const token=lsGet("xp-sb-token",null);
-    if(!token){ alert("Login atau daftar dulu untuk membayar dengan QRIS."); openAuth(); return; }
     if(!productId){ alert("ID produk belum tersedia. Muat ulang katalog lalu coba lagi."); return; }
     const popup=window.open("about:blank","_blank");
     if(!popup){ alert("Izinkan pop-up agar halaman pembayaran QRIS bisa dibuka."); return; }
@@ -1003,7 +1002,7 @@ async function sendWa(){
         method:"POST",
         headers:{
           apikey:SB_KEY,
-          Authorization:"Bearer "+token,
+          Authorization:"Bearer "+(token||SB_KEY),
           "Content-Type":"application/json",
           "Idempotency-Key":"xpp-"+crypto.randomUUID()
         },
