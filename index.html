@@ -93,7 +93,17 @@ header{position:sticky;top:0;z-index:10;background:var(--shade);border-bottom:2p
 .shead .step{margin:0}
 .pubtag{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--txt);white-space:nowrap}
 .items{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.item-group{margin:0 0 14px}.item-group-title{font-size:13px;font-weight:800;margin:0 0 9px;color:var(--pink);letter-spacing:.2px}
+.item-group{margin:0 0 9px}.item-group-title{font-size:13px;font-weight:800;margin:0 0 9px;color:var(--pink);letter-spacing:.2px}
+.nominal-head{font-size:20px;font-weight:900;margin:4px 0 3px;color:var(--txt)}
+.nominal-sub{font-size:13px;color:var(--txt);opacity:.78;margin:0 0 12px}
+.nominal-search{width:100%;box-sizing:border-box;padding:13px 15px;border:1.5px solid var(--pink);border-radius:13px;background:var(--card);color:var(--txt);font-size:14px;margin:0 0 12px}
+.category-toggle{display:flex;align-items:center;gap:12px;width:100%;padding:12px;border:1.5px solid var(--pink);border-radius:14px;background:var(--card);color:var(--txt);text-align:left;cursor:pointer}
+.category-icon{width:40px;height:40px;display:grid;place-items:center;flex:none;border-radius:12px;background:color-mix(in srgb,var(--pink) 13%,transparent);font-size:22px}
+.category-info{flex:1;min-width:0}.category-info b{display:block;font-size:14px}.category-info small{display:block;font-size:11px;opacity:.75;margin-top:3px;line-height:1.35}
+.category-count{font-size:11px;white-space:nowrap;opacity:.8}.category-arrow{font-size:16px;transition:transform .18s}.item-group.open .category-arrow{transform:rotate(180deg)}
+.category-products{padding:10px 1px 2px}.category-products[hidden]{display:none}
+.category-products .items{gap:8px}.category-products .opt{padding:11px;border-radius:12px}.category-products .opt b{font-size:13px}.category-products .opt small{font-size:13px;margin-top:4px}
+
 @media (min-width:560px){.items{grid-template-columns:repeat(3,1fr)}}
 .opt{position:relative;background:var(--card);border:2px solid var(--pink);border-radius:16px;padding:14px;text-align:left;color:var(--txt);cursor:pointer}
 .opt b{display:block;font-size:15px;color:var(--txt)}
@@ -609,6 +619,51 @@ function productCategory(name,gameId){
   return "Produk lainnya";
 }
 
+function categoryPresentation(cat,gameId){
+  const map={
+    "Diamond":["💎","Pilihan nominal diamond resmi & proses kilat"],
+    "Diamonds":["💎","Pilihan nominal diamond"],
+    "Weekly Diamond Pass":["🎫","Paket hemat mingguan"],
+    "Twilight Pass":["🌙","Paket spesial dalam game"],
+    "Weekly Membership":["🎫","Paket membership mingguan"],
+    "Monthly Membership":["👑","Paket membership bulanan"],
+    "Level Up Pass":["🚀","Paket level up"],
+    "UC":["🪙","Pilihan nominal Unknown Cash"],
+    "Royale Pass":["🎟️","Paket Royale Pass"],
+    "Prime":["⭐","Paket Prime"],
+    "Prime Plus":["🌟","Paket Prime Plus"],
+    "Valorant Points":["💠","Pilihan nominal Valorant Points"],
+    "Robux":["🟩","Pilihan nominal Robux"],
+    "Gift Card":["🎁","Pilihan gift card"],
+    "CP":["🪙","Pilihan nominal COD Points"],
+    "Battle Pass":["🎟️","Paket Battle Pass"],
+    "Genesis Crystal":["💎","Pilihan Genesis Crystal"],
+    "Blessing of the Welkin Moon":["🌙","Paket Blessing of the Welkin Moon"],
+    "Weekly Card":["🎫","Paket kartu mingguan"],
+    "Tokens":["🪙","Pilihan token"],
+    "Gold":["🪙","Pilihan gold"],
+    "Pass":["🎟️","Pilihan paket pass"],
+    "Produk lainnya":["📦","Pilihan produk tersedia"]
+  };
+  return map[cat]||["🎮","Pilihan produk resmi & proses kilat"];
+}
+function filterProductCategories(value){
+  const q=String(value||"").trim().toLowerCase();
+  document.querySelectorAll("#order .item-group").forEach(group=>{
+    let shown=0;
+    group.querySelectorAll(".opt").forEach(btn=>{
+      const match=!q||btn.textContent.toLowerCase().includes(q);
+      btn.hidden=!match;if(match)shown++;
+    });
+    group.hidden=shown===0;
+    const count=group.querySelector(".category-count");
+    if(count) count.textContent=shown+" produk";
+    const products=group.querySelector(".category-products");
+    if(q&&shown){products.hidden=false;group.classList.add("open");}
+    else if(!q){products.hidden=true;group.classList.remove("open");}
+  });
+}
+
 function renderOrder(){
   const box=$("order");
   box.hidden=false;
@@ -625,7 +680,10 @@ function renderOrder(){
     ${cur.zone?`<label class="lbl" for="zone">${cur.zone}</label><input class="inp" id="zone" inputmode="numeric" autocomplete="off" placeholder="Masukkan ${cur.zone}">`:""}
     <p class="hint">${cur.hint}</p>
     <h4 class="step">2. Pilih nominal</h4>
-    ${(()=>{const groups=new Map();cur.items.forEach((it,i)=>{const cat=productCategory(it[0],cur.id);if(!groups.has(cat))groups.set(cat,[]);groups.get(cat).push({it,i});});return Array.from(groups,([cat,items])=>`<section class="item-group"><h5 class="item-group-title">${esc(cat)}</h5><div class="items">${items.map(({it,i})=>`<button class="opt" data-i="${i}">${CHK}<b>${esc(it[0])}</b><small>${rp(it[1])}</small></button>`).join("")}</div></section>`).join("");})()}
+    <div class="nominal-head">Pilih Nominal</div>
+    <p class="nominal-sub">Mau top up berapa ${cur.id==="ml"||cur.id==="ff"||cur.id==="ffm"?"Diamonds":cur.id==="pubg"?"UC":cur.id==="rbx"?"Robux":"produk"}?</p>
+    <input class="nominal-search" id="productSearch" type="search" placeholder="Cari produk... (misal: 86, pass, 257)" autocomplete="off">
+    ${(()=>{const groups=new Map();cur.items.forEach((it,i)=>{const cat=productCategory(it[0],cur.id);if(!groups.has(cat))groups.set(cat,[]);groups.get(cat).push({it,i});});return Array.from(groups,([cat,items],k)=>{const [ico,desc]=categoryPresentation(cat,cur.id);return `<section class="item-group"><button class="category-toggle" type="button" data-category="${k}"><span class="category-icon">${ico}</span><span class="category-info"><b>${esc(cat==="Diamond"?"Top Up Diamond":cat)}</b><small>${esc(desc)}</small></span><span class="category-count">${items.length} produk</span><span class="category-arrow">⌄</span></button><div class="category-products" hidden><div class="items">${items.map(({it,i})=>`<button class="opt" data-i="${i}">${CHK}<b>${esc(it[0])}</b><small>${rp(it[1])}</small></button>`).join("")}</div></div></section>`;}).join("");})()}
     <h4 class="step">3. Metode pembayaran</h4>
     <div class="chips">${PAYS.map((p,i)=>`<button class="chip" data-p="${i}">${p}</button>`).join("")}</div>
     <div class="sumbox">
@@ -637,11 +695,12 @@ function renderOrder(){
   </div>`;
   box.onclick=e=>{
     if(e.target.closest(".crumbtn")){ovClose('order');return;}
+    const cat=e.target.closest(".category-toggle"); if(cat){const group=cat.closest(".item-group"),body=group.querySelector(".category-products"),wasOpen=!body.hidden;box.querySelectorAll(".category-products").forEach(el=>el.hidden=true);box.querySelectorAll(".item-group").forEach(el=>el.classList.remove("open"));if(!wasOpen){body.hidden=false;group.classList.add("open");}return;}
     const o=e.target.closest(".opt"); if(o){nom=+o.dataset.i; refresh(); return;}
     const c=e.target.closest(".chip"); if(c){pay=+c.dataset.p; refresh(); return;}
     if(e.target.closest("#go")&&ready()) sendWa();
   };
-  box.oninput=refresh;
+  box.oninput=e=>{if(e.target.id==="productSearch"){filterProductCategories(e.target.value);return;}refresh();};
   refresh();
 }
 
