@@ -555,7 +555,7 @@ function pick(id){
 function productCategory(name,gameId){
   const n=String(name||"").toLowerCase();
   if(gameId==="ml"){
-    if(/weekly diamond pass|diamond pass|\\bwdp\\b/.test(n)) return "Weekly Diamond Pass";
+    if(/weekly diamond pass|diamond pass|\bwdp\b/.test(n)) return "Weekly Diamond Pass";
     if(/twilight pass/.test(n)) return "Twilight Pass";
     if(/diamond/.test(n)) return "Diamond";
   }
@@ -571,7 +571,7 @@ function productCategory(name,gameId){
     if(/prime/.test(n)) return "Prime";
     if(/uc/.test(n)) return "UC";
   }
-  if(gameId==="val" && /valorant points|\\bvp\\b|points/.test(n)) return "Valorant Points";
+  if(gameId==="val" && /valorant points|\bvp\b|points/.test(n)) return "Valorant Points";
   if(gameId==="rbx"){
     if(/gift card/.test(n)) return "Gift Card";
     if(/robux/.test(n)) return "Robux";
@@ -602,8 +602,8 @@ function productCategory(name,gameId){
   if(/gift card/.test(n)) return "Gift Card";
   if(/diamond/.test(n)) return "Diamonds";
   if(/gold/.test(n)) return "Gold";
-  if(/\\buc\\b/.test(n)) return "UC";
-  if(/\\bcp\\b/.test(n)) return "CP";
+  if(/\buc\b/.test(n)) return "UC";
+  if(/\bcp\b/.test(n)) return "CP";
   if(/robux/.test(n)) return "Robux";
   if(/token/.test(n)) return "Tokens";
   return "Produk lainnya";
