@@ -536,8 +536,9 @@ const minP=g=>Math.min(...g.items.map(i=>i[1]));
 let cur=null,nom=null,pay=null;
 
 function renderGrid(){
+  if(!vipPricesLoaded){ $("grid").innerHTML='<p class="hint">Memuat harga produk terbaru...</p>'; return; }
   const f=$("q").value.trim().toLowerCase();
-  const list=GAMES.filter(g=>ART[g.id] && g.name.toLowerCase().includes(f));
+  const list=GAMES.filter(g=>ART[g.id] && g.items.length && g.name.toLowerCase().includes(f));
   $("grid").innerHTML=list.length?list.map(g=>`<button class="gcard" data-id="${g.id}"><span class="gtop" style="--a:${g.c[0]};--b:${g.c[1]}">${ART[g.id]?`<span class="art" style="background-image:url(${ART[g.id]})"></span>`:`<span class="ava">${g.ab}</span>`}</span><span class="gbody">${g.pub?`<span class="gpub">${g.pub}</span>`:""}<b>${g.name}</b><span class="gfoot"><span>Mulai</span><strong>${rp(minP(g))}</strong></span></span></button>`).join(""):'<p class="hint">Game tidak ditemukan.</p>';
 }
 $("grid").onclick=e=>{const b=e.target.closest(".gcard"); if(b) pick(b.dataset.id);};
@@ -694,6 +695,33 @@ async function sbFetch(path,opt={}){
   if(!r.ok) throw new Error(r.status+" "+txt);
   return txt?JSON.parse(txt):null;
 }
+
+// Harga katalog publik selalu diambil dari produk aktif VIPayment di Supabase.
+let vipPricesLoaded=false, vipPricesError="";
+async function loadVipaymentPrices(){
+  const [games,products]=await Promise.all([
+    sbFetch("/rest/v1/xpaypoint_games?select=id,slug,is_active&is_active=eq.true",{noAuth:true}),
+    sbFetch("/rest/v1/xpaypoint_products?select=game_id,name,sell_price,provider_sku&provider=eq.vipayment&is_active=eq.true&order=sell_price.asc",{noAuth:true})
+  ]);
+  const uiBySlug={
+    "mobile-legends":"ml","free-fire":"ff","free-fire-max":"ffm",
+    "pubg-mobile":"pubg","valorant":"val","roblox":"rbx",
+    "honor-of-kings":"hok","blood-strike":"bs",
+    "magic-chess-go-go":"mc","call-of-duty-mobile":"cod",
+    "genshin-impact":"gi"
+  };
+  const slugByGameId=new Map(games.map(g=>[g.id,g.slug]));
+  const grouped=new Map();
+  for(const p of products){
+    const slug=slugByGameId.get(p.game_id), uiId=uiBySlug[slug];
+    if(!uiId || !Number.isFinite(Number(p.sell_price)) || Number(p.sell_price)<=0) continue;
+    if(!grouped.has(uiId)) grouped.set(uiId,[]);
+    grouped.get(uiId).push([p.name,Number(p.sell_price)]);
+  }
+  GAMES.forEach(g=>{g.items=grouped.get(g.id)||[];});
+  if(!products.length) throw new Error("Belum ada produk VIPayment aktif di database.");
+}
+
 function sbSession(){ return lsGet("xp-sb-user",null); }
 function isAdmin(){ const s=sbSession(); return !!s && s.email==="xpaybantuan@gmail.com"; }
 function esc(v){ return String(v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
@@ -1104,6 +1132,7 @@ $("aiInput").addEventListener("keydown",e=>{ if(e.key==="Enter") aiSend(); });
 
 
 renderGrid();
+loadVipaymentPrices().then(()=>{vipPricesLoaded=true;renderGrid();}).catch(err=>{vipPricesError=String(err.message||err);vipPricesLoaded=true;GAMES.forEach(g=>g.items=[]);renderGrid();console.error("VIPayment price load failed",err);});
 updateXpcBtn();
 document.addEventListener("click",e=>{ const x=e.target.closest("[data-info]"); if(x){ openInfo(x.dataset.info); } });
 
