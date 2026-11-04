@@ -1298,7 +1298,7 @@ $("aiInput").addEventListener("keydown",e=>{ if(e.key==="Enter") aiSend(); });
 
 
 renderGrid();
-loadVipaymentPrices().then(()=>{vipPricesLoaded=true;renderGrid();}).catch(err=>{vipPricesError=String(err.message||err);vipPricesLoaded=true;GAMES.forEach(g=>g.items=[]);renderGrid();console.error("VIPayment price load failed",err);});
+loadVipaymentPrices().then(()=>{vipPricesLoaded=true;renderGrid();}).catch(err=>{vipPricesError=String(err.message||err);vipPricesLoaded=true;renderGrid();console.error("VIPayment price load failed; using built-in fallback catalog",err);});
 updateXpcBtn();
 document.addEventListener("click",e=>{ const x=e.target.closest("[data-info]"); if(x){ openInfo(x.dataset.info); } });
 
