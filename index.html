@@ -1173,6 +1173,9 @@ async function sendWa(){
   const zone=$("zone")?$("zone").value.trim():"";
   const [label,price]=cur.items[nom];
   const payName=PAYS[pay];
+  const email=$("buyerEmail").value.trim();
+  const phone=$("buyerPhone").value.trim();
+  const promo=$("promoCode").value.trim();
   let popup=null;
   if(payName==="XPAYCOIN"){
     if(!sbSession()){ openAuth(); return; }
@@ -1182,7 +1185,8 @@ async function sendWa(){
   }
   let t=`Halo admin XPAYPOINT, saya mau top up:\n\nGame: ${cur.name}\nItem: ${label}\nHarga: ${rp(price)}\n${cur.idl}: ${uid}`;
   if(cur.zone) t+=`\n${cur.zone}: ${zone}`;
-  t+=`\nMetode pembayaran: ${payName}`;
+  t+=`\nMetode pembayaran: ${payName}\nEmail: ${email}\nWhatsApp: ${phone}`;
+  if(promo) t+=`\nKode promo: ${promo} (perlu verifikasi admin)`;
   if(payName==="XPAYCOIN") t+=" (saldo XPAYCOIN sudah dipotong)";
   if(SB_OK){
     sbFetch("/rest/v1/orders",{method:"POST",noAuth:true,headers:{Prefer:"return=minimal"},body:{user_id:(sbSession()&&sbSession().id)||null,game:cur.name,item:label,price:price,player_id:uid,zone:zone||null,pay_method:payName}}).catch(()=>{});
