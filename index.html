@@ -529,6 +529,32 @@ const GAMES=[
   {id:"gi",ab:"GI",name:"Genshin Impact",pub:"HoYoverse",idl:"UID",num:true,hint:"UID ada di profil game kamu.",items:[["60 Genesis Crystal",15000],["300+30 Genesis Crystal",75000],["980 Genesis Crystal",240000],["1980 Genesis Crystal",480000],["3280 Genesis Crystal",800000]]}
 ];
 GAMES.forEach((g,i)=>g.c=GC[i%GC.length]);
+
+// Katalog utama selalu membaca harga dan produk aktif dari Supabase.
+const GAME_SLUGS={ml:"mobile-legends",ff:"free-fire",ffm:"free-fire-max",pubg:"pubg-mobile",val:"valorant",rbx:"roblox",hok:"honor-of-kings",bs:"blood-strike",mc:"magic-chess-go-go",cod:"call-of-duty-mobile",gi:"genshin-impact"};
+async function loadStoreCatalog(){
+  try{
+    const [dbGames,dbProducts]=await Promise.all([
+      sbFetch("/rest/v1/xpaypoint_games?select=id,slug,name,category,sort_order&is_active=eq.true&order=sort_order.asc",{noAuth:true}),
+      sbFetch("/rest/v1/xpaypoint_products?select=id,game_id,name,provider_sku,sell_price,metadata,sort_order&is_active=eq.true&order=sell_price.asc",{noAuth:true})
+    ]);
+    if(!Array.isArray(dbGames)||!Array.isArray(dbProducts)) throw new Error("Format katalog Supabase tidak valid");
+    const fresh=GAMES.map(base=>{
+      const dbGame=dbGames.find(g=>g.slug===GAME_SLUGS[base.id]);
+      if(!dbGame) return null;
+      const items=dbProducts.filter(p=>p.game_id===dbGame.id && Number(p.sell_price)>0)
+        .map(p=>[p.name,Number(p.sell_price),p.id,p.provider_sku,p.metadata||{}]);
+      if(!items.length) return null;
+      return {...base,name:dbGame.name,dbGameId:dbGame.id,items};
+    }).filter(Boolean);
+    if(!fresh.length) throw new Error("Katalog produk aktif masih kosong");
+    GAMES.splice(0,GAMES.length,...fresh);
+    GAMES.forEach((g,i)=>g.c=GC[i%GC.length]);
+    renderGrid();
+  }catch(e){
+    console.warn("Katalog Supabase belum dapat dimuat:",e);
+  }
+}
 const CHK='<span class="chk"><svg class="i" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg></span>';
 const $=id=>document.getElementById(id);
 const rp=n=>"Rp "+n.toLocaleString("id-ID");
@@ -537,8 +563,8 @@ let cur=null,nom=null,pay=null;
 
 function renderGrid(){
   const f=$("q").value.trim().toLowerCase();
-  const list=GAMES.filter(g=>ART[g.id] && g.name.toLowerCase().includes(f));
-  $("grid").innerHTML=list.length?list.map(g=>`<button class="gcard" data-id="${g.id}"><span class="gtop" style="--a:${g.c[0]};--b:${g.c[1]}">${ART[g.id]?`<span class="art" style="background-image:url(${ART[g.id]})"></span>`:`<span class="ava">${g.ab}</span>`}</span><span class="gbody">${g.pub?`<span class="gpub">${g.pub}</span>`:""}<b>${g.name}</b><span class="gfoot"><span>Mulai</span><strong>${rp(minP(g))}</strong></span></span></button>`).join(""):'<p class="hint">Game tidak ditemukan.</p>';
+  const list=GAMES.filter(g=>g.name.toLowerCase().includes(f));
+  $("grid").innerHTML=list.length?list.map(g=>`<button class="gcard" data-id="${g.id}"><span class="gtop" style="--a:${g.c[0]};--b:${g.c[1]}">${ART[g.id]?`<span class="art" style="background-image:url(${ART[g.id]})"></span>`:`<span class="ava">${g.ab}</span>`}</span><span class="gbody">${g.pub?`<span class="gpub">${g.pub}</span>`:""}<b>${esc(g.name)}</b><span class="gfoot"><span>Mulai</span><strong>${rp(minP(g))}</strong></span></span></button>`).join(""):'<p class="hint">Game tidak ditemukan.</p>';
 }
 $("grid").onclick=e=>{const b=e.target.closest(".gcard"); if(b) pick(b.dataset.id);};
 $("q").oninput=renderGrid;
@@ -566,7 +592,7 @@ function renderOrder(){
     ${cur.zone?`<label class="lbl" for="zone">${cur.zone}</label><input class="inp" id="zone" inputmode="numeric" autocomplete="off" placeholder="Masukkan ${cur.zone}">`:""}
     <p class="hint">${cur.hint}</p>
     <h4 class="step">2. Pilih nominal</h4>
-    <div class="items">${cur.items.map((it,i)=>`<button class="opt" data-i="${i}">${CHK}<b>${it[0]}</b><small>${rp(it[1])}</small></button>`).join("")}</div>
+    <div class="items">${cur.items.map((it,i)=>`<button class="opt" data-i="${i}">${CHK}<b>${esc(it[0])}</b><small>${rp(it[1])}</small></button>`).join("")}</div>
     <h4 class="step">3. Metode pembayaran</h4>
     <div class="chips">${PAYS.map((p,i)=>`<button class="chip" data-p="${i}">${p}</button>`).join("")}</div>
     <div class="sumbox">
@@ -1073,6 +1099,7 @@ $("aiInput").addEventListener("keydown",e=>{ if(e.key==="Enter") aiSend(); });
 
 
 renderGrid();
+loadStoreCatalog();
 updateXpcBtn();
 document.addEventListener("click",e=>{ const x=e.target.closest("[data-info]"); if(x){ openInfo(x.dataset.info); } });
 
