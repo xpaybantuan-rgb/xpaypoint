@@ -682,8 +682,8 @@ Object.assign(INFO,{
 
 
 // ===== VERSI BACKEND (Supabase) =====
-const SB_URL="https://sdlzrjbvhzxqlvhhkgtc.supabase.co";
-const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkbHpyamJ2aHp4cWx2aGhrZ3RjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMzNDAxNjMsImV4cCI6MjEwODkxNjE2M30.wQdPwbuc6r9eBtTxy0w6qc-eCDVDNvXvhqc1PIhvtG8";
+const SB_URL="https://rjgeitbkpcyymgemcztx.supabase.co";
+const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJqZ2VpdGJrcGN5eW1nZW1jenR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM3MjkyNjAsImV4cCI6MjEwOTMwNTI2MH0.JvqOrcagsrSGjfMo2l1TvP39vmFTqsszKjF0fd5H5ts";
 const SB_OK=SB_URL.startsWith("https://") && !SB_URL.includes("ISI_") && !SB_KEY.startsWith("ISI_");
 async function sbFetch(path,opt={}){
   const headers=Object.assign({apikey:SB_KEY,"Content-Type":"application/json"},opt.headers||{});
@@ -1005,7 +1005,7 @@ $("wgo").onclick=()=>ovClose('welcome');
 
 $("fabBtn").onclick=()=>openAI();
 $("fabFaq").onclick=()=>{ $("fabmenu").hidden=true; openInfo('faq'); };
-const AI_URL="https://sdlzrjbvhzxqlvhhkgtc.supabase.co/functions/v1/ai-chat";
+const AI_URL="https://rjgeitbkpcyymgemcztx.supabase.co/functions/v1/ai-chat";
 const AI_WA="https://wa.me/6282160778137";
 const AI_QUICK=[["Cara order top up","Bagaimana cara order top up di XPAYPOINT?"],["Cara cek status pesanan","Bagaimana cara cek status pesanan saya?"],["Metode pembayaran","Apa saja metode pembayaran yang tersedia?"],["Hubungi CS","__WA__"]];
 let aiHist=[], msgCount=0, selectedImage=null, aiBusy=false;
