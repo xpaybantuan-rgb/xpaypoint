@@ -93,6 +93,7 @@ header{position:sticky;top:0;z-index:10;background:var(--shade);border-bottom:2p
 .shead .step{margin:0}
 .pubtag{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--txt);white-space:nowrap}
 .items{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.item-group{margin:0 0 14px}.item-group-title{font-size:13px;font-weight:800;margin:0 0 9px;color:var(--pink);letter-spacing:.2px}
 @media (min-width:560px){.items{grid-template-columns:repeat(3,1fr)}}
 .opt{position:relative;background:var(--card);border:2px solid var(--pink);border-radius:16px;padding:14px;text-align:left;color:var(--txt);cursor:pointer}
 .opt b{display:block;font-size:15px;color:var(--txt)}
@@ -551,6 +552,63 @@ function pick(id){
   ovOpen('order', closeOrder);
 }
 
+function productCategory(name,gameId){
+  const n=String(name||"").toLowerCase();
+  if(gameId==="ml"){
+    if(/weekly diamond pass|diamond pass|\\bwdp\\b/.test(n)) return "Weekly Diamond Pass";
+    if(/twilight pass/.test(n)) return "Twilight Pass";
+    if(/diamond/.test(n)) return "Diamond";
+  }
+  if(gameId==="ff"||gameId==="ffm"){
+    if(/weekly membership|weekly member|membership mingguan/.test(n)) return "Weekly Membership";
+    if(/monthly membership|monthly member|membership bulanan/.test(n)) return "Monthly Membership";
+    if(/level.?up pass/.test(n)) return "Level Up Pass";
+    if(/diamond/.test(n)) return "Diamond";
+  }
+  if(gameId==="pubg"){
+    if(/royale pass|elite pass/.test(n)) return "Royale Pass";
+    if(/prime plus/.test(n)) return "Prime Plus";
+    if(/prime/.test(n)) return "Prime";
+    if(/uc/.test(n)) return "UC";
+  }
+  if(gameId==="val" && /valorant points|\\bvp\\b|points/.test(n)) return "Valorant Points";
+  if(gameId==="rbx"){
+    if(/gift card/.test(n)) return "Gift Card";
+    if(/robux/.test(n)) return "Robux";
+  }
+  if(gameId==="cod"){
+    if(/battle pass/.test(n)) return "Battle Pass";
+    if(/cp/.test(n)) return "CP";
+  }
+  if(gameId==="gi"){
+    if(/blessing|welkin/.test(n)) return "Blessing of the Welkin Moon";
+    if(/genesis crystal/.test(n)) return "Genesis Crystal";
+    if(/battle pass/.test(n)) return "Battle Pass";
+  }
+  if(gameId==="hok"){
+    if(/weekly card|weekly pass/.test(n)) return "Weekly Card";
+    if(/token/.test(n)) return "Tokens";
+  }
+  if(gameId==="bs"){
+    if(/battle pass|pass/.test(n)) return "Pass";
+    if(/gold/.test(n)) return "Gold";
+  }
+  if(gameId==="mc"){
+    if(/pass/.test(n)) return "Pass";
+    if(/diamond/.test(n)) return "Diamonds";
+  }
+  if(/weekly|wdp/.test(n)) return "Weekly Pass";
+  if(/membership|member/.test(n)) return "Membership";
+  if(/gift card/.test(n)) return "Gift Card";
+  if(/diamond/.test(n)) return "Diamonds";
+  if(/gold/.test(n)) return "Gold";
+  if(/\\buc\\b/.test(n)) return "UC";
+  if(/\\bcp\\b/.test(n)) return "CP";
+  if(/robux/.test(n)) return "Robux";
+  if(/token/.test(n)) return "Tokens";
+  return "Produk lainnya";
+}
+
 function renderOrder(){
   const box=$("order");
   box.hidden=false;
@@ -567,7 +625,7 @@ function renderOrder(){
     ${cur.zone?`<label class="lbl" for="zone">${cur.zone}</label><input class="inp" id="zone" inputmode="numeric" autocomplete="off" placeholder="Masukkan ${cur.zone}">`:""}
     <p class="hint">${cur.hint}</p>
     <h4 class="step">2. Pilih nominal</h4>
-    <div class="items">${cur.items.map((it,i)=>`<button class="opt" data-i="${i}">${CHK}<b>${it[0]}</b><small>${rp(it[1])}</small></button>`).join("")}</div>
+    ${(()=>{const groups=new Map();cur.items.forEach((it,i)=>{const cat=productCategory(it[0],cur.id);if(!groups.has(cat))groups.set(cat,[]);groups.get(cat).push({it,i});});return Array.from(groups,([cat,items])=>`<section class="item-group"><h5 class="item-group-title">${esc(cat)}</h5><div class="items">${items.map(({it,i})=>`<button class="opt" data-i="${i}">${CHK}<b>${esc(it[0])}</b><small>${rp(it[1])}</small></button>`).join("")}</div></section>`).join("");})()}
     <h4 class="step">3. Metode pembayaran</h4>
     <div class="chips">${PAYS.map((p,i)=>`<button class="chip" data-p="${i}">${p}</button>`).join("")}</div>
     <div class="sumbox">
@@ -701,7 +759,7 @@ let vipPricesLoaded=false, vipPricesError="";
 async function loadVipaymentPrices(){
   const [games,products]=await Promise.all([
     sbFetch("/rest/v1/xpaypoint_games?select=id,slug,is_active&is_active=eq.true",{noAuth:true}),
-    sbFetch("/rest/v1/xpaypoint_products?select=game_id,name,sell_price,provider_sku&provider=eq.vipayment&is_active=eq.true&order=sell_price.asc",{noAuth:true})
+    sbFetch("/rest/v1/xpaypoint_products?select=game_id,name,sell_price,provider_sku&provider=eq.vipayment&is_active=eq.true&sell_price=lte.1000000&order=sell_price.asc",{noAuth:true})
   ]);
   const uiBySlug={
     "mobile-legends":"ml","free-fire":"ff","free-fire-max":"ffm",
@@ -714,7 +772,7 @@ async function loadVipaymentPrices(){
   const grouped=new Map();
   for(const p of products){
     const slug=slugByGameId.get(p.game_id), uiId=uiBySlug[slug];
-    if(!uiId || !Number.isFinite(Number(p.sell_price)) || Number(p.sell_price)<=0) continue;
+    if(!uiId || !Number.isFinite(Number(p.sell_price)) || Number(p.sell_price)<=0 || Number(p.sell_price)>1000000) continue;
     if(!grouped.has(uiId)) grouped.set(uiId,[]);
     grouped.get(uiId).push([p.name,Number(p.sell_price)]);
   }
