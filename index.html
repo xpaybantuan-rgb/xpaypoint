@@ -935,10 +935,12 @@ async function renderAdmin(){
       <h4 class="step">Permintaan isi XPAYCOIN (menunggu)</h4><div class="card-box">${pendRows}</div>
       <h4 class="step">Pesanan terakhir</h4><div class="card-box">${rows}</div>
       <h4 class="step">Daftar game &amp; harga mulai</h4><div class="card-box">${gl}</div>`;
+    if(!vipaymentAutoSyncStarted){vipaymentAutoSyncStarted=true;const syncBtn=$("vipSyncBtn");if(syncBtn)runVipaymentSync(syncBtn);}
   }catch(e){
     box.innerHTML=head+'<p class="err">Gagal memuat data. Cek koneksi dan pastikan login admin benar.</p>';
   }
 }
+let vipaymentAutoSyncStarted=false;
 async function runVipaymentSync(btn){
   const status=$("vipSyncStatus");
   const token=lsGet("xp-sb-token",null);
