@@ -1142,6 +1142,32 @@ $("fabAI").onclick=openAI; $("aiClose").onclick=()=>ovClose("ai"); $("aiReset").
 $("aiInput").addEventListener("keydown",e=>{ if(e.key==="Enter") aiSend(); });
 
 
+// Halaman kembali otomatis dari Kasera Pay setelah checkout sukses.
+(function showKaseraReturn(){
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("status") !== "succeeded") return;
+  const notice = document.createElement("div");
+  notice.id = "kaseraReturnNotice";
+  notice.style.cssText = "position:fixed;inset:0;z-index:99999;display:grid;place-items:center;padding:22px;background:rgba(10,8,18,.82);backdrop-filter:blur(8px)";
+  const panel = document.createElement("div");
+  panel.style.cssText = "width:min(100%,420px);padding:28px 22px;border:1px solid rgba(249,3,186,.35);border-radius:22px;background:#17121f;color:#fff;text-align:center;box-shadow:0 18px 70px rgba(0,0,0,.4)";
+  panel.innerHTML = '<div style="font-size:42px;margin-bottom:12px">💖</div><h2 style="margin:0 0 10px;font-size:22px">Terima kasih sudah bertransaksi!</h2><p style="margin:0;color:#ddd;line-height:1.65">Kamu telah kembali dari Kasera Pay. Status pembayaran dan pesanan akan diperbarui otomatis setelah notifikasi pembayaran terverifikasi oleh sistem XPAYPOINT.</p><p id="kaseraReturnCountdown" style="margin:18px 0 0;color:#ff72d2;font-weight:700">Kembali ke halaman utama dalam 5 detik…</p>';
+  notice.appendChild(panel);
+  document.body.appendChild(notice);
+  let seconds = 5;
+  const countdown = panel.querySelector("#kaseraReturnCountdown");
+  const timer = window.setInterval(() => {
+    seconds -= 1;
+    if (countdown) countdown.textContent = seconds > 0 ? "Kembali ke halaman utama dalam " + seconds + " detik…" : "Selamat berbelanja kembali!";
+    if (seconds <= 0) {
+      window.clearInterval(timer);
+      notice.remove();
+      window.history.replaceState({}, document.title, window.location.pathname + window.location.hash);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, 1000);
+})();
+
 renderGrid();
 loadStoreCatalog();
 updateXpcBtn();
