@@ -564,7 +564,7 @@ let cur=null,nom=null,pay=null;
 function renderGrid(){
   if(!vipPricesLoaded){ $("grid").innerHTML='<p class="hint">Memuat harga produk terbaru...</p>'; return; }
   const f=$("q").value.trim().toLowerCase();
-  const list=GAMES.filter(g=>ART[g.id] && g.items.length && g.name.toLowerCase().includes(f));
+  const list=GAMES.filter(g=>g.items.length && g.name.toLowerCase().includes(f));
   $("grid").innerHTML=list.length?list.map(g=>`<button class="gcard" data-id="${g.id}"><span class="gtop" style="--a:${g.c[0]};--b:${g.c[1]}">${ART[g.id]?`<span class="art" style="background-image:url(${ART[g.id]})"></span>`:`<span class="ava">${g.ab}</span>`}</span><span class="gbody">${g.pub?`<span class="gpub">${g.pub}</span>`:""}<b>${g.name}</b><span class="gfoot"><span>Mulai</span><strong>${rp(minP(g))}</strong></span></span></button>`).join(""):'<p class="hint">Game tidak ditemukan.</p>';
 }
 $("grid").onclick=e=>{const b=e.target.closest(".gcard"); if(b) pick(b.dataset.id);};
