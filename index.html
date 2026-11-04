@@ -88,7 +88,7 @@ header{position:sticky;top:0;z-index:10;background:var(--shade);border-bottom:2p
 .phead .pub{font-size:12px;letter-spacing:.14em;color:#fff;font-weight:700;text-transform:uppercase}
 .phead h3{font-size:26px;font-weight:700;line-height:1.1;margin-top:4px;padding-right:40px;color:#fff}
 .x{position:absolute;top:calc(10px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);width:36px;height:36px;border-radius:50%;border:2px solid var(--pink);background:var(--card);color:var(--txt);font-size:20px;line-height:1;cursor:pointer;z-index:2}
-.step{font-size:18px;font-weight:700;margin:24px 0 10px;color:var(--txt)}
+.checkout-card{border:1px solid var(--border);background:var(--card);border-radius:18px;padding:15px;margin:14px 0;box-shadow:0 5px 18px rgba(0,0,0,.035)}\n.checkout-card .shead{margin-top:2px}\n.checkout-card .step{margin-top:2px}\n.optional{font-size:12px;color:var(--muted);font-weight:500}\n.step{font-size:18px;font-weight:700;margin:24px 0 10px;color:var(--txt)}
 .shead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:24px 0 10px}
 .shead .step{margin:0}
 .pubtag{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--txt);white-space:nowrap}
@@ -689,25 +689,45 @@ function renderOrder(){
       
       <h3>${cur.name}</h3>
     </div>
+    <section class="checkout-card">
     <div class="shead"><div><h4 class="step">1. Masukkan Data Akun</h4><p class="section-note">Isi User ID${cur.zone?" & Zone ID":""} dengan benar biar pesanan nggak nyasar.</p></div>${cur.pub?`<span class="pubtag">${cur.pub}</span>`:""}</div>
     <label class="lbl" for="uid">${cur.idl} <b class="required">*</b></label>
     <input class="inp" id="uid" inputmode="${cur.num?"numeric":"text"}" autocomplete="off" placeholder="Contoh: 12345678">
     ${cur.zone?`<label class="lbl" for="zone">${cur.zone} <b class="required">*</b></label><input class="inp" id="zone" inputmode="numeric" autocomplete="off" placeholder="Contoh: 1234">`:""}
     <button class="help-id" type="button" data-info="unggul">ⓘ Cara menemukan User ID</button>
     <p class="hint account-hint">${cur.hint}</p>
-    <h4 class="step">2. Pilih Nominal</h4>
+    </section>
+    <section class="checkout-card">
+    <h4 class="step">2. Langkah 2: Pilih Nominal</h4>
     <div class="nominal-head">Pilih Nominal</div>
     <p class="nominal-sub">Mau top up berapa ${cur.id==="ml"||cur.id==="ff"||cur.id==="ffm"?"Diamonds":cur.id==="pubg"?"UC":cur.id==="rbx"?"Robux":"produk"}?</p>
     <input class="nominal-search" id="productSearch" type="search" placeholder="Cari produk... (misal: 86, pass, 257)" autocomplete="off">
     ${(()=>{const groups=new Map();cur.items.forEach((it,i)=>{const cat=productCategory(it[0],cur.id);if(!groups.has(cat))groups.set(cat,[]);groups.get(cat).push({it,i});});return Array.from(groups,([cat,items],k)=>{const [ico,desc]=categoryPresentation(cat,cur.id);return `<section class="item-group"><button class="category-toggle" type="button" data-category="${k}"><span class="category-icon">${ico}</span><span class="category-info"><b>${esc(cat==="Diamond"?"Top Up Diamond":cat)}</b><small>${esc(desc)}</small></span><span class="category-count">${items.length} produk</span><span class="category-arrow">⌄</span></button><div class="category-products" hidden><div class="items">${items.map(({it,i})=>`<button class="opt" data-i="${i}">${CHK}<b>${esc(it[0])}</b><small>${rp(it[1])}</small></button>`).join("")}</div></div></section>`;}).join("");})()}
-    <h4 class="step">3. Pilih Pembayaran</h4>
-    <p class="section-note payment-note">Harga yang tampil adalah harga yang dibayar. Biaya admin mengikuti metode pembayaran.</p>
-    <div class="pay-options">${PAYS.map((p,i)=>{const d=p==="XPAYCOIN"?"Bebas biaya · Login dahulu untuk pakai saldo":p==="QRIS"?"Instruksi QRIS dikirim saat konfirmasi":p==="Transfer Bank"?"Konfirmasi transfer melalui admin":"Instruksi pembayaran melalui admin";return `<button class="pay-option" data-p="${i}"><span class="pay-radio"></span><span class="pay-copy"><b>${p}</b><small>${d}</small></span>${p==="XPAYCOIN"?'<span class="pay-free">Bebas Biaya</span>':""}</button>`}).join("")}</div>
+    </section>
+    <section class="checkout-card">
+    <h4 class="step">3. Langkah 3: Pilih Pembayaran</h4>
+    <p class="section-note payment-note">Harga di tiap metode mengikuti biaya yang ditampilkan. Biaya admin saat ini Rp0.</p>
+    <div class="pay-options">${PAYS.map((p,i)=>{const d=p==="XPAYCOIN"?"Bebas biaya · Login dahulu untuk pakai saldo":"Scan QRIS All Payment (E-Wallet & M-Banking). Instruksi pembayaran dikirim saat konfirmasi.";return `<button class="pay-option" data-p="${i}"><span class="pay-radio"></span><span class="pay-copy"><b>${p}</b><small>${d}</small></span>${p==="XPAYCOIN"?'<span class="pay-free">Bebas Biaya</span>':""}</button>`}).join("")}</div>
+    </section>
+    <section class="checkout-card">
+    <h4 class="step">4. Langkah 4: Email Penerima Invoice & Promo</h4>
+    <p class="section-note">Masukkan kontak yang aktif untuk detail pesanan dan pembaruan transaksi.</p>
+    <label class="lbl" for="buyerEmail">Alamat Email (Penerima Invoice) <b class="required">*</b></label>
+    <input class="inp" id="buyerEmail" type="email" autocomplete="email" placeholder="kamu@email.com">
+    <p class="hint">Email dicantumkan pada data pesanan untuk kebutuhan invoice.</p>
+    <label class="lbl" for="buyerPhone">Nomor WhatsApp <b class="required">*</b></label>
+    <input class="inp" id="buyerPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="0812 3456 7890">
+    <p class="hint">Nomor WhatsApp untuk tujuan transaksi dan update pesanan.</p>
+    <label class="lbl" for="promoCode">Kode Promo <span class="optional">(opsional)</span></label>
+    <input class="inp" id="promoCode" autocomplete="off" placeholder="Masukkan kode">
+    <p class="hint">Kode promo dicatat untuk diverifikasi admin. Potongan otomatis belum tersedia.</p>
+    <p class="hint">Punya akun member? Masuk untuk menikmati fitur XPAYCOIN dan layanan member.</p>
+    </section>
     <div class="sumbox">
       <h4 class="summary-title">Ringkasan Pesanan</h4>
       <p class="summary-game">${cur.name} (${cur.pub||"Indonesia"})</p>
       <div class="sumrow"><span id="sItem">Belum pilih nominal</span><b id="sHarga">Rp 0</b></div>
-      <div class="sumrow"><span>Pembayaran</span><b id="sPay">Belum dipilih</b></div>
+      <div class="sumrow"><span>Pembayaran</span><b id="sPay">Belum dipilih</b></div>\n      <div class="sumrow"><span>Email</span><b id="sEmail">Belum diisi</b></div>\n      <div class="sumrow"><span>WhatsApp</span><b id="sPhone">Belum diisi</b></div>\n      <div class="sumrow"><span>Kode promo</span><b id="sPromo">—</b></div>
       <div class="sumrow"><span>Subtotal</span><b id="sSubtotal">Rp 0</b></div>
       <div class="sumrow"><span>Biaya admin</span><b id="sAdmin">Rp 0</b></div>
       <div class="total"><span>Total Bayar</span><strong id="sTotal">Rp 0</strong></div>
@@ -734,7 +754,7 @@ function closeOrder(){
 function ready(){
   const uid=$("uid")?$("uid").value.trim():"";
   const zone=$("zone")?$("zone").value.trim():"";
-  return uid.length>=3 && (!cur.zone||zone.length>0) && nom!==null && pay!==null;
+  const email=$("buyerEmail")?$("buyerEmail").value.trim():"";\n  const phone=$("buyerPhone")?$("buyerPhone").value.replace(/\\D/g,""):"";\n  return uid.length>=3 && (!cur.zone||zone.length>0) && /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email) && phone.length>=9 && nom!==null && pay!==null;
 }
 
 function refresh(){
@@ -744,7 +764,7 @@ function refresh(){
   const has=nom!==null, price=has?cur.items[nom][1]:0;
   $("sItem").textContent=has?cur.items[nom][0]:"Belum pilih nominal";
   $("sHarga").textContent=has?rp(price):"Rp 0";
-  $("sPay").textContent=pay===null?"Belum dipilih":PAYS[pay];
+  $("sPay").textContent=pay===null?"Belum dipilih":PAYS[pay];\n  $("sEmail").textContent=$("buyerEmail").value.trim()||"Belum diisi";\n  $("sPhone").textContent=$("buyerPhone").value.trim()||"Belum diisi";\n  $("sPromo").textContent=$("promoCode").value.trim()||"—";
   $("sSubtotal").textContent=rp(price);
   $("sAdmin").textContent=rp(0);
   $("sTotal").textContent=rp(price);
