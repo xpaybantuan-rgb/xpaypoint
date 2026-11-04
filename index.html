@@ -934,29 +934,39 @@ async function xpcRequest(){
 // ===== ADMIN =====
 async function renderAdmin(){
   const box=$("adminPanel");
-  const head='<button class="x" aria-label="Tutup">&times;</button><div class="ahead"><h3 class="ttl">Dasbor Admin</h3><button class="ghost" id="logout">Keluar</button></div>';
-  box.innerHTML=head+'<p class="hint">Memuat data...</p>';
+  const head='<button class="x" aria-label="Tutup">&times;</button><div class="ahead"><h3 class="ttl">Dasbor Admin XPAYPOINT</h3><button class="ghost" id="logout">Keluar</button></div>';
+  box.innerHTML=head+'<p class="hint">Memuat data terbaru...</p>';
   try{
-    const [ord,pend]=await Promise.all([
-      sbFetch("/rest/v1/orders?select=*&order=created_at.desc&limit=200"),
-      sbFetch("/rest/v1/xpc_topups?select=*&status=eq.pending&order=created_at.asc")
+    if(!sbSession()) throw new Error("Sesi admin tidak ditemukan. Login ulang.");
+    const [orders,payments,games,topups]=await Promise.all([
+      sbFetch("/rest/v1/xpaypoint_orders?select=*&order=created_at.desc&limit=200"),
+      sbFetch("/rest/v1/xpaypoint_payments?select=order_id,amount,status,gateway_reference,created_at,paid_at&order=created_at.desc&limit=200"),
+      sbFetch("/rest/v1/xpaypoint_games?select=id,name,is_active&order=name.asc"),
+      sbFetch("/rest/v1/xpaypoint_topups?select=id,user_id,amount,pay_method,status,created_at&order=created_at.desc&limit=50")
     ]);
-    const today=new Date().toDateString();
-    const todayCount=ord.filter(o=>new Date(o.created_at).toDateString()===today).length;
-    const totalNom=GAMES.reduce((a,g)=>a+g.items.length,0);
-    const rows=ord.slice(0,10).map(o=>`<div class="orow"><div><b>${esc(o.game)}</b><small>${esc(o.item)} · ${esc(o.player_id)}${o.zone?" / "+esc(o.zone):""} · ${esc(o.pay_method)}</small></div><div class="ort"><b>${rp(o.price)}</b><small>${new Date(o.created_at).toLocaleString("id-ID")}</small></div></div>`).join("")||'<p class="hint">Belum ada pesanan.</p>';
-    const pendRows=pend.map(t=>`<div class="orow"><div><b>#${t.id} · ${rp(t.amount)}</b><small>${esc(t.pay_method)} · user ${esc(String(t.user_id).slice(0,8))} · ${new Date(t.created_at).toLocaleString("id-ID")}</small></div><div class="ort" style="display:flex;gap:6px"><button class="btn" data-ok="${t.id}">Konfirmasi</button><button class="ghost" data-no="${t.id}">Batalkan</button></div></div>`).join("")||'<p class="hint">Tidak ada permintaan isi XPAYCOIN.</p>';
-    const gl=GAMES.map(g=>`<div class="grow"><span>${esc(g.name)}</span><b>${rp(minP(g))}</b></div>`).join("");
-    box.innerHTML=head+`<div class="stats">
-      <div class="stat"><small>Game</small><b>${GAMES.length}</b></div>
-      <div class="stat"><small>Nominal</small><b>${totalNom}</b></div>
-      <div class="stat"><small>Pesanan</small><b>${ord.length}</b></div>
-      <div class="stat"><small>Hari ini</small><b>${todayCount}</b></div></div>
-      <h4 class="step">Permintaan isi XPAYCOIN (menunggu)</h4><div class="card-box">${pendRows}</div>
-      <h4 class="step">Pesanan terakhir</h4><div class="card-box">${rows}</div>
-      <h4 class="step">Daftar game &amp; harga mulai</h4><div class="card-box">${gl}</div>`;
+    const payByOrder=new Map((payments||[]).filter(p=>p.order_id).map(p=>[p.order_id,p]));
+    const paid=orders.filter(o=>["paid","processing","completed","success"].includes(String(o.status).toLowerCase())).length;
+    const pending=orders.filter(o=>String(o.status).toLowerCase()==="pending_payment").length;
+    const failed=orders.filter(o=>["failed","cancelled","canceled"].includes(String(o.status).toLowerCase())).length;
+    const omzet=orders.filter(o=>["paid","processing","completed","success"].includes(String(o.status).toLowerCase())).reduce((n,o)=>n+Number(o.payable_amount||0),0);
+    const statusLabel=s=>({pending_payment:"Menunggu pembayaran",paid:"Sudah dibayar",processing:"Diproses",completed:"Selesai",success:"Berhasil",failed:"Gagal",cancelled:"Dibatalkan",canceled:"Dibatalkan"}[String(s||"").toLowerCase()]||String(s||"Belum ada status"));
+    const rows=orders.slice(0,30).map(o=>{
+      const p=payByOrder.get(o.id);
+      const state=String(o.status||"").toLowerCase();
+      const tone=["paid","processing","completed","success"].includes(state)?"ok":["failed","cancelled","canceled"].includes(state)?"bad":"wait";
+      return '<div class="orow"><div><b>'+esc(o.order_code||"Pesanan")+' · '+esc(o.game_name_snapshot||"Game")+'</b><small>'+esc(o.product_name_snapshot||"-")+' · ID '+esc(o.target_id||"-")+(o.zone_id?" / "+esc(o.zone_id):"")+' · '+new Date(o.created_at).toLocaleString("id-ID")+'</small><small>Pembayaran: '+esc(p?p.status:"Belum ada")+' · '+esc(p?p.gateway_reference||"Kasera":"-")+'</small></div><div class="ort"><b>'+rp(Number(o.payable_amount||0))+'</b><small class="xpc-badge '+tone+'">'+esc(statusLabel(o.status))+'</small></div></div>';
+    }).join("")||'<p class="hint">Belum ada pesanan di sistem baru.</p>';
+    const topupRows=(topups||[]).map(t=>'<div class="orow"><div><b>'+rp(Number(t.amount||0))+'</b><small>'+esc(t.pay_method||"QRIS")+' · '+esc(String(t.user_id||"").slice(0,8))+' · '+new Date(t.created_at).toLocaleString("id-ID")+'</small></div><span class="xpc-badge">'+esc(statusLabel(t.status))+'</span></div>').join("")||'<p class="hint">Belum ada riwayat deposit XPAYPOINT.</p>';
+    const gameRows=(games||[]).map(g=>'<div class="grow"><span>'+esc(g.name)+'</span><b>'+(g.is_active?'Aktif':'Nonaktif')+'</b></div>').join("")||'<p class="hint">Belum ada data game.</p>';
+    box.innerHTML=head+
+      '<div class="stats"><div class="stat"><small>Game</small><b>'+(games||[]).length+'</b></div><div class="stat"><small>Total pesanan</small><b>'+orders.length+'</b></div><div class="stat"><small>Menunggu bayar</small><b>'+pending+'</b></div><div class="stat"><small>Gagal / batal</small><b>'+failed+'</b></div></div>'+
+      '<div class="card-box"><div class="orow"><div><b>Total omzet terbayar</b><small>Pesanan yang sudah terkonfirmasi</small></div><div class="ort"><b>'+rp(omzet)+'</b></div></div><div class="orow"><div><b>Pembayaran terkonfirmasi</b></div><div class="ort"><b>'+paid+'</b></div></div></div>'+
+      '<h4 class="step">Pesanan terbaru XPAYPOINT</h4><div class="card-box">'+rows+'</div>'+
+      '<h4 class="step">Deposit XPAYPOINT</h4><div class="card-box">'+topupRows+'</div>'+
+      '<h4 class="step">Game di katalog</h4><div class="card-box">'+gameRows+'</div>'+
+      '<button class="ghost" id="adminRefresh" style="margin-top:12px">Muat ulang data</button>';
   }catch(e){
-    box.innerHTML=head+'<p class="err">Gagal memuat data. Cek koneksi dan pastikan login admin benar.</p>';
+    box.innerHTML=head+'<p class="err">'+esc(e&&e.message?e.message:"Gagal memuat dasbor admin.")+'</p><button class="ghost" id="adminRefresh">Coba lagi</button>';
   }
 }
 async function adminTopup(fn,id){
@@ -967,6 +977,7 @@ async function adminTopup(fn,id){
 $("admin").onclick=e=>{
   if(e.target.closest(".crumbtn")||e.target.closest(".x")){ ovClose('admin'); return; }
   if(e.target.closest("#logout")){ xpcLogout(); ovClose('admin'); return; }
+  if(e.target.closest("#adminRefresh")){ renderAdmin(); return; }
   const ok=e.target.closest("[data-ok]"), no=e.target.closest("[data-no]");
   if(ok) adminTopup("xpc_confirm_topup",+ok.dataset.ok);
   else if(no) adminTopup("xpc_cancel_topup",+no.dataset.no);
