@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XPAYPOINT - Gaming Store</title>
+    
+    <!-- Fonts: Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Icons: FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Tailwind Config Custom Colors -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Poppins', 'sans-serif'] },
+                    colors: {
+                        primary: '#ff007f', /* Warna Pink XPAYPOINT */
+                        dark: '#111111',
+                        bgSoft: '#fdf2f8',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(180deg, #fce7f3 0%, #f3f4f6 15%, #f3f4f6 100%);
+            background-attachment: fixed;
+            color: #111111;
+        }
+
+        /* Hilangkan Scrollbar tapi tetap bisa di-scroll */
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
+
+        /* Transisi Sidebar */
+        .sidebar { transform: translateX(100%); transition: transform 0.3s ease-in-out; }
+        .sidebar.active { transform: translateX(0); }
+        .sidebar-overlay { opacity: 0; pointer-events: none; transition: opacity 0.3s; backdrop-filter: blur(2px); }
+        .sidebar-overlay.active { opacity: 1; pointer-events: auto; }
+
+        /* Transisi Modal (Auth) */
+        .modal { opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+        .modal.active { opacity: 1; pointer-events: auto; }
+        .modal-content { transform: translateY(20px); transition: transform 0.3s; }
+        .modal.active .modal-content { transform: translateY(0); }
+
+        /* Custom Input Outline */
+        input:focus { outline: none; border-color: #ff007f; }
+        
+        /* Checkbox Custom */
+        input[type="checkbox"]:checked { background-color: #ff007f; border-color: #ff007f; }
+    </style>
+</head>
+<body class="antialiased pb-10">
+
+    <!-- HEADER -->
+    <header class="bg-white sticky top-0 z-40 shadow-sm">
+        <div class="max-w-md mx-auto flex items-center justify-between p-4">
+            <!-- Logo Brand -->
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white shadow-[0_0_10px_rgba(255,0,127,0.5)]">
+                    <i class="fa-solid fa-xmark text-2xl font-black"></i>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-xl font-black leading-none tracking-tight">XPAYPOINT</span>
+                    <span class="text-[10px] font-bold tracking-[0.2em] text-gray-700 mt-0.5">GAMING STORE</span>
+                </div>
+            </div>
+            
+            <!-- Navbar Actions -->
+            <div class="flex items-center space-x-3">
+                <button class="w-10 h-10 rounded-full border-2 border-primary text-primary flex items-center justify-center bg-bgSoft">
+                    <i class="fa-solid fa-xmark bg-yellow-400 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] font-bold"></i>
+                </button>
+                <button onclick="toggleSidebar()" class="w-10 h-10 rounded-full border-2 border-primary text-primary flex items-center justify-center bg-bgSoft">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- SIDEBAR MENU (Sesuai Screenshot 2) -->
+    <div id="sidebarOverlay" class="fixed inset-0 bg-black/60 z-50 sidebar-overlay" onclick="toggleSidebar()"></div>
+    <div id="sidebar" class="fixed top-0 right-0 h-full w-[85%] max-w-sm bg-white z-50 sidebar flex flex-col shadow-2xl overflow-y-auto">
+        
+        <div class="p-4 flex items-center justify-between border-b-2 border-primary">
+            <div class="text-sm font-bold">
+                <span class="underline">Beranda</span> <span class="mx-1 text-gray-400">›</span> Menu Utama
+            </div>
+            <button class="w-10 h-10 rounded-full border-2 border-primary text-primary flex items-center justify-center">
+                <i class="fa-regular fa-moon text-lg"></i>
+            </button>
+        </div>
+
+        <div class="p-4 space-y-3 flex-grow">
+            <!-- Sidebar Links -->
+            <a href="#" class="flex justify-between items-center p-4 rounded-2xl border-2 border-primary text-dark font-bold hover:bg-bgSoft transition">
+                <div class="flex items-center space-x-4">
+                    <div class="w-8 h-8 rounded-lg bg-pink-100 text-primary flex items-center justify-center"><i class="fa-solid fa-bag-shopping"></i></div>
+                    <span>Topup</span>
+                </div>
+                <i class="fa-solid fa-chevron-right text-xs"></i>
+            </a>
+            <a href="#" class="flex justify-between items-center p-4 rounded-2xl border-2 border-primary text-dark font-bold hover:bg-bgSoft transition">
+                <div class="flex items-center space-x-4">
+                    <div class="w-8 h-8 rounded-lg bg-pink-100 text-primary flex items-center justify-center"><i class="fa-solid fa-receipt"></i></div>
+                    <span>Cek Transaksi</span>
+                </div>
+                <i class="fa-solid fa-chevron-right text-xs"></i>
+            </a>
+            <a href="#" class="flex justify-between items-center p-4 rounded-2xl border-2 border-primary text-dark font-bold hover:bg-bgSoft transition">
+                <div class="flex items-center space-x-4">
+                    <div class="w-8 h-8 rounded-lg bg-pink-100 text-primary flex items-center justify-center"><i class="fa-solid fa-trophy"></i></div>
+                    <span>Leaderboard</span>
+                </div>
+                <i class="fa-solid fa-chevron-right text-xs"></i>
+            </a>
+            <a href="#" class="flex justify-between items-center p-4 rounded-2xl border-2 border-primary text-dark font-bold hover:bg-bgSoft transition">
+                <div class="flex items-center space-x-4">
+                    <div class="w-8 h-8 rounded-lg bg-pink-100 text-primary flex items-center justify-center"><i class="fa-regular fa-file-lines"></i></div>
+                    <span>Artikel</span>
+                </div>
+                <i class="fa-solid fa-chevron-right text-xs"></i>
+            </a>
+            <a href="#" class="flex justify-between items-center p-4 rounded-2xl border-2 border-primary text-dark font-bold hover:bg-bgSoft transition">
+                <div class="flex items-center space-x-4">
+                    <div class="w-8 h-8 rounded-lg bg-pink-100 text-primary flex items-center justify-center"><i class="fa-solid fa-shield-halved"></i></div>
+                    <span>Cara Top Up</span>
+                </div>
+                <i class="fa-solid fa-chevron-right text-xs"></i>
+            </a>
+            <a href="#" class="flex justify-between items-center p-4 rounded-2xl border-2 border-primary text-dark font-bold hover:bg-bgSoft transition">
+                <div class="flex items-center space-x-4">
+                    <div class="w-8 h-8 rounded-lg bg-pink-100 text-primary flex items-center justify-center"><i class="fa-regular fa-circle-question"></i></div>
+                    <span>Sering Ditanyakan</span>
+                </div>
+                <i class="fa-solid fa-chevron-right text-xs"></i>
+            </a>
+        </div>
+
+        <div class="p-4 mt-auto">
+            <button onclick="toggleSidebar(); openAuthModal('login')" class="w-full bg-primary text-white font-bold py-4 rounded-2xl shadow-lg">
+                Daftar / Masuk
+            </button>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <main class="max-w-md mx-auto px-4 mt-4">
+        
+        <!-- Banner Promo -->
+        <div class="w-full rounded-2xl overflow-hidden border-2 border-primary shadow-lg shadow-pink-200/50 mb-6 relative bg-gradient-to-r from-blue-900 to-primary h-36 flex flex-col items-center justify-center text-center p-2">
+            <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=600&q=80" class="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-40">
+            <div class="relative z-10">
+                <p class="text-[8px] text-white font-bold tracking-widest uppercase mb-1">Mobile Legends • Free Fire/MAX • PUBG Mobile • Honor of Kings • DLL.</p>
+                <h2 class="text-3xl font-black text-white drop-shadow-md italic uppercase">WELCOME<br>XPAYPOINT</h2>
+                <div class="bg-white/20 backdrop-blur-sm border border-white/50 text-white text-[9px] font-bold py-1 px-3 rounded-full mt-2 inline-block">
+                    TEMPAT TOPUP & VOUCHERS MURAH
+                </div>
+            </div>
+            <div class="absolute bottom-0 w-full bg-white text-primary text-[10px] font-bold py-1 text-center border-t-2 border-primary">
+                TOP UP AMAN & TERPERCAYA 24 JAM
+            </div>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="relative w-full mb-8">
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
+            </div>
+            <input type="text" class="w-full border-2 border-primary rounded-2xl py-3 pl-12 pr-4 bg-white font-medium text-sm shadow-sm" placeholder="Cari game favorit...">
+        </div>
+
+        <!-- Title Games -->
+        <div class="flex items-center space-x-2 mb-2">
+            <div class="w-1.5 h-5 bg-primary rounded-full"></div>
+            <i class="fa-solid fa-fire text-primary text-sm"></i>
+            <h3 class="text-lg font-black text-dark">Pilihan Game Populer</h3>
+        </div>
+        <p class="text-xs font-bold text-gray-700 mb-4">Klik pada game untuk membuka menu top up</p>
+
+        <!-- GAMES GRID (Sesuai Screenshot 6) -->
+        <div class="grid grid-cols-2 gap-3 mb-10">
+            
+            <!-- Game Card 1 -->
+            <div class="bg-white border-2 border-primary rounded-3xl overflow-hidden cursor-pointer shadow-sm">
+                <div class="relative h-28 w-full">
+                    <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=300&q=80" class="w-full h-full object-cover">
+                    <!-- Icon X Logo Top Center pada Card -->
+                    <div class="absolute top-2 left-1/2 transform -translate-x-1/2 bg-primary w-6 h-6 rounded flex items-center justify-center text-white border border-white shadow-sm">
+                        <i class="fa-solid fa-xmark text-xs font-black"></i>
+                    </div>
+                </div>
+                <div class="p-3">
+                    <p class="text-[10px] font-bold text-gray-500 tracking-[0.15em] uppercase">MOONTON</p>
+                    <h4 class="font-black text-dark text-sm leading-tight mt-1 mb-2">Mobile Legends</h4>
+                    <hr class="border-t-2 border-primary mb-2">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-bold text-dark">Mulai</span>
+                        <span class="font-black text-dark text-sm">Rp 20.000</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Game Card 2 -->
+            <div class="bg-white border-2 border-primary rounded-3xl overflow-hidden cursor-pointer shadow-sm">
+                <div class="relative h-28 w-full">
+                    <img src="https://images.unsplash.com/photo-1622281561081-3069176315c1?auto=format&fit=crop&w=300&q=80" class="w-full h-full object-cover">
+                    <div class="absolute top-2 left-1/2 transform -translate-x-1/2 bg-primary w-6 h-6 rounded flex items-center justify-center text-white border border-white shadow-sm">
+                        <i class="fa-solid fa-xmark text-xs font-black"></i>
+                    </div>
+                </div>
+                <div class="p-3">
+                    <p class="text-[10px] font-bold text-gray-500 tracking-[0.15em] uppercase">GARENA</p>
+                    <h4 class="font-black text-dark text-sm leading-tight mt-1 mb-2">Free Fire</h4>
+                    <hr class="border-t-2 border-primary mb-2">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-bold text-dark">Mulai</span>
+                        <span class="font-black text-dark text-sm">Rp 10.000</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Game Card 3 -->
+            <div class="bg-white border-2 border-primary rounded-3xl overflow-hidden cursor-pointer shadow-sm">
+                <div class="relative h-28 w-full">
+                    <img src="https://images.unsplash.com/photo-1632260260864-cb7f9b88e146?auto=format&fit=crop&w=300&q=80" class="w-full h-full object-cover">
+                    <div class="absolute top-2 left-1/2 transform -translate-x-1/2 bg-primary w-6 h-6 rounded flex items-center justify-center text-white border border-white shadow-sm">
+                        <i class="fa-solid fa-xmark text-xs font-black"></i>
+                    </div>
+                </div>
+                <div class="p-3">
+                    <p class="text-[10px] font-bold text-gray-500 tracking-[0.15em] uppercase">GARENA</p>
+                    <h4 class="font-black text-dark text-sm leading-tight mt-1 mb-2">Free Fire MAX</h4>
+                    <hr class="border-t-2 border-primary mb-2">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-bold text-dark">Mulai</span>
+                        <span class="font-black text-dark text-sm">Rp 10.000</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Game Card 4 -->
+            <div class="bg-white border-2 border-primary rounded-3xl overflow-hidden cursor-pointer shadow-sm">
+                <div class="relative h-28 w-full">
+                    <img src="https://images.unsplash.com/photo-1589241062272-c0a000072dfa?auto=format&fit=crop&w=300&q=80" class="w-full h-full object-cover">
+                    <div class="absolute top-2 left-1/2 transform -translate-x-1/2 bg-primary w-6 h-6 rounded flex items-center justify-center text-white border border-white shadow-sm">
+                        <i class="fa-solid fa-xmark text-xs font-black"></i>
+                    </div>
+                </div>
+                <div class="p-3">
+                    <p class="text-[10px] font-bold text-gray-500 tracking-[0.15em] uppercase">TENCENT</p>
+                    <h4 class="font-black text-dark text-sm leading-tight mt-1 mb-2">PUBG Mobile</h4>
+                    <hr class="border-t-2 border-primary mb-2">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-bold text-dark">Mulai</span>
+                        <span class="font-black text-dark text-sm">Rp 16.000</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Game Card 5 -->
+            <div class="bg-white border-2 border-primary rounded-3xl overflow-hidden cursor-pointer shadow-sm">
+                <div class="relative h-28 w-full">
+                    <img src="https://images.unsplash.com/photo-1605901309584-818e25960b8f?auto=format&fit=crop&w=300&q=80" class="w-full h-full object-cover">
+                    <div class="absolute top-2 left-1/2 transform -translate-x-1/2 bg-primary w-6 h-6 rounded flex items-center justify-center text-white border border-white shadow-sm">
+                        <i class="fa-solid fa-xmark text-xs font-black"></i>
+                    </div>
+                </div>
+                <div class="p-3">
+                    <p class="text-[10px] font-bold text-gray-500 tracking-[0.15em] uppercase">ACTIVISION</p>
+                    <h4 class="font-black text-dark text-sm leading-tight mt-1 mb-2">Call of Duty Mobile</h4>
+                    <hr class="border-t-2 border-primary mb-2">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-bold text-dark">Mulai</span>
+                        <span class="font-black text-dark text-sm">Rp 15.000</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Game Card 6 -->
+            <div class="bg-white border-2 border-primary rounded-3xl overflow-hidden cursor-pointer shadow-sm">
+                <div class="relative h-28 w-full">
+                    <img src="https://images.unsplash.com/photo-1621501103258-3e02580dfbf6?auto=format&fit=crop&w=300&q=80" class="w-full h-full object-cover">
+                    <div class="absolute top-2 left-1/2 transform -translate-x-1/2 bg-primary w-6 h-6 rounded flex items-center justify-center text-white border border-white shadow-sm">
+                        <i class="fa-solid fa-xmark text-xs font-black"></i>
+                    </div>
+                </div>
+                <div class="p-3">
+                    <p class="text-[10px] font-bold text-gray-500 tracking-[0.15em] uppercase">HOYOVERSE</p>
+                    <h4 class="font-black text-dark text-sm leading-tight mt-1 mb-2">Genshin Impact</h4>
+                    <hr class="border-t-2 border-primary mb-2">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-bold text-dark">Mulai</span>
+                        <span class="font-black text-dark text-sm">Rp 15.000</span>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+
+        <!-- Title Keunggulan -->
+        <div class="flex items-center space-x-2 mb-4">
+            <div class="w-1.5 h-5 bg-primary rounded-full"></div>
+            <i class="fa-regular fa-bell text-primary text-sm font-bold"></i>
+            <h3 class="text-lg font-black text-dark uppercase">KEUNGGULAN XPAYPOINT</h3>
+        </div>
+
+        <!-- Keunggulan Section (Sesuai Screenshot 1 & 6) -->
+        <div class="space-y-4 mb-12">
+            <div class="bg-white border-2 border-primary rounded-3xl p-4 flex items-start space-x-4 shadow-sm">
+                <div class="w-10 h-10 bg-bgSoft rounded-xl flex items-center justify-center flex-shrink-0 text-primary">
+                    <i class="fa-solid fa-bolt"></i>
+                </div>
+                <div>
+                    <h4 class="font-black text-dark text-sm">Diproses otomatis</h4>
+                    <p class="text-xs font-bold text-dark mt-1 leading-snug">Pembayaran terkonfirmasi, pesanan langsung masuk ke proses. Diolah oleh payment gateway & supplier terpercaya.</p>
+                </div>
+            </div>
+            <div class="bg-white border-2 border-primary rounded-3xl p-4 flex items-start space-x-4 shadow-sm">
+                <div class="w-10 h-10 bg-bgSoft rounded-xl flex items-center justify-center flex-shrink-0 text-primary">
+                    <i class="fa-solid fa-tag"></i>
+                </div>
+                <div>
+                    <h4 class="font-black text-dark text-sm">Harga terlihat di awal</h4>
+                    <p class="text-xs font-bold text-dark mt-1 leading-snug">Nominal dan harga mata uang game favorit kamu langsung terlihat di tampilan menu game.</p>
+                </div>
+            </div>
+            <div class="bg-white border-2 border-primary rounded-3xl p-4 flex items-start space-x-4 shadow-sm">
+                <div class="w-10 h-10 bg-bgSoft rounded-xl flex items-center justify-center flex-shrink-0 text-primary">
+                    <i class="fa-solid fa-lock"></i>
+                </div>
+                <div>
+                    <h4 class="font-black text-dark text-sm">Data kamu aman</h4>
+                    <p class="text-xs font-bold text-dark mt-1 leading-snug">Datamu diproses oleh Supabase & Claude AI, terenkripsi di server.</p>
+                </div>
+            </div>
+            <div class="bg-white border-2 border-primary rounded-3xl p-4 flex items-start space-x-4 shadow-sm">
+                <div class="w-10 h-10 bg-bgSoft rounded-xl flex items-center justify-center flex-shrink-0 text-primary">
+                    <i class="fa-regular fa-comment"></i>
+                </div>
+                <div>
+                    <h4 class="font-black text-dark text-sm">Bantuan admin</h4>
+                    <p class="text-xs font-bold text-dark mt-1 leading-snug">Hubungi tim XPAYPOINT lewat WhatsApp jika pesanan kamu mengalami kendala saat top up.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER (Sesuai Screenshot 1) -->
+    <footer class="max-w-md mx-auto px-4 pb-6">
+        
+        <!-- Logo Footer -->
+        <div class="flex flex-col items-center justify-center mb-8 text-center">
+            <div class="flex items-center space-x-3 mb-2">
+                <div class="w-12 h-12 bg-primary rounded-xl flex items-center justify-center text-white shadow-sm">
+                    <i class="fa-solid fa-xmark text-3xl font-black"></i>
+                </div>
+                <span class="text-2xl font-black text-dark">XPAYPOINT</span>
+            </div>
+            <p class="text-sm font-medium text-gray-700 px-4">Top up game & voucher murah, aman & terpercaya.</p>
+        </div>
+
+        <div class="space-y-4">
+            <h4 class="font-black text-primary uppercase text-sm">HUBUNGI KAMI</h4>
+            <div class="space-y-3 font-bold text-sm">
+                <p class="text-green-600">WhatsApp 0821-6077-8137</p>
+                <p class="text-dark">Instagram @xpaypoint</p>
+            </div>
+        </div>
+
+        <div class="space-y-4 mt-8">
+            <h4 class="font-black text-primary uppercase text-sm">BANTUAN</h4>
+            <div class="space-y-4 font-bold text-sm text-dark">
+                <p>Syarat & Ketentuan</p>
+                <p>Kebijakan Privasi</p>
+                <p>Kebijakan Refund</p>
+            </div>
+        </div>
+
+        <div class="space-y-4 mt-8">
+            <h4 class="font-black text-primary uppercase text-sm">PEMBAYARAN</h4>
+            <p class="text-sm font-medium text-dark leading-relaxed">QRIS, GoPay, OVO, DANA, ShopeePay, Transfer Bank, XPAYCOIN</p>
+        </div>
+
+        <div class="border-t border-gray-300 mt-8 pt-6 text-center">
+            <p class="text-xs font-bold text-dark mb-1">© 2026 xpaypoint by claude ai</p>
+            <p class="text-xs font-bold text-dark">keamanan dilindungin cloudflare & supabase</p>
+        </div>
+    </footer>
+
+    <!-- FAB CHAT (Bulat Pink Pojok Kanan Bawah) -->
+    <a href="#" class="fixed bottom-6 right-6 w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(255,0,127,0.4)] z-30">
+        <i class="fa-regular fa-comment text-2xl"></i>
+    </a>
+
+    <!-- ============================================== -->
+    <!-- MODAL AUTH (LOGIN / REGISTER) Sesuai SC 3, 4, 5-->
+    <!-- ============================================== -->
+    <div id="authModal" class="fixed inset-0 bg-white z-50 modal overflow-y-auto hidden">
+        <div class="max-w-md mx-auto h-full bg-white modal-content px-4 py-6 pb-20">
+            
+            <div class="flex items-center text-sm font-bold mb-6">
+                <span class="underline">Beranda</span> <span class="mx-1 text-gray-400">›</span> Masuk
+            </div>
+
+            <!-- TAB BUTTONS -->
+            <div class="flex space-x-3 mb-6">
+                <button id="btnTabLogin" onclick="switchAuth('login')" class="flex-1 py-3 rounded-xl font-black text-white bg-primary text-center transition border-2 border-primary">
+                    Masuk
+                </button>
+                <button id="btnTabReg" onclick="switchAuth('register')" class="flex-1 py-3 rounded-xl font-black text-primary bg-white text-center transition border-2 border-primary">
+                    Daftar
+                </button>
+            </div>
+
+            <!-- HALAMAN MASUK (SC 3) -->
+            <div id="formLogin" class="space-y-5">
+                <div class="flex items-center space-x-3 mb-2">
+                    <div class="w-14 h-14 rounded-2xl border-2 border-primary text-primary flex items-center justify-center text-2xl"><i class="fa-solid fa-lock"></i></div>
+                    <div>
+                        <h3 class="font-black text-2xl text-dark leading-tight">Masuk dulu, yuk!</h3>
+                        <p class="text-sm font-medium text-gray-600">Masuk dengan email dan password kamu.</p>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-dark mb-1">Email</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><i class="fa-regular fa-envelope text-primary"></i></div>
+                        <input type="email" class="w-full border-2 border-primary rounded-xl py-3.5 pl-12 pr-4 font-medium" placeholder="kamu@email.com">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-dark mb-1">Password</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><i class="fa-solid fa-lock text-primary text-sm"></i></div>
+                        <input type="password" class="w-full border-2 border-primary rounded-xl py-3.5 pl-12 pr-12 font-medium" placeholder="Password kamu">
+                        <div class="absolute inset-y-0 right-0 pr-4 flex items-center cursor-pointer text-primary"><i class="fa-regular fa-eye text-sm"></i></div>
+                    </div>
+                </div>
+
+                <!-- Cloudflare Mockup -->
+                <div class="bg-[#2d2d2d] rounded-sm p-3 flex items-center justify-between border border-[#444] shadow-sm">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-7 h-7 bg-[#34a853] rounded-sm flex items-center justify-center text-white"><i class="fa-solid fa-check text-lg"></i></div>
+                        <span class="text-white text-[15px]">Berhasil!</span>
+                    </div>
+                    <div class="text-right flex flex-col items-end">
+                        <i class="fa-brands fa-cloudflare text-[#f38020] text-3xl leading-none"></i>
+                        <div class="text-[8px] text-gray-400 mt-1"><a href="#" class="hover:underline">Privasi</a> • <a href="#" class="hover:underline">Bantuan</a></div>
+                    </div>
+                </div>
+
+                <button class="w-full bg-primary text-white font-black py-4 rounded-2xl mt-4 flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-right-to-bracket text-lg"></i> <span>Masuk</span>
+                </button>
+
+                <div class="text-center mt-6">
+                    <span class="text-sm font-medium text-dark">Belum punya akun? </span>
+                    <a href="#" onclick="switchAuth('register')" class="text-primary font-bold underline">Daftar gratis</a>
+                </div>
+            </div>
+
+
+            <!-- HALAMAN DAFTAR (SC 4 & 5) -->
+            <div id="formRegister" class="space-y-4 hidden">
+                <div class="flex items-center space-x-3 mb-2">
+                    <div class="w-14 h-14 rounded-2xl border-2 border-primary text-primary flex items-center justify-center text-2xl"><i class="fa-regular fa-user"></i></div>
+                    <div>
+                        <h3 class="font-black text-2xl text-dark leading-tight">Bikin akun baru</h3>
+                        <p class="text-sm font-medium text-gray-600 leading-tight">Daftar untuk memakai XPAYCOIN dan riwayat pesanan.</p>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-dark mb-1">Nama lengkap</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><i class="fa-regular fa-user text-primary"></i></div>
+                        <input type="text" class="w-full border-2 border-primary rounded-xl py-3 pl-12 pr-4 font-medium text-gray-500" placeholder="Nama kamu">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-dark mb-1">Email aktif</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><i class="fa-regular fa-envelope text-primary"></i></div>
+                        <input type="email" class="w-full border-2 border-primary rounded-xl py-3 pl-12 pr-4 font-medium text-gray-500" placeholder="kamu@email.com">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-dark mb-1">Nomor HP / WhatsApp (opsional)</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><i class="fa-solid fa-mobile-screen-button text-primary"></i></div>
+                        <input type="tel" class="w-full border-2 border-primary rounded-xl py-3 pl-12 pr-4 font-medium text-gray-500" placeholder="0812xxxxxxxx">
+                    </div>
+                    <p class="text-[11px] font-medium text-gray-500 mt-1">Nomor HP dipakai untuk info pesanan saja.</p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-dark mb-1">Password</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><i class="fa-solid fa-lock text-primary text-sm"></i></div>
+                        <input type="password" class="w-full border-2 border-primary rounded-xl py-3 pl-12 pr-12 font-medium text-gray-500" placeholder="Buat password">
+                        <div class="absolute inset-y-0 right-0 pr-4 flex items-center cursor-pointer text-primary"><i class="fa-regular fa-eye text-sm"></i></div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-dark mb-1">Ulangi password</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><i class="fa-solid fa-lock text-primary text-sm"></i></div>
+                        <input type="password" class="w-full border-2 border-primary rounded-xl py-3 pl-12 pr-12 font-medium text-gray-500" placeholder="Ketik ulang password">
+                        <div class="absolute inset-y-0 right-0 pr-4 flex items-center cursor-pointer text-primary"><i class="fa-regular fa-eye text-sm"></i></div>
+                    </div>
+                </div>
+
+                <!-- Password Rules -->
+                <ul class="text-xs font-bold text-gray-500 space-y-1 mt-2">
+                    <li><i class="fa-regular fa-circle text-gray-400 mr-1 text-[10px]"></i> Minimal 6 karakter</li>
+                    <li><i class="fa-regular fa-circle text-gray-400 mr-1 text-[10px]"></i> Huruf kecil (a-z)</li>
+                    <li><i class="fa-regular fa-circle text-gray-400 mr-1 text-[10px]"></i> Huruf kapital (A-Z)</li>
+                    <li><i class="fa-regular fa-circle text-gray-400 mr-1 text-[10px]"></i> Angka (0-9)</li>
+                    <li><i class="fa-regular fa-circle text-gray-400 mr-1 text-[10px]"></i> Simbol, contoh @ # $ % &</li>
+                </ul>
+
+                <!-- Checkbox -->
+                <label class="flex items-start mt-4 cursor-pointer">
+                    <input type="checkbox" class="mt-1 flex-shrink-0 w-5 h-5 border-2 border-primary rounded-md text-primary focus:ring-0">
+                    <span class="text-sm font-bold text-dark ml-3 leading-snug">Aku setuju dengan <a href="#" class="text-primary underline">Syarat & Ketentuan XPAYPOINT</a> dan <a href="#" class="text-primary underline">Syarat & Ketentuan XPAYCOIN</a>.</span>
+                </label>
+
+                <!-- Cloudflare Mockup -->
+                <div class="bg-[#2d2d2d] rounded-sm p-3 flex items-center justify-between border border-[#444] shadow-sm mt-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-7 h-7 bg-[#34a853] rounded-sm flex items-center justify-center text-white"><i class="fa-solid fa-check text-lg"></i></div>
+                        <span class="text-white text-[15px]">Berhasil!</span>
+                    </div>
+                    <div class="text-right flex flex-col items-end">
+                        <i class="fa-brands fa-cloudflare text-[#f38020] text-3xl leading-none"></i>
+                        <div class="text-[8px] text-gray-400 mt-1"><a href="#" class="hover:underline">Privasi</a> • <a href="#" class="hover:underline">Bantuan</a></div>
+                    </div>
+                </div>
+
+                <button class="w-full bg-primary text-white font-black py-4 rounded-2xl mt-4 flex items-center justify-center space-x-2">
+                    <i class="fa-regular fa-user text-lg"></i> <span>Daftar Sekarang</span>
+                </button>
+
+                <div class="text-center mt-6">
+                    <span class="text-sm font-medium text-dark">Sudah punya akun? </span>
+                    <a href="#" onclick="switchAuth('login')" class="text-primary font-bold underline">Masuk di sini</a>
+                </div>
+            </div>
+            
+            <div class="text-center mt-8 text-xs font-bold text-dark flex justify-center items-center">
+                <i class="fa-solid fa-lock text-gray-500 mr-1.5"></i> ©2026 XPAYPOINT • data kamu aman & terenkripsi
+            </div>
+            
+            <!-- Tombol Close Modal -->
+            <button onclick="closeAuthModal()" class="absolute top-4 right-4 w-10 h-10 flex items-center justify-center text-dark rounded-full bg-gray-100 hover:bg-gray-200">
+                <i class="fa-solid fa-xmark text-lg font-black"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- SCRIPT LOGIKA UI MURNI (TANPA BACKEND) -->
+    <script>
+        // Toggle Sidebar
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('sidebarOverlay').classList.toggle('active');
+        }
+
+        // Buka Modal Auth
+        function openAuthModal(type) {
+            const modal = document.getElementById('authModal');
+            modal.classList.remove('hidden');
+            // Sedikit delay agar transisi CSS jalan
+            setTimeout(() => { modal.classList.add('active'); }, 10);
+            document.body.style.overflow = 'hidden'; // Stop background scroll
+            switchAuth(type);
+        }
+
+        // Tutup Modal Auth
+        function closeAuthModal() {
+            const modal = document.getElementById('authModal');
+            modal.classList.remove('active');
+            setTimeout(() => { modal.classList.add('hidden'); }, 300);
+            document.body.style.overflow = '';
+        }
+
+        // Ganti Tab Login / Register
+        function switchAuth(type) {
+            const btnLogin = document.getElementById('btnTabLogin');
+            const btnReg = document.getElementById('btnTabReg');
+            const formLogin = document.getElementById('formLogin');
+            const formReg = document.getElementById('formRegister');
+
+            if(type === 'login') {
+                btnLogin.className = "flex-1 py-3 rounded-xl font-black text-white bg-primary text-center transition border-2 border-primary";
+                btnReg.className = "flex-1 py-3 rounded-xl font-black text-primary bg-white text-center transition border-2 border-primary";
+                formLogin.classList.remove('hidden');
+                formReg.classList.add('hidden');
+            } else {
+                btnReg.className = "flex-1 py-3 rounded-xl font-black text-white bg-primary text-center transition border-2 border-primary";
+                btnLogin.className = "flex-1 py-3 rounded-xl font-black text-primary bg-white text-center transition border-2 border-primary";
+                formReg.classList.remove('hidden');
+                formLogin.classList.add('hidden');
+            }
+            
+            // Scroll otomatis ke atas modal pas pindah tab
+            document.querySelector('.modal-content').scrollTo(0,0);
+        }
+    </script>
+</body>
+</html>
