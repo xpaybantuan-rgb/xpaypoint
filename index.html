@@ -599,7 +599,7 @@ function renderOrder(){
       <div class="sumrow"><span id="sItem">Belum pilih nominal</span><b id="sHarga">-</b></div>
       <div class="total"><span>Total bayar</span><strong id="sTotal">-</strong></div>
     </div>
-    <button class="btn" id="go" disabled>Pesan via WhatsApp</button>
+    <button class="btn" id="go" disabled>Bayar Sekarang</button>
     <p class="hint center"></p>
   </div>`;
   box.onclick=e=>{
@@ -976,23 +976,56 @@ $("admin").onclick=e=>{
 async function sendWa(){
   const uid=$("uid").value.trim();
   const zone=$("zone")?$("zone").value.trim():"";
-  const [label,price]=cur.items[nom];
+  const [label,price,productId]=cur.items[nom];
   const payName=PAYS[pay];
+
+  if(payName==="QRIS"){
+    const token=lsGet("xp-sb-token",null);
+    if(!token){ alert("Login atau daftar dulu untuk membayar dengan QRIS."); openAuth(); return; }
+    if(!productId){ alert("ID produk belum tersedia. Muat ulang katalog lalu coba lagi."); return; }
+    const popup=window.open("about:blank","_blank");
+    if(!popup){ alert("Izinkan pop-up agar halaman pembayaran QRIS bisa dibuka."); return; }
+    const go=$("go");
+    if(go){go.disabled=true;go.textContent="Membuat tagihan...";}
+    try{
+      const response=await fetch(SB_URL+"/functions/v1/kasera-create-payment",{
+        method:"POST",
+        headers:{
+          apikey:SB_KEY,
+          Authorization:"Bearer "+token,
+          "Content-Type":"application/json",
+          "Idempotency-Key":"xpp-"+crypto.randomUUID()
+        },
+        body:JSON.stringify({product_id:productId,target_id:uid,zone_id:zone||null})
+      });
+      const data=await response.json().catch(()=>({}));
+      if(!response.ok||!data.success||!data.checkout_url) throw new Error(data.error||"Gagal membuat tagihan QRIS.");
+      popup.opener=null;
+      popup.location.replace(data.checkout_url);
+      closeOrder();
+    }catch(error){
+      try{popup.close();}catch(_){}
+      alert(error instanceof Error?error.message:"Pembayaran QRIS gagal dibuat. Coba lagi.");
+      if(go){go.disabled=false;go.textContent="Bayar Sekarang";}
+    }
+    return;
+  }
+
   let popup=null;
   if(payName==="XPAYCOIN"){
     if(!sbSession()){ openAuth(); return; }
     try{
-      await sbFetch("/rest/v1/rpc/xpc_spend",{method:"POST",body:{p_amount:price,p_note:`${cur.name} - ${label} (${uid}${zone?" / "+zone:""})`}});
+      await sbFetch("/rest/v1/rpc/xpc_spend",{method:"POST",body:{p_amount:price,p_note:cur.name+" - "+label+" ("+uid+(zone?" / "+zone:"")+")"}});
     }catch(e){ alert("Saldo XPAYCOIN tidak cukup. Isi saldo dulu lewat menu XPAYCOIN."); return; }
   }
-  let t=`Halo admin XPAYPOINT, saya mau top up:\n\nGame: ${cur.name}\nItem: ${label}\nHarga: ${rp(price)}\n${cur.idl}: ${uid}`;
-  if(cur.zone) t+=`\n${cur.zone}: ${zone}`;
-  t+=`\nMetode pembayaran: ${payName}`;
+  let t="Halo admin XPAYPOINT, saya mau top up:\n\nGame: "+cur.name+"\nItem: "+label+"\nHarga: "+rp(price)+"\n"+cur.idl+": "+uid;
+  if(cur.zone) t+="\n"+cur.zone+": "+zone;
+  t+="\nMetode pembayaran: "+payName;
   if(payName==="XPAYCOIN") t+=" (saldo XPAYCOIN sudah dipotong)";
   if(SB_OK){
     sbFetch("/rest/v1/orders",{method:"POST",noAuth:true,headers:{Prefer:"return=minimal"},body:{game:cur.name,item:label,price:price,player_id:uid,zone:zone||null,pay_method:payName}}).catch(()=>{});
   }
-  const url=`https://wa.me/${WA}?text=${encodeURIComponent(t)}`;
+  const url="https://wa.me/"+WA+"?text="+encodeURIComponent(t);
   popup=window.open(url,"_blank");
   if(popup) popup.opener=null; else window.location.href=url;
 }
