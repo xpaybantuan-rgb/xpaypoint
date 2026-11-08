@@ -23,10 +23,10 @@
 <button id="logoutBtn" class="btn" style="margin-top:9px;background:#303643">Keluar</button>
 <div id="status" class="status">Siap. Tekan tombol untuk mengambil daftar harga terbaru.</div>
 <div id="results" class="hidden"><div class="stats">
-<div class="stat"><b id="total">0</b><small>Produk ID + Global</small></div>
+<div class="stat"><b id="total">0</b><small>Total produk tersimpan</small></div>
 <div class="stat"><b id="available">0</b><small>Tersedia</small></div>
 <div class="stat"><b id="excluded">0</b><small>Region lain dilewati</small></div>
-</div><div class="tablewrap"><table><thead><tr><th>Region</th><th>Game</th><th>Produk</th><th>Modal Member</th><th>Harga jual +200</th><th>Status</th></tr></thead><tbody id="rows"></tbody></table></div><p class="muted">Tabel menampilkan maksimal 100 produk pertama sebagai pratinjau. Semua produk terpilih tetap disimpan ke staging.</p></div>
+</div><div class="tablewrap"><table><thead><tr><th>Region</th><th>Game</th><th>Produk</th><th>Modal Member</th><th>Harga jual +200</th><th>Status</th></tr></thead><tbody id="rows"></tbody></table></div><p class="muted">Semua produk hasil sinkronisasi ditampilkan di bawah. Pilihan produk yang akan dijual tetap lu tentukan sendiri.</p></div>
 </section></section></main>
 <script>
 (() => {
@@ -59,7 +59,7 @@ $("syncBtn").onclick=async()=>{
   if(error)throw error;
   if(!data?.success)throw new Error(data?.error||"Sinkronisasi gagal.");
   $("total").textContent=data.received;$("available").textContent=data.available;$("excluded").textContent=data.excluded_other_regions;
-  $("rows").innerHTML=(data.preview||[]).map(r=>"<tr><td>"+r.region+"</td><td>"+r.game+"</td><td>"+r.name+"</td><td>"+money(r.member_price)+"</td><td>"+money(r.sell_price)+"</td><td>"+r.status+"</td></tr>").join("");
+  $("rows").innerHTML=(data.products||[]).map(r=>"<tr><td>"+r.region+"</td><td>"+r.game+"</td><td>"+r.name+"</td><td>"+money(r.member_price)+"</td><td>"+money(r.sell_price)+"</td><td>"+r.status+"</td></tr>").join("");
   $("results").classList.remove("hidden");
   showStatus("BERHASIL — "+data.message+"\nTier: "+data.selected_price_tier+" ("+data.account_level+"). Produk kosong: "+data.empty+". Region lain dilewati: "+data.excluded_other_regions+".");
  }catch(e){showStatus("GAGAL: "+(e.message||String(e))+"\nPastikan akun admin terverifikasi dan secrets VIPAYMENT tersedia di Supabase/Cloudflare.");}
