@@ -11,6 +11,26 @@
 :root{color-scheme:dark;--bg:#090b12;--surface:#111522;--surface2:#171d2c;--text:#f6f7fb;--muted:#9ba5b8;--line:#283044;--accent:#f04455;--accent2:#ff6b73;--soft:#351c29;--shadow:0 18px 50px #0005}
 html[data-theme="light"]{color-scheme:light;--bg:#f5f6fa;--surface:#fff;--surface2:#eef0f6;--text:#171b27;--muted:#697386;--line:#e0e4ed;--accent:#e9364c;--accent2:#ff6574;--soft:#fff0f1;--shadow:0 18px 50px #25304a12}
 *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--text);font:500 14px Manrope,system-ui,sans-serif;line-height:1.55;min-height:100vh}button,input{font:inherit}button,a{-webkit-tap-highlight-color:transparent}a{color:inherit;text-decoration:none}.container{width:min(1180px,calc(100% - 36px));margin:auto}.topline{height:34px;background:#e9364c;color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;letter-spacing:.04em}.header{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(18px);border-bottom:1px solid var(--line)}.headrow{height:72px;display:flex;align-items:center;gap:26px}.brand{display:flex;align-items:center;gap:10px;font:700 22px "Space Grotesk",sans-serif;letter-spacing:-.8px;white-space:nowrap}.brandmark{width:36px;height:36px;border-radius:12px;background:linear-gradient(145deg,var(--accent2),#b51f42);display:grid;place-items:center;color:white;font-weight:800;box-shadow:0 8px 22px #e9364c44}.brand em{color:var(--accent);font-style:normal}.nav{display:flex;align-items:center;gap:22px;margin:auto;font-size:12px;font-weight:800;color:var(--muted)}.nav a:hover,.nav a.active{color:var(--text)}.actions{display:flex;align-items:center;gap:9px}.iconbtn,.ghostbtn{border:1px solid var(--line);background:var(--surface);color:var(--text);height:40px;border-radius:12px;padding:0 12px;display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;font-size:12px;font-weight:800}.primary{background:linear-gradient(120deg,var(--accent),#b92c4d);color:#fff;border:0;box-shadow:0 9px 24px #e9364c35}.hero{padding:38px 0 24px}.hero-card{position:relative;overflow:hidden;min-height:300px;border:1px solid #ffffff15;border-radius:26px;background:radial-gradient(ellipse at 80% 10%,#f0445540,transparent 40%),linear-gradient(115deg,#151b2a,#241523 70%,#351522);padding:clamp(24px,5vw,58px);display:flex;align-items:center;box-shadow:var(--shadow)}.hero-card:after{content:"XP";position:absolute;right:4%;bottom:-100px;font:700 clamp(200px,32vw,390px)/1 "Space Grotesk";color:#ffffff08;pointer-events:none}.hero-copy{position:relative;z-index:1;max-width:620px}.eyebrow{color:#ff8d98;font-size:10px;font-weight:800;letter-spacing:.22em;text-transform:uppercase}.hero h1{font:700 clamp(34px,5vw,58px)/1.06 "Space Grotesk";letter-spacing:-1.8px;margin:14px 0}.hero h1 span{color:#ff6978}.hero p{color:#c3c8d4;max-width:490px;font-size:13px;line-height:1.8;margin:0 0 24px}.hero-cta{display:flex;gap:10px;flex-wrap:wrap}.btn{border:0;border-radius:12px;padding:13px 18px;font-size:12px;font-weight:800;cursor:pointer}.btn-light{background:#fff;color:#181b25}.btn-outline{background:#ffffff10;color:white;border:1px solid #ffffff30}.trustrow{display:flex;gap:22px;flex-wrap:wrap;margin-top:22px;color:#cbd0db;font-size:10px;font-weight:700}.trustrow span{display:flex;gap:7px;align-items:center}.section{padding:30px 0}.section-head{display:flex;justify-content:space-between;align-items:end;gap:15px;margin-bottom:17px}.kicker{color:var(--accent);font-size:10px;font-weight:800;letter-spacing:.17em;text-transform:uppercase}.section h2{font:700 clamp(23px,3vw,30px) "Space Grotesk";letter-spacing:-.7px;margin:5px 0 0}.sub{color:var(--muted);font-size:11px;margin:6px 0 0}.searchbox{display:flex;align-items:center;gap:10px;max-width:390px;width:100%;background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:0 14px;height:46px}.searchbox input{width:100%;border:0;outline:0;background:transparent;color:var(--text);font-size:12px}.searchbox svg{width:17px;opacity:.6;flex:none}.chips{display:flex;gap:8px;overflow:auto;padding:2px 0 12px;scrollbar-width:none}.chips::-webkit-scrollbar{display:none}.chip{border:1px solid var(--line);background:var(--surface);color:var(--muted);padding:9px 14px;border-radius:99px;white-space:nowrap;font-size:10px;font-weight:800;cursor:pointer}.chip.active{background:var(--soft);border-color:var(--accent);color:var(--accent2)}.gamegrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}.gamecard{position:relative;display:flex;align-items:center;gap:12px;padding:13px;border:1px solid var(--line);border-radius:17px;background:var(--surface);cursor:pointer;text-align:left;color:var(--text);min-width:0;transition:transform .18s,border-color .18s,box-shadow .18s}.gamecard:hover{transform:translateY(-3px);border-color:var(--accent);box-shadow:0 12px 28px #0002}.gameart{width:54px;height:54px;flex:none;border-radius:14px;display:grid;place-items:center;overflow:hidden;background:linear-gradient(145deg,#f0445550,#6b315b);color:#fff;font:700 18px "Space Grotesk";letter-spacing:-1px}.gameart img{width:100%;height:100%;object-fit:contain;padding:4px}.gameinfo{min-width:0}.gameinfo strong{display:block;font-size:11px;line-height:1.35}.gameinfo small{display:block;color:var(--muted);font-size:9px;margin-top:5px}.gamearrow{margin-left:auto;color:var(--muted);font-size:18px}.product-area{margin-top:26px;border-top:1px solid var(--line);padding-top:24px}.product-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}.product-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px}.product{border:1px solid var(--line);border-radius:15px;background:var(--surface);padding:14px;min-width:0}.product small{color:var(--muted);font-size:9px}.product strong{display:block;font-size:11px;margin:7px 0 11px;min-height:32px}.price{font:700 15px "Space Grotesk";color:var(--accent2)}.stock{font-size:9px;color:#36c995;font-weight:800}.stock.out{color:#f08c55}.product button{width:100%;margin-top:12px}.product button:disabled{opacity:.55;cursor:not-allowed}.state{padding:30px;text-align:center;border:1px dashed var(--line);border-radius:16px;color:var(--muted);font-size:12px;grid-column:1/-1}.features{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.feature{background:var(--surface);border:1px solid var(--line);border-radius:17px;padding:18px}.feature .ficon{width:36px;height:36px;border-radius:11px;background:var(--soft);color:var(--accent);display:grid;place-items:center;font-size:17px}.feature strong{display:block;font-size:12px;margin:12px 0 5px}.feature p{margin:0;color:var(--muted);font-size:10px;line-height:1.7}.promo{display:grid;grid-template-columns:1.3fr .7fr;gap:14px}.promobox{border:1px solid var(--line);border-radius:20px;background:linear-gradient(120deg,#271a28,#171c2b);padding:24px;color:#fff;min-height:145px}.promobox.alt{background:linear-gradient(120deg,#1a2931,#1b1c30)}.promobox small{color:#ff9aa4;font-weight:800;letter-spacing:.14em}.promobox h3{font:700 22px "Space Grotesk";margin:9px 0}.promobox p{font-size:10px;color:#c3c8d4;margin:0}.footer{margin-top:38px;border-top:1px solid var(--line);padding:32px 0 90px;color:var(--muted)}.footgrid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:24px}.footer p,.footer a{font-size:10px;line-height:1.9}.footer h4{color:var(--text);font-size:11px;margin:0 0 10px}.footlinks{display:grid;gap:4px}.bottomnav{display:none}.toast{position:fixed;left:50%;bottom:85px;transform:translateX(-50%);z-index:70;background:var(--text);color:var(--bg);border-radius:12px;padding:11px 15px;font-size:11px;font-weight:800;box-shadow:var(--shadow);max-width:90vw;text-align:center}.loading{animation:pulse 1.2s infinite alternate}@keyframes pulse{to{opacity:.45}}@media(max-width:800px){.nav{gap:12px}.nav a{font-size:10px}.product-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.features{grid-template-columns:repeat(2,1fr)}}@media(max-width:620px){.container{width:min(100% - 28px,520px)}.topline{font-size:9px}.headrow{height:62px;gap:10px}.brand{font-size:19px}.brandmark{width:32px;height:32px}.nav{display:none}.actions .ghostbtn{display:none}.actions .iconbtn{width:39px;padding:0}.actions .primary{padding:10px 12px;font-size:10px}.hero{padding-top:20px}.hero-card{min-height:285px;border-radius:21px;padding:25px 21px}.hero h1{font-size:38px}.hero p{font-size:11px}.trustrow{gap:12px;font-size:9px}.section{padding:23px 0}.section-head{align-items:start;flex-direction:column}.searchbox{max-width:none}.gamegrid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.gamecard{display:block;padding:9px;border-radius:14px;text-align:center}.gameart{width:100%;height:74px;margin-bottom:8px;border-radius:10px;font-size:17px}.gameinfo strong{font-size:9px;min-height:24px}.gameinfo small{font-size:8px}.gamearrow{display:none}.product-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.product{padding:11px}.product strong{font-size:10px}.price{font-size:14px}.promo{grid-template-columns:1fr}.promobox{min-height:130px}.footgrid{grid-template-columns:1fr 1fr}.footgrid>div:first-child{grid-column:1/-1}.bottomnav{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;z-index:40;bottom:0;left:0;right:0;padding:8px 8px calc(8px + env(safe-area-inset-bottom));background:color-mix(in srgb,var(--surface) 94%,transparent);backdrop-filter:blur(18px);border-top:1px solid var(--line)}.bottomnav a{display:grid;justify-items:center;gap:3px;color:var(--muted);font-size:8px;font-weight:800}.bottomnav a span:first-child{font-size:17px}.bottomnav a.active{color:var(--accent)}.footer{padding-bottom:110px}}
+
+.chat-fab{position:fixed;right:20px;bottom:24px;z-index:65;border:0;border-radius:999px;padding:13px 17px;background:linear-gradient(120deg,var(--accent),#b92c4d);color:#fff;font-weight:800;font-size:12px;box-shadow:0 12px 32px #e9364c55;cursor:pointer;display:flex;align-items:center;gap:9px}
+.chat-fab .chat-spark{width:25px;height:25px;border-radius:50%;background:#ffffff24;display:grid;place-items:center;font-size:15px}
+.chat-panel{position:fixed;right:20px;bottom:82px;z-index:64;width:min(380px,calc(100vw - 28px));height:min(560px,calc(100dvh - 120px));background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:0 24px 70px #0007;display:flex;flex-direction:column;overflow:hidden}
+.chat-panel[hidden]{display:none}
+.chat-head{padding:15px 16px;background:linear-gradient(120deg,#241725,#171c2b);color:#fff;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.chat-brand{display:flex;align-items:center;gap:10px}.chat-avatar{width:36px;height:36px;border-radius:12px;background:linear-gradient(145deg,#ff7180,#a92348);display:grid;place-items:center;font-weight:900}
+.chat-brand strong{display:block;font-size:12px}.chat-brand small{display:block;color:#c4c9d4;font-size:9px;margin-top:2px}
+.chat-close{border:1px solid #ffffff30;background:#ffffff12;color:white;border-radius:10px;width:32px;height:32px;font-size:18px;cursor:pointer}
+.chat-messages{padding:14px;display:flex;flex-direction:column;gap:10px;overflow:auto;flex:1;background:var(--bg)}
+.chat-bubble{max-width:88%;padding:10px 12px;border-radius:14px;font-size:11px;line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere}
+.chat-bubble.bot{align-self:flex-start;background:var(--surface2);color:var(--text);border-bottom-left-radius:5px}
+.chat-bubble.user{align-self:flex-end;background:var(--accent);color:white;border-bottom-right-radius:5px}
+.chat-typing{color:var(--muted);font-size:10px;padding:0 14px 8px}
+.chat-compose{padding:10px;border-top:1px solid var(--line);display:flex;gap:8px;background:var(--surface)}
+.chat-compose textarea{flex:1;min-width:0;resize:none;max-height:90px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--text);padding:10px;font:500 11px Manrope, sans-serif;outline:none}
+.chat-compose textarea:focus{border-color:var(--accent)}
+.chat-send{width:42px;flex:none;border:0;border-radius:12px;background:var(--accent);color:white;font-size:17px;font-weight:900;cursor:pointer}
+.chat-send:disabled{opacity:.45;cursor:not-allowed}
+@media(max-width:620px){.chat-fab{right:14px;bottom:78px;padding:11px 13px}.chat-panel{right:8px;bottom:132px;width:calc(100vw - 16px);height:min(520px,calc(100dvh - 155px))}}
 </style>
 </head>
 <body>
@@ -50,6 +70,20 @@ html[data-theme="light"]{color-scheme:light;--bg:#f5f6fa;--surface:#fff;--surfac
 </div></footer>
 <nav class="bottomnav"><a class="active" href="#"><span>⌂</span><span>Beranda</span></a><a href="#games"><span>🎮</span><span>Games</span></a><a href="#voucher"><span>🎟</span><span>Voucher</span></a><a href="#games"><span>▤</span><span>Transaksi</span></a><a href="#footer" id="mobileProfile"><span>☻</span><span>Profil</span></a></nav>
 <div class="toast" id="toast" hidden></div>
+<div class="chat-panel" id="chatPanel" hidden>
+  <div class="chat-head">
+    <div class="chat-brand"><span class="chat-avatar">X</span><span><strong>XPAYPOINT AI</strong><small>Asisten virtual · Gemini AI</small></span></div>
+    <button class="chat-close" id="chatClose" aria-label="Tutup chat">×</button>
+  </div>
+  <div class="chat-messages" id="chatMessages" aria-live="polite"></div>
+  <div class="chat-typing" id="chatTyping" hidden>XPAYPOINT AI sedang mengetik…</div>
+  <form class="chat-compose" id="chatForm">
+    <textarea id="chatInput" rows="1" maxlength="2500" placeholder="Tulis pertanyaanmu…" aria-label="Pesan untuk XPAYPOINT AI"></textarea>
+    <button class="chat-send" id="chatSend" type="submit" aria-label="Kirim pesan">➤</button>
+  </form>
+</div>
+<button class="chat-fab" id="chatToggle" aria-expanded="false"><span class="chat-spark">✦</span> Tanya XP AI</button>
+
 <script>
 const SUPABASE_URL="https://rjgeitbkpcyymgemcztx.supabase.co";
 const SUPABASE_KEY="sb_publishable_1b6C4q5vgbX0XfP_EV5yjQ_Qk9Cq4lR";
@@ -67,6 +101,52 @@ async function init(){ $("year").textContent=new Date().getFullYear();try{const 
 $("gameSearch").addEventListener("input",renderGames);$("productSearch").addEventListener("input",renderProducts);$("clearGame").addEventListener("click",()=>{$("productArea").hidden=true;activeGame=null});$("gameFilters").addEventListener("click",e=>{const b=e.target.closest("[data-filter]");if(!b)return;activeFilter=b.dataset.filter;document.querySelectorAll(".chip").forEach(x=>x.classList.toggle("active",x===b));renderGames()});
 $("themeBtn").addEventListener("click",()=>{const next=document.documentElement.dataset.theme==="dark"?"light":"dark";document.documentElement.dataset.theme=next;localStorage.setItem("xp-theme",next);$("themeBtn").textContent=next==="dark"?"☼":"☾"});const saved=localStorage.getItem("xp-theme");if(saved){document.documentElement.dataset.theme=saved;$("themeBtn").textContent=saved==="dark"?"☼":"☾"}
 $("loginBtn").addEventListener("click",()=>notify("Login member sedang disiapkan. Belum ada formulir autentikasi aktif."));$("profileBtn").addEventListener("click",()=>notify("Profil member akan aktif setelah modul autentikasi selesai."));$("mobileProfile").addEventListener("click",e=>{e.preventDefault();notify("Profil member akan aktif setelah modul autentikasi selesai.")});
+
+const CHAT_ENDPOINT=SUPABASE_URL+"/functions/v1/ai-chat";
+let chatDeviceId=localStorage.getItem("xp-chat-device");
+if(!chatDeviceId){chatDeviceId=crypto.randomUUID();localStorage.setItem("xp-chat-device",chatDeviceId)}
+let chatMessages=[],chatLoaded=false,chatBusy=false;
+function renderChat(){
+  const box=$("chatMessages");
+  box.innerHTML=chatMessages.map(m=>'<div class="chat-bubble '+(m.role==="user"?"user":"bot")+'">'+safe(m.content)+'</div>').join("");
+  box.scrollTop=box.scrollHeight;
+}
+async function chatCall(payload){
+  const response=await fetch(CHAT_ENDPOINT,{method:"POST",headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+SUPABASE_KEY,"Content-Type":"application/json"},body:JSON.stringify({...payload,deviceId:chatDeviceId})});
+  const data=await response.json().catch(()=>({}));
+  if(!response.ok)throw new Error(data.error||"Chat sedang tidak tersedia.");
+  return data;
+}
+async function loadChat(){
+  if(chatLoaded)return;
+  chatLoaded=true;
+  try{
+    const data=await chatCall({action:"history"});
+    chatMessages=(data.messages||[]).map(m=>({role:m.role,content:m.message}));
+  }catch(e){chatMessages=[]}
+  if(!chatMessages.length)chatMessages=[{role:"assistant",content:"Halo! Aku XPAYPOINT AI. Mau tanya harga game, cara top up, XPAYCOIN, atau bantuan pesanan? 😊"}];
+  renderChat();
+}
+function openChat(){
+  $("chatPanel").hidden=false;$("chatToggle").setAttribute("aria-expanded","true");
+  loadChat();setTimeout(()=>$("chatInput").focus(),80);
+}
+function closeChat(){$("chatPanel").hidden=true;$("chatToggle").setAttribute("aria-expanded","false")}
+$("chatToggle").addEventListener("click",()=>{$("chatPanel").hidden?openChat():closeChat()});
+$("chatClose").addEventListener("click",closeChat);
+$("chatForm").addEventListener("submit",async e=>{
+  e.preventDefault();if(chatBusy)return;
+  const text=$("chatInput").value.trim();if(!text)return;
+  chatMessages.push({role:"user",content:text});$("chatInput").value="";renderChat();
+  chatBusy=true;$("chatSend").disabled=true;$("chatTyping").hidden=false;
+  try{
+    const data=await chatCall({messages:chatMessages.slice(-8).map(m=>({role:m.role,content:m.content}))});
+    chatMessages.push({role:"assistant",content:data.reply||"Maaf, aku belum bisa menjawab sekarang."});
+  }catch(err){chatMessages.push({role:"assistant",content:err.message||"Koneksi sedang terganggu. Coba lagi sebentar ya."})}
+  finally{chatBusy=false;$("chatSend").disabled=false;$("chatTyping").hidden=true;renderChat();$("chatInput").focus()}
+});
+$("chatInput").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();$("chatForm").requestSubmit()}});
+
 init();
 </script>
 </body></html>
