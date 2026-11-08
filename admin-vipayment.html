@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Admin Sinkronisasi VIPAYMENT — XPAYPOINT</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{font-family:Inter,system-ui,sans-serif;color:#191b22;background:#f7f8fb}*{box-sizing:border-box}body{margin:0;padding:24px 14px}.wrap{max-width:850px;margin:32px auto}.panel{background:white;border:1px solid #e7e8ed;border-radius:20px;padding:22px;box-shadow:0 12px 36px #18213a0c}.brand{font-weight:900;letter-spacing:.04em;color:#e9364c;font-size:13px}.title{font-size:25px;font-weight:850;margin:8px 0}.muted{color:#697386;font-size:13px;line-height:1.65}.field{display:block;width:100%;padding:14px;border:1px solid #dfe2e8;border-radius:12px;margin:10px 0;font:inherit}.btn{border:0;border-radius:12px;background:#e9364c;color:white;font-weight:800;padding:14px 18px;width:100%;cursor:pointer}.btn:disabled{opacity:.55}.hidden{display:none!important}.status{margin-top:14px;padding:13px;border-radius:12px;background:#f5f6f8;font-size:13px;white-space:pre-wrap}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:18px 0}.stat{background:#fafafa;border:1px solid #eee;border-radius:13px;padding:13px}.stat b{display:block;font-size:23px}.stat small{color:#697386}.tablewrap{overflow:auto;max-height:420px;border:1px solid #eee;border-radius:12px}table{width:100%;border-collapse:collapse;font-size:12px}th,td{text-align:left;padding:10px;border-bottom:1px solid #eee;white-space:nowrap}th{position:sticky;top:0;background:#fafafa}.warning{background:#fff8e8;border:1px solid #f3dfaa;padding:12px;border-radius:12px;font-size:12px;color:#755b20;margin:15px 0}
+</style></head>
+<body><main class="wrap"><section class="panel">
+<div class="brand">XPAYPOINT / ADMIN</div><h1 class="title">Sinkronisasi VIPAYMENT</h1>
+<p class="muted">Ambil katalog langsung dari API VIPAYMENT. Filter hanya region Indonesia (ID) dan Global. Harga menggunakan tier Member akun Basic; harga jual simulasi = Member + Rp200.</p>
+<div class="warning">Halaman khusus admin. Katalog hanya masuk ke tabel staging Supabase. Harga produk yang tampil di website pelanggan tidak akan diubah.</div>
+<section id="login">
+<input id="email" class="field" type="email" autocomplete="username" value="xpaybantuan@gmail.com" placeholder="Email admin">
+<input id="password" class="field" type="password" autocomplete="current-password" placeholder="Password akun admin Supabase">
+<button id="loginBtn" class="btn">Login Admin</button>
+</section>
+<section id="work" class="hidden">
+<p class="muted" id="who"></p>
+<button id="syncBtn" class="btn">Ambil Daftar Harga ID + Global</button>
+<button id="logoutBtn" class="btn" style="margin-top:9px;background:#303643">Keluar</button>
+<div id="status" class="status">Siap. Tekan tombol untuk mengambil daftar harga terbaru.</div>
+<div id="results" class="hidden"><div class="stats">
+<div class="stat"><b id="total">0</b><small>Produk ID + Global</small></div>
+<div class="stat"><b id="available">0</b><small>Tersedia</small></div>
+<div class="stat"><b id="excluded">0</b><small>Region lain dilewati</small></div>
+</div><div class="tablewrap"><table><thead><tr><th>Region</th><th>Game</th><th>Produk</th><th>Modal Member</th><th>Harga jual +200</th><th>Status</th></tr></thead><tbody id="rows"></tbody></table></div><p class="muted">Tabel menampilkan maksimal 100 produk pertama sebagai pratinjau. Semua produk terpilih tetap disimpan ke staging.</p></div>
+</section></section></main>
+<script>
+(() => {
+const URL="https://rjgeitbkpcyymgemcztx.supabase.co";
+const KEY="sb_publishable_1b6C4q5vgbX0XfP_EV5yjQ_Qk9Cq4lR";
+const client=window.supabase.createClient(URL,KEY);
+const $=id=>document.getElementById(id);
+const money=n=>"Rp"+new Intl.NumberFormat("id-ID").format(Number(n||0));
+function showStatus(s){$("status").textContent=s}
+function setSession(session){
+ const logged=!!session;
+ $("login").classList.toggle("hidden",logged);
+ $("work").classList.toggle("hidden",!logged);
+ if(logged)$("who").textContent="Login sebagai "+(session.user.email||"admin");
+}
+async function restore(){const {data}=await client.auth.getSession();setSession(data.session)}
+$("loginBtn").onclick=async()=>{
+ $("loginBtn").disabled=true;showStatus("Memeriksa akun admin...");
+ const {data,error}=await client.auth.signInWithPassword({email:$("email").value.trim(),password:$("password").value});
+ $("loginBtn").disabled=false;
+ if(error){showStatus("Login gagal: "+error.message);return}
+ if(data.user.email?.toLowerCase()!=="xpaybantuan@gmail.com"){await client.auth.signOut();showStatus("Akun ini bukan admin XPAYPOINT.");return}
+ setSession(data.session);showStatus("Login berhasil. Siap sinkronisasi.");
+};
+$("logoutBtn").onclick=async()=>{await client.auth.signOut();setSession(null);showStatus("Sudah keluar.")};
+$("syncBtn").onclick=async()=>{
+ $("syncBtn").disabled=true;$("results").classList.add("hidden");showStatus("Menghubungi API VIPAYMENT dan mengambil katalog ID + Global...");
+ try{
+  const {data,error}=await client.functions.invoke("vipayment-sync-regions");
+  if(error)throw error;
+  if(!data?.success)throw new Error(data?.error||"Sinkronisasi gagal.");
+  $("total").textContent=data.received;$("available").textContent=data.available;$("excluded").textContent=data.excluded_other_regions;
+  $("rows").innerHTML=(data.preview||[]).map(r=>"<tr><td>"+r.region+"</td><td>"+r.game+"</td><td>"+r.name+"</td><td>"+money(r.member_price)+"</td><td>"+money(r.sell_price)+"</td><td>"+r.status+"</td></tr>").join("");
+  $("results").classList.remove("hidden");
+  showStatus("BERHASIL — "+data.message+"\nTier: "+data.selected_price_tier+" ("+data.account_level+"). Produk kosong: "+data.empty+". Region lain dilewati: "+data.excluded_other_regions+".");
+ }catch(e){showStatus("GAGAL: "+(e.message||String(e))+"\nPastikan akun admin terverifikasi dan secrets VIPAYMENT tersedia di Supabase/Cloudflare.");}
+ finally{$("syncBtn").disabled=false}
+};
+restore();
+})();
+</script></body></html>
