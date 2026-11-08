@@ -14,23 +14,23 @@ html[data-theme="light"]{color-scheme:light;--bg:#f5f6fa;--surface:#fff;--surfac
 
 .chat-fab{position:fixed;right:20px;bottom:24px;z-index:65;border:0;border-radius:999px;padding:13px 17px;background:linear-gradient(120deg,var(--accent),#b92c4d);color:#fff;font-weight:800;font-size:12px;box-shadow:0 12px 32px #e9364c55;cursor:pointer;display:flex;align-items:center;gap:9px}
 .chat-fab .chat-spark{width:25px;height:25px;border-radius:50%;background:#ffffff24;display:grid;place-items:center;font-size:15px}
-.chat-panel{position:fixed;inset:0;z-index:9999;width:100vw;height:100vh;height:100dvh;max-width:none;max-height:none;background:var(--surface);border:0;border-radius:0;box-shadow:none;display:flex;flex-direction:column;overflow:hidden;padding-bottom:env(safe-area-inset-bottom)}
+.chat-panel{position:fixed;inset:0;z-index:99999;width:100%;height:100vh;height:100dvh;min-height:100%;max-width:none;max-height:none;background:var(--surface);border:0;border-radius:0;box-shadow:none;display:flex;flex-direction:column;overflow:hidden;overscroll-behavior:contain;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
 .chat-panel[hidden]{display:none}
-.chat-head{padding:15px 16px;background:linear-gradient(120deg,#241725,#171c2b);color:#fff;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.chat-head{flex:none;padding:15px 16px;background:linear-gradient(120deg,#241725,#171c2b);color:#fff;display:flex;align-items:center;justify-content:space-between;gap:10px}
 .chat-brand{display:flex;align-items:center;gap:10px}.chat-avatar{width:36px;height:36px;border-radius:12px;background:linear-gradient(145deg,#ff7180,#a92348);display:grid;place-items:center;font-weight:900}
 .chat-brand strong{display:block;font-size:12px}.chat-brand small{display:block;color:#c4c9d4;font-size:9px;margin-top:2px}
 .chat-close{border:1px solid #ffffff30;background:#ffffff12;color:white;border-radius:10px;width:32px;height:32px;font-size:18px;cursor:pointer}
-.chat-messages{padding:14px;display:flex;flex-direction:column;gap:10px;overflow:auto;flex:1;background:var(--bg)}
+.chat-messages{min-height:0;padding:14px;display:flex;flex-direction:column;gap:10px;overflow:auto;flex:1;background:var(--bg)}
 .chat-bubble{max-width:88%;padding:10px 12px;border-radius:14px;font-size:11px;line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere}
 .chat-bubble.bot{align-self:flex-start;background:var(--surface2);color:var(--text);border-bottom-left-radius:5px}
 .chat-bubble.user{align-self:flex-end;background:var(--accent);color:white;border-bottom-right-radius:5px}
 .chat-typing{color:var(--muted);font-size:10px;padding:0 14px 8px}
-.chat-compose{padding:10px;border-top:1px solid var(--line);display:flex;gap:8px;background:var(--surface)}
+.chat-compose{flex:none;padding:10px;border-top:1px solid var(--line);display:flex;gap:8px;background:var(--surface)}
 .chat-compose textarea{flex:1;min-width:0;resize:none;max-height:90px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--text);padding:10px;font:500 11px Manrope, sans-serif;outline:none}
 .chat-compose textarea:focus{border-color:var(--accent)}
 .chat-send{width:42px;flex:none;border:0;border-radius:12px;background:var(--accent);color:white;font-size:17px;font-weight:900;cursor:pointer}
 .chat-send:disabled{opacity:.45;cursor:not-allowed}
-@media(max-width:620px){.chat-fab{right:14px;bottom:78px;padding:11px 13px}.chat-panel{right:8px;bottom:132px;width:calc(100vw - 16px);height:min(520px,calc(100dvh - 155px))}}
+@media(max-width:620px){.chat-fab{right:14px;bottom:78px;padding:11px 13px}.chat-panel{inset:0;width:100%;height:100vh;height:100dvh;border-radius:0}}
 </style>
 </head>
 <body>
@@ -70,7 +70,7 @@ html[data-theme="light"]{color-scheme:light;--bg:#f5f6fa;--surface:#fff;--surfac
 </div></footer>
 <nav class="bottomnav"><a class="active" href="#"><span>⌂</span><span>Beranda</span></a><a href="#games"><span>🎮</span><span>Games</span></a><a href="#voucher"><span>🎟</span><span>Voucher</span></a><a href="#games"><span>▤</span><span>Transaksi</span></a><a href="#footer" id="mobileProfile"><span>☻</span><span>Profil</span></a></nav>
 <div class="toast" id="toast" hidden></div>
-<div class="chat-panel" id="chatPanel" hidden>
+<div class="chat-panel" id="chatPanel" role="dialog" aria-modal="true" aria-label="Asisten virtual XPAYPOINT" hidden>
   <div class="chat-head">
     <div class="chat-brand"><span class="chat-avatar">X</span><span><strong>XPAYPOINT AI</strong><small>Asisten virtual • xpaypoint</small></span></div>
     <button class="chat-close" id="chatClose" aria-label="Tutup chat">×</button>
@@ -127,12 +127,19 @@ async function loadChat(){
   if(!chatMessages.length)chatMessages=[{role:"assistant",content:"Halo! Aku XPAYPOINT AI. Mau tanya harga game, cara top up, XPAYCOIN, atau bantuan pesanan? 😊"}];
   renderChat();
 }
+let chatPreviousOverflow="";
 function openChat(){
+  chatPreviousOverflow=document.body.style.overflow;
   $("chatPanel").hidden=false;$("chatToggle").hidden=true;$("chatToggle").setAttribute("aria-expanded","true");
   document.body.style.overflow="hidden";
   loadChat();setTimeout(()=>$("chatInput").focus(),80);
 }
-function closeChat(){$("chatPanel").hidden=true;$("chatToggle").hidden=false;$("chatToggle").setAttribute("aria-expanded","false");document.body.style.overflow=""}
+function closeChat(){
+  $("chatPanel").hidden=true;$("chatToggle").hidden=false;$("chatToggle").setAttribute("aria-expanded","false");
+  document.body.style.overflow=chatPreviousOverflow;
+  $("chatToggle").focus();
+}
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("chatPanel").hidden)closeChat()});
 $("chatToggle").addEventListener("click",()=>{$("chatPanel").hidden?openChat():closeChat()});
 $("chatClose").addEventListener("click",closeChat);
 $("chatForm").addEventListener("submit",async e=>{
