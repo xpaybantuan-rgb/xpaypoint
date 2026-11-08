@@ -14,7 +14,7 @@ html[data-theme="light"]{color-scheme:light;--bg:#f5f6fa;--surface:#fff;--surfac
 
 .chat-fab{position:fixed;right:20px;bottom:24px;z-index:65;border:0;border-radius:999px;padding:13px 17px;background:linear-gradient(120deg,var(--accent),#b92c4d);color:#fff;font-weight:800;font-size:12px;box-shadow:0 12px 32px #e9364c55;cursor:pointer;display:flex;align-items:center;gap:9px}
 .chat-fab .chat-spark{width:25px;height:25px;border-radius:50%;background:#ffffff24;display:grid;place-items:center;font-size:15px}
-.chat-panel{position:fixed;right:20px;bottom:82px;z-index:64;width:min(380px,calc(100vw - 28px));height:min(560px,calc(100dvh - 120px));background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:0 24px 70px #0007;display:flex;flex-direction:column;overflow:hidden}
+.chat-panel{position:fixed;inset:0;z-index:9999;width:100vw;height:100vh;height:100dvh;max-width:none;max-height:none;background:var(--surface);border:0;border-radius:0;box-shadow:none;display:flex;flex-direction:column;overflow:hidden;padding-bottom:env(safe-area-inset-bottom)}
 .chat-panel[hidden]{display:none}
 .chat-head{padding:15px 16px;background:linear-gradient(120deg,#241725,#171c2b);color:#fff;display:flex;align-items:center;justify-content:space-between;gap:10px}
 .chat-brand{display:flex;align-items:center;gap:10px}.chat-avatar{width:36px;height:36px;border-radius:12px;background:linear-gradient(145deg,#ff7180,#a92348);display:grid;place-items:center;font-weight:900}
@@ -72,7 +72,7 @@ html[data-theme="light"]{color-scheme:light;--bg:#f5f6fa;--surface:#fff;--surfac
 <div class="toast" id="toast" hidden></div>
 <div class="chat-panel" id="chatPanel" hidden>
   <div class="chat-head">
-    <div class="chat-brand"><span class="chat-avatar">X</span><span><strong>XPAYPOINT AI</strong><small>Asisten virtual · Gemini AI</small></span></div>
+    <div class="chat-brand"><span class="chat-avatar">X</span><span><strong>XPAYPOINT AI</strong><small>Asisten virtual • xpaypoint</small></span></div>
     <button class="chat-close" id="chatClose" aria-label="Tutup chat">×</button>
   </div>
   <div class="chat-messages" id="chatMessages" aria-live="polite"></div>
@@ -128,10 +128,11 @@ async function loadChat(){
   renderChat();
 }
 function openChat(){
-  $("chatPanel").hidden=false;$("chatToggle").setAttribute("aria-expanded","true");
+  $("chatPanel").hidden=false;$("chatToggle").hidden=true;$("chatToggle").setAttribute("aria-expanded","true");
+  document.body.style.overflow="hidden";
   loadChat();setTimeout(()=>$("chatInput").focus(),80);
 }
-function closeChat(){$("chatPanel").hidden=true;$("chatToggle").setAttribute("aria-expanded","false")}
+function closeChat(){$("chatPanel").hidden=true;$("chatToggle").hidden=false;$("chatToggle").setAttribute("aria-expanded","false");document.body.style.overflow=""}
 $("chatToggle").addEventListener("click",()=>{$("chatPanel").hidden?openChat():closeChat()});
 $("chatClose").addEventListener("click",closeChat);
 $("chatForm").addEventListener("submit",async e=>{
