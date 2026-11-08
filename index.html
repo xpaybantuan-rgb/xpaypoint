@@ -14,7 +14,7 @@ html[data-theme="light"]{color-scheme:light;--bg:#f7f8fc;--surface:#fff;--surfac
 
 .chat-fab{position:fixed;right:20px;bottom:24px;z-index:65;border:0;border-radius:999px;padding:13px 17px;background:linear-gradient(120deg,var(--accent),#b92c4d);color:#fff;font-weight:800;font-size:12px;box-shadow:0 12px 32px #e9364c55;cursor:pointer;display:flex;align-items:center;gap:9px}
 .chat-fab .chat-spark{width:25px;height:25px;border-radius:50%;background:#ffffff24;display:grid;place-items:center;font-size:15px}
-.chat-panel{position:fixed;inset:0;z-index:99999;width:100%;height:100vh;height:100dvh;min-height:0;max-width:none;max-height:none;background:var(--surface);border:0;border-radius:0;box-shadow:none;display:flex;flex-direction:column;overflow:hidden;overscroll-behavior:contain;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+.chat-footer{flex:0 0 auto;text-align:center;padding:7px 12px calc(7px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:#fff;color:var(--muted);font-size:9px}.chat-panel{position:fixed;inset:0;z-index:99999;width:100%;height:100vh;height:100dvh;min-height:0;max-width:none;max-height:none;background:var(--surface);border:0;border-radius:0;box-shadow:none;display:flex;flex-direction:column;overflow:hidden;overscroll-behavior:contain;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
 /* Keep the chat chrome pinned when Android opens its keyboard */
 .chat-panel.keyboard-aware{inset:auto 0 auto 0;top:var(--chat-vv-top,0px);height:var(--chat-vv-height,100dvh);}
 .chat-head,.chat-toolbar,.chat-compose{flex:0 0 auto;position:relative;z-index:2}
@@ -116,10 +116,12 @@ html[data-theme="light"]{color-scheme:light;--bg:#f7f8fc;--surface:#fff;--surfac
     <textarea id="chatInput" rows="1" maxlength="2500" placeholder="Tulis pertanyaanmu…" aria-label="Pesan untuk XPAYPOINT AI"></textarea>
     <button class="chat-send" id="chatSend" type="submit" aria-label="Kirim pesan">➤</button>
   </form>
+  <div class="chat-footer">© <span id="chatYear"></span> XPAYPOINT · Asisten virtual</div>
 </div>
 <button class="chat-fab" id="chatToggle" aria-expanded="false"><span class="chat-spark">✦</span> Tanya XP AI</button>
 
 <script>
+document.getElementById("chatYear").textContent=new Date().getFullYear();
 const SUPABASE_URL="https://rjgeitbkpcyymgemcztx.supabase.co";
 const SUPABASE_KEY="sb_publishable_1b6C4q5vgbX0XfP_EV5yjQ_Qk9Cq4lR";
 const money=n=>new Intl.NumberFormat("id-ID",{style:"currency",currency:"IDR",maximumFractionDigits:0}).format(Number(n||0));
