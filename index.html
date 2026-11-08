@@ -16,6 +16,19 @@ html[data-theme="light"]{color-scheme:light;--bg:#f5f6fa;--surface:#fff;--surfac
 .chat-fab .chat-spark{width:25px;height:25px;border-radius:50%;background:#ffffff24;display:grid;place-items:center;font-size:15px}
 .chat-panel{position:fixed;inset:0;z-index:99999;width:100%;height:100vh;height:100dvh;min-height:100%;max-width:none;max-height:none;background:var(--surface);border:0;border-radius:0;box-shadow:none;display:flex;flex-direction:column;overflow:hidden;overscroll-behavior:contain;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
 .chat-panel[hidden]{display:none}
+
+.chat-toolbar{flex:none;display:flex;gap:8px;padding:9px 12px;background:var(--surface);border-bottom:1px solid var(--line)}
+.chat-tool-btn{border:1px solid var(--line);background:var(--surface2);color:var(--text);border-radius:10px;padding:9px 12px;font:700 11px Manrope,sans-serif;cursor:pointer}
+.chat-tool-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.chat-history-panel{position:absolute;inset:0;z-index:8;background:var(--surface);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+.chat-history-panel[hidden]{display:none}
+.chat-history-head{flex:none;display:flex;align-items:center;justify-content:space-between;padding:16px;border-bottom:1px solid var(--line);font-weight:800;color:var(--text)}
+.chat-history-list{overflow:auto;min-height:0;flex:1;padding:12px;display:flex;flex-direction:column;gap:8px}
+.chat-history-item{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--surface2);border-radius:12px;padding:10px}
+.chat-history-open{flex:1;min-width:0;text-align:left;border:0;background:transparent;color:var(--text);font:700 11px Manrope,sans-serif;cursor:pointer;overflow-wrap:anywhere}
+.chat-history-open small{display:block;color:var(--muted);font-weight:500;margin-top:5px}
+.chat-history-delete{flex:none;border:1px solid #e04455;background:transparent;color:#f06b79;border-radius:9px;padding:8px;font-size:11px;cursor:pointer}
+.chat-history-empty{padding:24px 12px;color:var(--muted);font-size:12px;text-align:center}
 .chat-head{flex:none;padding:15px 16px;background:linear-gradient(120deg,#241725,#171c2b);color:#fff;display:flex;align-items:center;justify-content:space-between;gap:10px}
 .chat-brand{display:flex;align-items:center;gap:10px}.chat-avatar{width:36px;height:36px;border-radius:12px;background:linear-gradient(145deg,#ff7180,#a92348);display:grid;place-items:center;font-weight:900}
 .chat-brand strong{display:block;font-size:12px}.chat-brand small{display:block;color:#c4c9d4;font-size:9px;margin-top:2px}
@@ -75,6 +88,14 @@ html[data-theme="light"]{color-scheme:light;--bg:#f5f6fa;--surface:#fff;--surfac
     <div class="chat-brand"><span class="chat-avatar">X</span><span><strong>XPAYPOINT AI</strong><small>Asisten virtual • xpaypoint</small></span></div>
     <button class="chat-close" id="chatClose" aria-label="Tutup chat">×</button>
   </div>
+  <div class="chat-toolbar">
+    <button class="chat-tool-btn primary" id="chatNew">＋ Chat baru</button>
+    <button class="chat-tool-btn" id="chatHistoryOpen">◷ Riwayat chat</button>
+  </div>
+  <div class="chat-history-panel" id="chatHistoryPanel" hidden>
+    <div class="chat-history-head"><span>Riwayat percakapan</span><button class="chat-close" id="chatHistoryClose" aria-label="Tutup riwayat">×</button></div>
+    <div class="chat-history-list" id="chatHistoryList"></div>
+  </div>
   <div class="chat-messages" id="chatMessages" aria-live="polite"></div>
   <div class="chat-typing" id="chatTyping" hidden>XPAYPOINT AI sedang mengetik…</div>
   <form class="chat-compose" id="chatForm">
@@ -105,7 +126,8 @@ $("loginBtn").addEventListener("click",()=>notify("Login member sedang disiapkan
 const CHAT_ENDPOINT=SUPABASE_URL+"/functions/v1/ai-chat";
 let chatDeviceId=localStorage.getItem("xp-chat-device");
 if(!chatDeviceId){chatDeviceId=crypto.randomUUID();localStorage.setItem("xp-chat-device",chatDeviceId)}
-let chatMessages=[],chatLoaded=false,chatBusy=false;
+let chatMessages=[],chatLoaded=false,chatBusy=false,chatConversationId=localStorage.getItem("xp-chat-conversation")||"";
+const CHAT_GREETING="Halo! Aku XPAYPOINT AI. Mau tanya harga game, cara top up, XPAYCOIN, atau bantuan pesanan? 😊";
 function renderChat(){
   const box=$("chatMessages");
   box.innerHTML=chatMessages.map(m=>'<div class="chat-bubble '+(m.role==="user"?"user":"bot")+'">'+safe(m.content)+'</div>').join("");
@@ -117,15 +139,52 @@ async function chatCall(payload){
   if(!response.ok)throw new Error(data.error||"Chat sedang tidak tersedia.");
   return data;
 }
+function setChatConversation(id){
+  chatConversationId=id||"";
+  if(chatConversationId)localStorage.setItem("xp-chat-conversation",chatConversationId);
+  else localStorage.removeItem("xp-chat-conversation");
+}
+async function loadConversation(id){
+  const data=await chatCall({action:"history",conversationId:id||undefined});
+  setChatConversation(data.conversationId);
+  chatMessages=(data.messages||[]).map(m=>({role:m.role,content:m.message}));
+  if(!chatMessages.length)chatMessages=[{role:"assistant",content:CHAT_GREETING}];
+  chatLoaded=true;renderChat();
+}
 async function loadChat(){
   if(chatLoaded)return;
-  chatLoaded=true;
+  try{await loadConversation(chatConversationId||undefined)}
+  catch(e){chatMessages=[{role:"assistant",content:CHAT_GREETING}];renderChat();notify(e.message||"Riwayat chat belum dapat dimuat.")}
+}
+async function createNewChat(){
+  if(chatBusy)return;
   try{
-    const data=await chatCall({action:"history"});
-    chatMessages=(data.messages||[]).map(m=>({role:m.role,content:m.message}));
-  }catch(e){chatMessages=[]}
-  if(!chatMessages.length)chatMessages=[{role:"assistant",content:"Halo! Aku XPAYPOINT AI. Mau tanya harga game, cara top up, XPAYCOIN, atau bantuan pesanan? 😊"}];
-  renderChat();
+    const data=await chatCall({action:"create_conversation"});
+    setChatConversation(data.conversation.id);
+    chatMessages=[{role:"assistant",content:CHAT_GREETING}];
+    chatLoaded=true;renderChat();$("chatInput").value="";
+    $("chatHistoryPanel").hidden=true;
+  }catch(e){notify(e.message||"Chat baru gagal dibuat.")}
+}
+async function loadChatHistory(){
+  const list=$("chatHistoryList");
+  list.innerHTML='<div class="chat-history-empty">Memuat riwayat…</div>';
+  try{
+    const data=await chatCall({action:"list_conversations"});
+    const items=data.conversations||[];
+    if(!items.length){list.innerHTML='<div class="chat-history-empty">Belum ada riwayat percakapan.</div>';return}
+    list.innerHTML=items.map(c=>'<div class="chat-history-item"><button class="chat-history-open" data-open-chat="'+safe(c.id)+'">'+safe(c.title||"Percakapan baru")+'<small>'+new Date(c.updated_at).toLocaleString("id-ID",{dateStyle:"medium",timeStyle:"short"})+'</small></button><button class="chat-history-delete" data-delete-chat="'+safe(c.id)+'" aria-label="Hapus percakapan">Hapus</button></div>').join("");
+  }catch(e){list.innerHTML='<div class="chat-history-empty">'+safe(e.message||"Riwayat gagal dimuat.")+'</div>'}
+}
+async function deleteChat(id){
+  if(chatBusy||!confirm("Hapus percakapan ini beserta seluruh pesannya?"))return;
+  try{
+    await chatCall({action:"delete_conversation",conversationId:id});
+    if(chatConversationId===id){setChatConversation("");chatLoaded=false;chatMessages=[]}
+    await loadChatHistory();
+    if(!chatConversationId){const data=await chatCall({action:"list_conversations"});const next=data.conversations?.[0];if(next)await loadConversation(next.id);else await createNewChat()}
+    notify("Percakapan berhasil dihapus.");
+  }catch(e){notify(e.message||"Percakapan gagal dihapus.")}
 }
 let chatPreviousOverflow="";
 function openChat(){
@@ -136,19 +195,29 @@ function openChat(){
 }
 function closeChat(){
   $("chatPanel").hidden=true;$("chatToggle").hidden=false;$("chatToggle").setAttribute("aria-expanded","false");
-  document.body.style.overflow=chatPreviousOverflow;
+  $("chatHistoryPanel").hidden=true;document.body.style.overflow=chatPreviousOverflow;
   $("chatToggle").focus();
 }
-document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("chatPanel").hidden)closeChat()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("chatPanel").hidden){if(!$("chatHistoryPanel").hidden)$("chatHistoryPanel").hidden=true;else closeChat()}});
 $("chatToggle").addEventListener("click",()=>{$("chatPanel").hidden?openChat():closeChat()});
 $("chatClose").addEventListener("click",closeChat);
+$("chatNew").addEventListener("click",createNewChat);
+$("chatHistoryOpen").addEventListener("click",()=>{$("chatHistoryPanel").hidden=false;loadChatHistory()});
+$("chatHistoryClose").addEventListener("click",()=>{$("chatHistoryPanel").hidden=true});
+$("chatHistoryList").addEventListener("click",async e=>{
+  const open=e.target.closest("[data-open-chat]");
+  const del=e.target.closest("[data-delete-chat]");
+  if(open){try{await loadConversation(open.dataset.openChat);$("chatHistoryPanel").hidden=true;$("chatInput").focus()}catch(err){notify(err.message||"Chat gagal dibuka.")}}
+  if(del)deleteChat(del.dataset.deleteChat);
+});
 $("chatForm").addEventListener("submit",async e=>{
   e.preventDefault();if(chatBusy)return;
   const text=$("chatInput").value.trim();if(!text)return;
   chatMessages.push({role:"user",content:text});$("chatInput").value="";renderChat();
   chatBusy=true;$("chatSend").disabled=true;$("chatTyping").hidden=false;
   try{
-    const data=await chatCall({messages:chatMessages.slice(-8).map(m=>({role:m.role,content:m.content}))});
+    const data=await chatCall({conversationId:chatConversationId,messages:chatMessages.slice(-8).map(m=>({role:m.role,content:m.content}))});
+    if(data.conversationId)setChatConversation(data.conversationId);
     chatMessages.push({role:"assistant",content:data.reply||"Maaf, aku belum bisa menjawab sekarang."});
   }catch(err){chatMessages.push({role:"assistant",content:err.message||"Koneksi sedang terganggu. Coba lagi sebentar ya."})}
   finally{chatBusy=false;$("chatSend").disabled=false;$("chatTyping").hidden=true;renderChat();$("chatInput").focus()}
