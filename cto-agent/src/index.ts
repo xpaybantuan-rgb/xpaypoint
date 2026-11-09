@@ -394,6 +394,7 @@ export class XPayPointCTOAgent extends Agent<Env, CTOState> {
           activeSession = polledSessionStatus === "in_progress" || polledSessionStatus === "requires_action";
         } else {
           polledSessionError = `Session status check returned HTTP ${sessionResponse.status}`;
+          activeSession = true;
         }
       }
       const reviewPRs = pulls.filter((pr) => Number(pr.review_comments ?? 0) > 0);
