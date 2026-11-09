@@ -44,7 +44,7 @@ Do not paste tokens or API keys into GitHub issues, PRs, chat, or source files. 
 ## Cost and cadence
 
 - No VPS is required. The Durable Object hibernates between scheduled work.
-- Monitoring runs every five minutes. AI coding sessions are event-driven and deduplicated by alert signature; the agent does not call the model on every heartbeat.
+- Monitoring runs every five minutes. AI coding sessions are event-driven and deduplicated by alert signature; the agent does not call the model on every heartbeat. Each managed coding session has a hard spend limit of USD $0.50.
 - Cloudflare Durable Objects have a Free allocation, but usage beyond included limits may require a paid Workers plan.
 - OpenAI Agents API model and hosted sandbox usage are billed separately at Platform API rates. A ChatGPT subscription does not include API credits.
 - This Worker is a development assistant, not a payment processor or storefront availability guarantee.
