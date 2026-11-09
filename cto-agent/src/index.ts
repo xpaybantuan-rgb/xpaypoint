@@ -78,7 +78,7 @@ function isAuthorized(request: Request, token?: string): boolean {
   return Boolean(token) && request.headers.get("Authorization") === `Bearer ${token}`;
 }
 
-function githubHeaders(env: Env): HeadersInit {
+function githubHeaders(env: Env): Record<string, string> {
   const headers: Record<string, string> = {
     Accept: "application/vnd.github+json",
     "X-GitHub-Api-Version": "2022-11-28",
@@ -122,7 +122,7 @@ function assertSafeBranch(branch: string): void {
 }
 
 function assertSafePath(path: string): void {
-  if (path.includes("\\\\") || path.split("/").some((part) => part === "." || part === "..")) {
+  if (path.includes("\\") || path.split("/").some((part) => part === "." || part === "..")) {
     throw new Error("Path traversal is not allowed.");
   }
   const normalized = path.replace(/^\.\//, "");
