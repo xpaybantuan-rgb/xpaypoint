@@ -101,7 +101,7 @@ async function githubRequest<T>(env: Env, path: string, init: RequestInit = {}):
 }
 
 function decodeBase64Utf8(value: string): string {
-  const binary = atob(value.replace(/\\n/g, ""));
+  const binary = atob(value.replace(/\n/g, ""));
   const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
   return new TextDecoder().decode(bytes);
 }
@@ -122,6 +122,9 @@ function assertSafeBranch(branch: string): void {
 }
 
 function assertSafePath(path: string): void {
+  if (path.includes("\\\\") || path.split("/").some((part) => part === "." || part === "..")) {
+    throw new Error("Path traversal is not allowed.");
+  }
   const normalized = path.replace(/^\.\//, "");
   const allowed =
     normalized === "README.md" ||
@@ -418,7 +421,11 @@ export class XPayPointCTOAgent extends Agent<Env, CTOState> {
         }
       }
 
-      nextState.lastAlertSignature = signature;
+      if (nextState.lastSessionId !== this.state.lastSessionId) {
+        nextState.lastAlertSignature = signature;
+      } else if (!signature) {
+        nextState.lastAlertSignature = null;
+      }
       this.setState(nextState);
     } catch (error) {
       this.setState({
@@ -500,7 +507,7 @@ export default {
 
     if (url.pathname === "/start" && request.method === "POST") {
       if (!isAuthorized(request, env.ADMIN_TOKEN)) return new Response("Unauthorized", { status: 401 });
-      const agentRequest = new Request(new URL("/agents/xpaypointctoagent/founder/status", url.origin), {
+      const agentRequest = new Request(new URL("/agents/xpaypointctoagent/founder", url.origin), {
         method: "GET",
         headers: request.headers,
       });
