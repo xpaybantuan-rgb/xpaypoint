@@ -24,6 +24,8 @@ interface CTOState {
   lastAlertSignature: string | null;
   lastSessionId: string | null;
   lastSessionAt: string | null;
+  lastSessionStatus: "idle" | "in_progress" | "requires_action" | "failed" | "unknown" | null;
+  lastSessionError: string | null;
   lastError: string | null;
   mcpServerUrl: string | null;
 }
@@ -36,6 +38,8 @@ const initialState: CTOState = {
   lastAlertSignature: null,
   lastSessionId: null,
   lastSessionAt: null,
+  lastSessionStatus: null,
+  lastSessionError: null,
   lastError: null,
   mcpServerUrl: null,
 };
@@ -375,6 +379,23 @@ export class XPayPointCTOAgent extends Agent<Env, CTOState> {
         githubRequest<any>(this.env, "/actions/runs?per_page=5"),
       ]);
       const latestRun = runs.workflow_runs?.[0];
+      let polledSessionStatus = this.state.lastSessionStatus;
+      let polledSessionError = this.state.lastSessionError;
+      let activeSession = false;
+      if (this.state.lastSessionId && this.env.OPENAI_API_KEY) {
+        const sessionResponse = await fetch(
+          `https://api.openai.com/v1/agents/sessions/${encodeURIComponent(this.state.lastSessionId)}`,
+          { headers: { Authorization: `Bearer ${this.env.OPENAI_API_KEY}`, "OpenAI-Beta": "agents=v1" } },
+        );
+        if (sessionResponse.ok) {
+          const session = await sessionResponse.json() as any;
+          polledSessionStatus = session.status ?? "unknown";
+          polledSessionError = session.error ?? null;
+          activeSession = polledSessionStatus === "in_progress" || polledSessionStatus === "requires_action";
+        } else {
+          polledSessionError = `Session status check returned HTTP ${sessionResponse.status}`;
+        }
+      }
       const reviewPRs = pulls.filter((pr) => Number(pr.review_comments ?? 0) > 0);
       const failedRun = latestRun?.conclusion === "failure";
       const alert = !siteHealthy || failedRun || reviewPRs.length > 0;
@@ -392,10 +413,12 @@ export class XPayPointCTOAgent extends Agent<Env, CTOState> {
         siteStatus: siteHealthy ? "healthy" : "unhealthy",
         latestWorkflow: latestRun ? `${latestRun.name ?? "workflow"}: ${latestRun.status}/${latestRun.conclusion ?? "pending"}` : "no workflow runs found",
         openPullRequests: pulls.length,
+        lastSessionStatus: polledSessionStatus,
+        lastSessionError: polledSessionError,
         lastError: null,
       };
 
-      if (signature && signature !== this.state.lastAlertSignature) {
+      if (signature && signature !== this.state.lastAlertSignature && !activeSession) {
         if (
           this.env.AUTOPILOT_ENABLED === "true" &&
           this.env.OPENAI_API_KEY &&
@@ -416,6 +439,8 @@ export class XPayPointCTOAgent extends Agent<Env, CTOState> {
           });
           nextState.lastSessionId = session.id;
           nextState.lastSessionAt = checkedAt;
+          nextState.lastSessionStatus = session.status as CTOState["lastSessionStatus"];
+          nextState.lastSessionError = null;
         } else {
           nextState.lastError = "Autopilot belum diaktifkan atau kredensial runtime belum lengkap.";
         }
@@ -440,7 +465,7 @@ export class XPayPointCTOAgent extends Agent<Env, CTOState> {
     siteHealthy: boolean;
     latestRun: any;
     reviewPRs: Array<{ number: number; title: string; head: string; reviewComments: number; url: string }>;
-  }): Promise<{ id: string }> {
+  }): Promise<{ id: string; status: string }> {
     const response = await fetch("https://api.openai.com/v1/agents/sessions", {
       method: "POST",
       headers: {
@@ -472,6 +497,7 @@ export class XPayPointCTOAgent extends Agent<Env, CTOState> {
           "Read relevant review feedback and repository files. If a safe fix is appropriate, create an autopilot/* branch, commit only permitted files, run tests in your sandbox when possible, and open a PR to main. If the problem involves protected payment, wallet, database, credential, or deployment areas, do not edit it; report that Founder approval is required.",
           "Do not merge or deploy.",
         ].join("\n\n"),
+        spend_control: { limit: 50 },
         stream: false,
       }),
     });
@@ -482,7 +508,7 @@ export class XPayPointCTOAgent extends Agent<Env, CTOState> {
     const result = await response.json() as any;
     const id = result.session_id ?? result.id;
     if (!id || typeof id !== "string") throw new Error("OpenAI Agents API did not return a session ID.");
-    return { id };
+    return { id, status: result.status ?? "unknown" };
   }
 }
 
