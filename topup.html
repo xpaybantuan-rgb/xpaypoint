@@ -3,8 +3,24 @@
 (function () {
   var pending = [];
   function remember(error) {
-    if (!error) return;
-    pending.push(error instanceof Error ? error : new Error(String(error)));
+    if (error instanceof Error) {
+      pending.push(error);
+    } else {
+      var message;
+      if (typeof error === "string") {
+        message = error;
+      } else {
+        try {
+          message = JSON.stringify(error);
+        } catch (_) {
+          message = "Non-Error rejection (unserializable value)";
+        }
+        if (typeof message !== "string") {
+          message = error === undefined ? "Non-Error rejection (undefined)" : String(error);
+        }
+      }
+      pending.push(new Error(message));
+    }
     if (pending.length > 20) pending.shift();
   }
   function onError(event) {
