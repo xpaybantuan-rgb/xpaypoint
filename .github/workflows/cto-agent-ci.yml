@@ -6,10 +6,8 @@ on:
       - "cto-agent/**"
       - ".github/workflows/cto-agent-ci.yml"
   push:
-    branches:
-      - "feature/xpaypoint-autonomous-cto-agent"
-    paths:
-      - "cto-agent/**"
+    branches: ["main", "autopilot/**"]
+    paths: ["cto-agent/**"]
 
 permissions:
   contents: read
@@ -25,7 +23,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Install dependencies
-        run: npm install --no-audit --no-fund
-      - name: TypeScript check
-        run: npm run check
+      - run: npm install --no-audit --no-fund
+      - run: npm run check

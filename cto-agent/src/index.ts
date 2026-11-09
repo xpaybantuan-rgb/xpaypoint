@@ -1,591 +1,127 @@
 import { Agent, routeAgentRequest } from "agents";
-import { McpServer } from "@modelcontextprotocol/server";
-import { createMcpHandler } from "agents/mcp/server";
-import { z } from "zod";
-
 interface Env {
-  XPayPointCTOAgent: DurableObjectNamespace;
-  REPO_OWNER: string;
-  REPO_NAME: string;
-  SITE_URL: string;
-  AUTOPILOT_ENABLED: string;
-  OPENAI_AGENT_MODEL?: string;
-  OPENAI_API_KEY?: string;
-  GITHUB_TOKEN?: string;
-  MCP_AUTH_TOKEN?: string;
-  ADMIN_TOKEN?: string;
+  XPayPointCTOAgent: DurableObjectNamespace; REPO_OWNER: string; REPO_NAME: string;
+  SITE_URL: string; AUTOPILOT_ENABLED: string; GEMINI_API_KEY?: string;
+  GEMINI_MODEL?: string; GITHUB_TOKEN?: string; ADMIN_TOKEN?: string;
 }
-
-interface CTOState {
-  lastCheckAt: string | null;
-  siteStatus: "healthy" | "unhealthy" | "unknown";
-  latestWorkflow: string | null;
-  openPullRequests: number;
-  lastAlertSignature: string | null;
-  lastSessionId: string | null;
-  lastSessionAt: string | null;
-  lastSessionStatus: "idle" | "in_progress" | "requires_action" | "failed" | "unknown" | null;
-  lastSessionError: string | null;
-  lastError: string | null;
-  mcpServerUrl: string | null;
+interface State {
+  lastCheckAt:string|null; siteStatus:"healthy"|"unhealthy"|"unknown"; latestWorkflow:string|null;
+  openPullRequests:number; lastAlertSignature:string|null; lastAuditAt:string|null;
+  lastAgentRunAt:string|null; lastAgentRunStatus:"success"|"failed"|null;
+  lastAgentRunSummary:string|null; lastError:string|null;
 }
-
-const initialState: CTOState = {
-  lastCheckAt: null,
-  siteStatus: "unknown",
-  latestWorkflow: null,
-  openPullRequests: 0,
-  lastAlertSignature: null,
-  lastSessionId: null,
-  lastSessionAt: null,
-  lastSessionStatus: null,
-  lastSessionError: null,
-  lastError: null,
-  mcpServerUrl: null,
-};
-
-const CTO_INSTRUCTIONS = `
-You are XPAYPOINT's autonomous CTO coding agent, operating under Founder-authorized Level 2 governance.
-
-Allowed:
-- Read the public XPAYPOINT repository and inspect open pull requests, review feedback, and CI.
-- Diagnose issues, edit permitted files on branches named autopilot/<short-slug>, run relevant tests in your sandbox, and open pull requests targeting main.
-- Report actual test results and any unavailable checks.
-
-Never:
-- Merge, deploy, release, rollback, or write to main.
-- Change production databases, Supabase schema or records, payment providers/configuration, payment/checkout/fulfillment flows, customer transactions, balances, wallets, XPAYCOIN, deposits, withdrawals, cashback, rewards, ledgers, or refunds.
-- Change secrets, credentials, GitHub/Cloudflare settings, Worker bindings, or deployment configuration.
-- Modify protected customer/payment pages. The MCP server enforces file-path restrictions; do not attempt to bypass them.
-- Claim a test passed unless you ran it and observed the result. Never include secrets in code, output, comments, or PRs.
-
-Use only the supplied XPAYPOINT MCP tools for repository writes. The available tools deliberately do not include merge, deployment, secrets, database, or payment operations. If a task touches a protected area, stop and report that Founder approval is required. Keep changes narrow, explain risks, and open a PR for Founder review.
-`.trim();
-
-const ALLOWED_MCP_TOOLS = [
-  "get_repository_snapshot",
-  "read_repository_file",
-  "read_pull_request_feedback",
-  "create_development_branch",
-  "commit_safe_files",
-  "open_pull_request",
-];
-
-function json(data: unknown, status = 200): Response {
-  return Response.json(data, {
-    status,
-    headers: { "cache-control": "no-store" },
-  });
+const initialState:State={lastCheckAt:null,siteStatus:"unknown",latestWorkflow:null,openPullRequests:0,lastAlertSignature:null,lastAuditAt:null,lastAgentRunAt:null,lastAgentRunStatus:null,lastAgentRunSummary:null,lastError:null};
+const instructions=[
+"You are XPAYPOINT's autonomous CTO coding agent under Founder-authorized Level 2 governance.",
+"Inspect repository, PRs, review feedback and CI. You may create autopilot/* branches, commit narrow fixes to allowed files, and open PRs targeting main.",
+"Never merge, deploy, release, rollback, write to main, or change production databases, Supabase schema/records, payment/checkout/fulfillment, customer transactions, balances, wallets, XPAYCOIN, deposits, withdrawals, cashback, rewards, ledgers, refunds, secrets, credentials, GitHub/Cloudflare settings, Worker bindings, or deployment configuration.",
+"Server-side tools enforce branch and path restrictions. Never bypass them. Never request, reveal, or include secrets. Do not claim tests passed unless CI reports success.",
+"For protected work, stop and report Founder approval is required. Work on one narrow issue, avoid duplicate PRs, summarize findings and tests."
+].join("\n");
+function json(data:unknown,status=200){return Response.json(data,{status,headers:{"cache-control":"no-store"}});}
+function auth(req:Request,token?:string){return Boolean(token)&&req.headers.get("Authorization")==="Bearer "+token;}
+function branchGuard(b:string){if(!/^autopilot\/[a-z0-9][a-z0-9-]{2,60}$/.test(b))throw Error("Only autopilot branches can be written.");}
+function pathGuard(p:string){
+ if(p.includes("\\")||p.split("/").some(x=>x==="."||x===".."))throw Error("Path traversal blocked.");
+ const ok=p==="README.md"||p.startsWith("cto-agent/src/")||p.startsWith("cto-agent/tests/")||p.startsWith("hq/")||p.startsWith("docs/")||p.startsWith("governance/");
+ const bad=/(^|\/)(\.env|\.dev\.vars|secrets?)(\.|\/|$)/i.test(p)||/(^|\/)(index|topup|profil|cek-pesanan|admin-vipayment)\.html$/i.test(p)||/(^|\/)(supabase|database|migrations)(\/|$)/i.test(p)||p.startsWith(".github/")||p==="cto-agent/wrangler.jsonc"||p==="cto-agent/package.json"||p==="cto-agent/tsconfig.json";
+ if(!ok||bad)throw Error("Protected or unsupported path: "+p);
 }
-
-function isAuthorized(request: Request, token?: string): boolean {
-  return Boolean(token) && request.headers.get("Authorization") === `Bearer ${token}`;
+function ghHeaders(e:Env):Record<string,string>{const h:Record<string,string>={Accept:"application/vnd.github+json","X-GitHub-Api-Version":"2022-11-28","User-Agent":"XPAYPOINT-Autonomous-CTO"};if(e.GITHUB_TOKEN)h.Authorization="Bearer "+e.GITHUB_TOKEN;return h;}
+async function gh<T>(e:Env,p:string,init:RequestInit={}):Promise<T>{
+ const r=await fetch("https://api.github.com/repos/"+e.REPO_OWNER+"/"+e.REPO_NAME+p,{...init,headers:{...ghHeaders(e),...(init.headers as Record<string,string>|undefined)}});
+ if(!r.ok)throw Error("GitHub API "+r.status+": "+(await r.text()).slice(0,300));return r.json() as Promise<T>;
 }
-
-function githubHeaders(env: Env): Record<string, string> {
-  const headers: Record<string, string> = {
-    Accept: "application/vnd.github+json",
-    "X-GitHub-Api-Version": "2022-11-28",
-    "User-Agent": "XPAYPOINT-Autonomous-CTO",
-  };
-  if (env.GITHUB_TOKEN) headers.Authorization = `Bearer ${env.GITHUB_TOKEN}`;
-  return headers;
+function dec(v:string){const b=atob(v.replace(/\n/g,""));return new TextDecoder().decode(Uint8Array.from(b,c=>c.charCodeAt(0)));}
+function enc(v:string){const a=new TextEncoder().encode(v);let b="";for(let i=0;i<a.length;i+=0x8000)b+=String.fromCharCode(...a.subarray(i,i+0x8000));return btoa(b);}
+async function tool(e:Env,n:string,a:any):Promise<unknown>{
+ if(n==="get_repository_snapshot"){
+  const [repo,prs,runs]=await Promise.all([gh<any>(e,""),gh<any[]>(e,"/pulls?state=open&per_page=20"),gh<any>(e,"/actions/runs?per_page=10")]);
+  return {repository:repo.full_name,visibility:repo.visibility,openPRs:prs.map(p=>({number:p.number,title:p.title,head:p.head?.ref,reviewComments:p.review_comments,url:p.html_url})),runs:(runs.workflow_runs||[]).map((x:any)=>({name:x.name,status:x.status,conclusion:x.conclusion,url:x.html_url}))};
+ }
+ if(n==="read_repository_file"){
+  const p=String(a.path||""),ref=String(a.ref||"main");
+  if(ref!=="main"&&!/^autopilot\/[a-z0-9][a-z0-9-]{2,60}$/.test(ref)&&!/^feature\/[a-z0-9-]+$/.test(ref)&&!/^governance\/[a-z0-9-]+$/.test(ref))throw Error("Invalid ref.");
+  const f=await gh<any>(e,"/contents/"+p.split("/").map(encodeURIComponent).join("/")+"?ref="+encodeURIComponent(ref));
+  if(f.type!=="file"||typeof f.content!=="string")throw Error("Not a text file.");
+  return {path:p,ref,sha:f.sha,content:f.encoding==="base64"?dec(f.content):f.content};
+ }
+ if(n==="read_pull_request_feedback"){
+  const k=Number(a.number);if(!Number.isInteger(k)||k<1)throw Error("Invalid PR number.");
+  const [c,r]=await Promise.all([gh<any[]>(e,"/pulls/"+k+"/comments?per_page=100"),gh<any[]>(e,"/pulls/"+k+"/reviews?per_page=100")]);
+  return {comments:c.map(x=>({path:x.path,line:x.line,body:x.body,author:x.user?.login})),reviews:r.map(x=>({state:x.state,body:x.body,author:x.user?.login}))};
+ }
+ if(n==="create_development_branch"){
+  const b=String(a.name||"");branchGuard(b);const m=await gh<any>(e,"/git/ref/heads/main");
+  const r=await gh<any>(e,"/git/refs",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({ref:"refs/heads/"+b,sha:m.object.sha})});return {branch:r.ref,sha:r.object?.sha};
+ }
+ if(n==="commit_safe_files"){
+  const b=String(a.branch||"");branchGuard(b);if(!e.GITHUB_TOKEN)throw Error("GitHub token missing.");
+  if(!Array.isArray(a.files)||a.files.length<1||a.files.length>8)throw Error("Provide 1-8 files.");
+  const out=[];for(const f of a.files){const p=String(f.path||""),v=String(f.content||"");pathGuard(p);if(v.length>200000)throw Error("File too large.");
+   const q=p.split("/").map(encodeURIComponent).join("/");let sha:string|undefined;
+   try{sha=(await gh<any>(e,"/contents/"+q+"?ref="+encodeURIComponent(b))).sha;}catch(err){if(!String(err).includes("404"))throw err;}
+   const r=await gh<any>(e,"/contents/"+q,{method:"PUT",headers:{"content-type":"application/json"},body:JSON.stringify({message:String(a.message||"chore: XPAYPOINT autopilot update").slice(0,160),content:enc(v),branch:b,...(sha?{sha}:{})})});out.push({path:p,sha:r.commit?.sha});
+  }return {branch:b,commits:out};
+ }
+ if(n==="open_pull_request"){
+  const b=String(a.head||"");branchGuard(b);if(!e.GITHUB_TOKEN)throw Error("GitHub token missing.");
+  const r=await gh<any>(e,"/pulls",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({title:String(a.title||"XPAYPOINT autopilot fix").slice(0,120),head:b,base:"main",body:String(a.body||"").slice(0,9000)+"\n\nAutopilot safety: not merged or deployed. Founder review required."})});
+  return {number:r.number,url:r.html_url,state:r.state,merged:r.merged};
+ }
+ throw Error("Tool not allowed: "+n);
 }
-
-async function githubRequest<T>(env: Env, path: string, init: RequestInit = {}): Promise<T> {
-  const response = await fetch(`https://api.github.com/repos/${env.REPO_OWNER}/${env.REPO_NAME}${path}`, {
-    ...init,
-    headers: { ...githubHeaders(env), ...(init.headers as Record<string, string> | undefined) },
-  });
-  if (!response.ok) {
-    const detail = (await response.text()).slice(0, 500);
-    throw new Error(`GitHub API ${response.status}: ${detail}`);
-  }
-  return response.json() as Promise<T>;
+const tools=[{functionDeclarations:[
+ {name:"get_repository_snapshot",description:"Read repository, open PRs and CI runs.",parameters:{type:"OBJECT",properties:{}}},
+ {name:"read_repository_file",description:"Read text file from main or development branch.",parameters:{type:"OBJECT",properties:{path:{type:"STRING"},ref:{type:"STRING"}},required:["path"]}},
+ {name:"read_pull_request_feedback",description:"Read reviews and inline comments for PR.",parameters:{type:"OBJECT",properties:{number:{type:"INTEGER"}},required:["number"]}},
+ {name:"create_development_branch",description:"Create autopilot/<short-slug> from main.",parameters:{type:"OBJECT",properties:{name:{type:"STRING"}},required:["name"]}},
+ {name:"commit_safe_files",description:"Commit safe files to autopilot branch only.",parameters:{type:"OBJECT",properties:{branch:{type:"STRING"},message:{type:"STRING"},files:{type:"ARRAY",items:{type:"OBJECT",properties:{path:{type:"STRING"},content:{type:"STRING"}},required:["path","content"]}}},required:["branch","message","files"]}},
+ {name:"open_pull_request",description:"Open PR from autopilot branch to main, never merge.",parameters:{type:"OBJECT",properties:{head:{type:"STRING"},title:{type:"STRING"},body:{type:"STRING"}},required:["head","title","body"]}}
+]}];
+async function runGemini(e:Env,task:string):Promise<string>{
+ if(!e.GEMINI_API_KEY||!e.GITHUB_TOKEN)throw Error("GEMINI_API_KEY or GITHUB_TOKEN missing.");
+ const model=e.GEMINI_MODEL||"gemini-2.5-flash",url="https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(model)+":generateContent";
+ const contents:any[]=[{role:"user",parts:[{text:instructions+"\n\nTask:\n"+task}]}];
+ for(let i=0;i<12;i++){
+  const r=await fetch(url,{method:"POST",headers:{"content-type":"application/json","x-goog-api-key":e.GEMINI_API_KEY},body:JSON.stringify({contents,tools,toolConfig:{functionCallingConfig:{mode:"AUTO"}},generationConfig:{temperature:0.2,maxOutputTokens:8192}}),signal:AbortSignal.timeout(55000)});
+  if(!r.ok)throw Error("Gemini API "+r.status+": "+(await r.text()).slice(0,300));
+  const d=await r.json() as any,c=d.candidates?.[0]?.content;if(!c?.parts)throw Error("Gemini returned no candidate.");contents.push(c);
+  const calls=c.parts.filter((p:any)=>p.functionCall);if(!calls.length)return c.parts.filter((p:any)=>p.text).map((p:any)=>p.text).join("\n").slice(0,10000)||"Agent completed.";
+  const responses=[];for(const p of calls){try{responses.push({functionResponse:{name:p.functionCall.name,response:{result:await tool(e,p.functionCall.name,p.functionCall.args||{})}}});}catch(err){responses.push({functionResponse:{name:p.functionCall.name,response:{error:err instanceof Error?err.message:"Tool failed"}}});}}
+  contents.push({role:"user",parts:responses});
+ }throw Error("Gemini agent reached 12 tool calls.");
 }
-
-function decodeBase64Utf8(value: string): string {
-  const binary = atob(value.replace(/\n/g, ""));
-  const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
-  return new TextDecoder().decode(bytes);
+export class XPayPointCTOAgent extends Agent<Env,State>{
+ initialState=initialState;
+ async onStart():Promise<void>{
+  await this.scheduleEvery(300,"runCycle",{}, {retry:{maxAttempts:3,baseDelayMs:1000,maxDelayMs:15000}});
+  await this.schedule("0 2 * * *","runDailyAudit",{}, {idempotent:true,retry:{maxAttempts:2,baseDelayMs:5000,maxDelayMs:30000}});
+ }
+ async onRequest():Promise<Response>{await this.runCycle();return json({service:"XPAYPOINT Autonomous CTO",mode:"Level 2",intervalSeconds:300,state:this.state});}
+ async runDailyAudit():Promise<void>{
+  if(this.env.AUTOPILOT_ENABLED!=="true")return;
+  try{const s=await runGemini(this.env,"Daily audit: inspect open PRs, review feedback, CI, code health and docs. Fix one safe narrow issue if justified, then open a PR. Do not touch protected areas.");const now=new Date().toISOString();this.setState({...this.state,lastAuditAt:now,lastAgentRunAt:now,lastAgentRunStatus:"success",lastAgentRunSummary:s,lastError:null});}
+  catch(err){const now=new Date().toISOString();this.setState({...this.state,lastAuditAt:now,lastAgentRunAt:now,lastAgentRunStatus:"failed",lastError:err instanceof Error?err.message.slice(0,500):"Audit failed"});}
+ }
+ async runCycle():Promise<void>{
+  const now=new Date().toISOString();try{
+   const site=await fetch(this.env.SITE_URL,{redirect:"follow",signal:AbortSignal.timeout(10000)});
+   const [prs,runs]=await Promise.all([gh<any[]>(this.env,"/pulls?state=open&per_page=20"),gh<any>(this.env,"/actions/runs?per_page=5")]);
+   const latest=runs.workflow_runs?.[0],review=prs.filter(p=>Number(p.review_comments||0)>0),failed=latest?.conclusion==="failure";
+   const signature=(!site.ok||failed||review.length)?JSON.stringify({site:site.ok,run:latest?.id||null,prs:review.map(p=>[p.number,p.updated_at,p.review_comments])}):null;
+   const next:State={...this.state,lastCheckAt:now,siteStatus:site.ok?"healthy":"unhealthy",latestWorkflow:latest?String(latest.name||"workflow")+": "+latest.status+"/"+(latest.conclusion||"pending"):"no workflow runs",openPullRequests:prs.length,lastError:null};
+   if(signature&&signature!==this.state.lastAlertSignature&&this.env.AUTOPILOT_ENABLED==="true"){
+    const s=await runGemini(this.env,"Investigate alert. Site healthy: "+site.ok+". Latest workflow: "+JSON.stringify(latest||null)+". PRs with review comments: "+JSON.stringify(review.map(p=>({number:p.number,title:p.title,head:p.head?.ref,reviewComments:p.review_comments,url:p.html_url})) )+". Fix only safe Level 2 issues and open a PR. Report protected issues without editing.");
+    next.lastAgentRunAt=now;next.lastAgentRunStatus="success";next.lastAgentRunSummary=s;next.lastAlertSignature=signature;
+   }else if(!signature)next.lastAlertSignature=null;
+   this.setState(next);
+  }catch(err){this.setState({...this.state,lastCheckAt:now,lastError:err instanceof Error?err.message.slice(0,500):"Monitor failed"});}
+ }
 }
-
-function encodeBase64Utf8(value: string): string {
-  const bytes = new TextEncoder().encode(value);
-  let binary = "";
-  for (let offset = 0; offset < bytes.length; offset += 0x8000) {
-    binary += String.fromCharCode(...bytes.subarray(offset, offset + 0x8000));
-  }
-  return btoa(binary);
-}
-
-function assertSafeBranch(branch: string): void {
-  if (!/^autopilot\/[a-z0-9][a-z0-9-]{2,60}$/.test(branch)) {
-    throw new Error("Writes are allowed only on autopilot/<short-slug> branches.");
-  }
-}
-
-function assertSafePath(path: string): void {
-  if (path.includes("\\") || path.split("/").some((part) => part === "." || part === "..")) {
-    throw new Error("Path traversal is not allowed.");
-  }
-  const normalized = path.replace(/^\.\//, "");
-  const allowed =
-    normalized === "README.md" ||
-    normalized.startsWith("cto-agent/src/") ||
-    normalized.startsWith("cto-agent/tests/") ||
-    normalized.startsWith("hq/") ||
-    normalized.startsWith("docs/") ||
-    normalized.startsWith("governance/");
-  const blocked =
-    /(^|\/)(\.env|\.dev\.vars|secrets?)(\.|\/|$)/i.test(normalized) ||
-    /(^|\/)(index|topup|profil|cek-pesanan|admin-vipayment)\.html$/i.test(normalized) ||
-    /(^|\/)(supabase|database|migrations)(\/|$)/i.test(normalized) ||
-    normalized.startsWith(".github/workflows/") ||
-    normalized === "cto-agent/wrangler.jsonc" ||
-    normalized === "cto-agent/package.json" ||
-    normalized === "cto-agent/tsconfig.json";
-  if (!allowed || blocked) {
-    throw new Error(`Protected or unsupported path: ${normalized}`);
-  }
-}
-
-async function createMcpServer(env: Env): Promise<McpServer> {
-  const server = new McpServer({ name: "xpaypoint-level2-github", version: "1.0.0" });
-
-  server.registerTool(
-    "get_repository_snapshot",
-    {
-      description: "Read XPAYPOINT main repository metadata, open PR summaries, and latest GitHub Actions runs. Read-only.",
-      inputSchema: z.object({}),
-    },
-    async () => {
-      const [pulls, runs, repo] = await Promise.all([
-        githubRequest<any[]>(env, "/pulls?state=open&per_page=20"),
-        githubRequest<any>(env, "/actions/runs?per_page=10"),
-        githubRequest<any>(env, ""),
-      ]);
-      const result = {
-        repository: repo.full_name,
-        defaultBranch: repo.default_branch,
-        openPullRequests: pulls.map((pr) => ({
-          number: pr.number,
-          title: pr.title,
-          head: pr.head?.ref,
-          headSha: pr.head?.sha,
-          base: pr.base?.ref,
-          reviewComments: pr.review_comments,
-          comments: pr.comments,
-          updatedAt: pr.updated_at,
-          url: pr.html_url,
-        })),
-        workflowRuns: (runs.workflow_runs ?? []).map((run: any) => ({
-          id: run.id,
-          name: run.name,
-          branch: run.head_branch,
-          status: run.status,
-          conclusion: run.conclusion,
-          updatedAt: run.updated_at,
-          url: run.html_url,
-        })),
-      };
-      return { content: [{ type: "text", text: JSON.stringify(result) }] };
-    },
-  );
-
-  server.registerTool(
-    "read_repository_file",
-    {
-      description: "Read a repository file from main or a named development branch. Never returns secrets from runtime bindings.",
-      inputSchema: z.object({
-        path: z.string().min(1).max(240),
-        ref: z.string().default("main"),
-      }),
-    },
-    async ({ path, ref }) => {
-      if (ref !== "main" && !/^autopilot\/[a-z0-9][a-z0-9-]{2,60}$/.test(ref) && !/^feature\/[a-z0-9-]+$/.test(ref)) {
-        throw new Error("Unsupported repository ref.");
-      }
-      const file = await githubRequest<any>(env, `/contents/${path.split("/").map(encodeURIComponent).join("/")}?ref=${encodeURIComponent(ref)}`);
-      if (file.type !== "file" || typeof file.content !== "string") throw new Error("Path is not a text file.");
-      const content = file.encoding === "base64" ? decodeBase64Utf8(file.content) : file.content;
-      return { content: [{ type: "text", text: JSON.stringify({ path, ref, sha: file.sha, content }) }] };
-    },
-  );
-
-  server.registerTool(
-    "read_pull_request_feedback",
-    {
-      description: "Read review comments and submitted reviews for an open XPAYPOINT pull request. Read-only.",
-      inputSchema: z.object({ number: z.number().int().positive() }),
-    },
-    async ({ number }) => {
-      const [comments, reviews] = await Promise.all([
-        githubRequest<any[]>(env, `/pulls/${number}/comments?per_page=100`),
-        githubRequest<any[]>(env, `/pulls/${number}/reviews?per_page=100`),
-      ]);
-      const result = {
-        comments: comments.map((item) => ({
-          path: item.path,
-          line: item.line,
-          body: item.body,
-          author: item.user?.login,
-          createdAt: item.created_at,
-        })),
-        reviews: reviews.map((item) => ({
-          state: item.state,
-          body: item.body,
-          author: item.user?.login,
-          submittedAt: item.submitted_at,
-        })),
-      };
-      return { content: [{ type: "text", text: JSON.stringify(result) }] };
-    },
-  );
-
-  server.registerTool(
-    "create_development_branch",
-    {
-      description: "Create an isolated autopilot/<short-slug> branch from main. Cannot create or update main or production branches.",
-      inputSchema: z.object({ name: z.string().min(5).max(80) }),
-    },
-    async ({ name }) => {
-      assertSafeBranch(name);
-      const mainRef = await githubRequest<any>(env, "/git/ref/heads/main");
-      const created = await githubRequest<any>(env, "/git/refs", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ ref: `refs/heads/${name}`, sha: mainRef.object.sha }),
-      });
-      return { content: [{ type: "text", text: JSON.stringify({ branch: created.ref, sha: created.object?.sha }) }] };
-    },
-  );
-
-  server.registerTool(
-    "commit_safe_files",
-    {
-      description: "Create or update text files on an autopilot development branch only. Server-side path restrictions block store, payment, wallet, database, secret, and deployment files.",
-      inputSchema: z.object({
-        branch: z.string(),
-        message: z.string().min(5).max(160),
-        files: z.array(z.object({ path: z.string().min(1).max(240), content: z.string().max(200000) })).min(1).max(8),
-      }),
-    },
-    async ({ branch, message, files }) => {
-      assertSafeBranch(branch);
-      for (const file of files) assertSafePath(file.path);
-      if (!env.GITHUB_TOKEN) throw new Error("GITHUB_TOKEN is not configured; repository writes are disabled.");
-      const commits: Array<{ path: string; sha: string }> = [];
-      for (const file of files) {
-        const encodedPath = file.path.split("/").map(encodeURIComponent).join("/");
-        let currentSha: string | undefined;
-        try {
-          const existing = await githubRequest<any>(env, `/contents/${encodedPath}?ref=${encodeURIComponent(branch)}`);
-          currentSha = existing.sha;
-        } catch (error) {
-          if (!String(error).includes("404")) throw error;
-        }
-        const result = await githubRequest<any>(env, `/contents/${encodedPath}`, {
-          method: "PUT",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({
-            message,
-            content: encodeBase64Utf8(file.content),
-            branch,
-            ...(currentSha ? { sha: currentSha } : {}),
-          }),
-        });
-        commits.push({ path: file.path, sha: result.commit?.sha ?? "" });
-      }
-      return { content: [{ type: "text", text: JSON.stringify({ branch, commits }) }] };
-    },
-  );
-
-  server.registerTool(
-    "open_pull_request",
-    {
-      description: "Open a pull request from an autopilot development branch into main for Founder review. This tool cannot merge or deploy.",
-      inputSchema: z.object({
-        head: z.string(),
-        title: z.string().min(5).max(120),
-        body: z.string().min(20).max(10000),
-      }),
-    },
-    async ({ head, title, body }) => {
-      assertSafeBranch(head);
-      if (!env.GITHUB_TOKEN) throw new Error("GITHUB_TOKEN is not configured; pull request creation is disabled.");
-      const pr = await githubRequest<any>(env, "/pulls", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          title,
-          head,
-          base: "main",
-          body: `${body}\n\n---\n**Autopilot safety:** development branch only; not merged or deployed. Founder review is required.`,
-          maintainer_can_modify: false,
-        }),
-      });
-      return { content: [{ type: "text", text: JSON.stringify({ number: pr.number, url: pr.html_url, state: pr.state, merged: pr.merged }) }] };
-    },
-  );
-
-  return server;
-}
-
-function makeMcpHandler(env: Env) {
-  return createMcpHandler(() => createMcpServer(env), {
-    route: "/mcp",
-    responseMode: "json",
-    corsOptions: false,
-  });
-}
-
-export class XPayPointCTOAgent extends Agent<Env, CTOState> {
-  initialState = initialState;
-
-  async onStart(): Promise<void> {
-    await this.scheduleEvery(300, "runCycle", {}, {
-      retry: { maxAttempts: 3, baseDelayMs: 1000, maxDelayMs: 15000 },
-    });
-    await this.schedule("0 2 * * *", "runDailyAudit", {}, {
-      idempotent: true,
-      retry: { maxAttempts: 2, baseDelayMs: 5000, maxDelayMs: 30000 },
-    });
-  }
-
-  async onRequest(request: Request): Promise<Response> {
-    const url = new URL(request.url);
-    this.setState({
-      ...this.state,
-      mcpServerUrl: `${url.origin}/mcp`,
-    });
-    await this.runCycle();
-    return json({
-      service: "XPAYPOINT Autonomous CTO",
-      mode: "Level 2",
-      intervalSeconds: 300,
-      state: this.state,
-    });
-  }
-
-  async runDailyAudit(): Promise<void> {
-    if (
-      this.env.AUTOPILOT_ENABLED !== "true" ||
-      !this.env.OPENAI_API_KEY ||
-      !this.env.GITHUB_TOKEN ||
-      !this.env.MCP_AUTH_TOKEN ||
-      !this.state.mcpServerUrl
-    ) return;
-
-    if (
-      this.state.lastSessionId &&
-      this.state.lastSessionStatus !== "idle" &&
-      this.state.lastSessionStatus !== "failed"
-    ) return;
-
-    try {
-      const checkedAt = new Date().toISOString();
-      const session = await this.startCodingSession({
-        siteHealthy: this.state.siteStatus === "healthy",
-        latestRun: null,
-        reviewPRs: [],
-        reason: "Scheduled daily proactive audit: inspect open PRs, code health, documentation, and CI. Make only safe Level 2 changes.",
-      });
-      this.setState({
-        ...this.state,
-        lastSessionId: session.id,
-        lastSessionAt: checkedAt,
-        lastSessionStatus: session.status as CTOState["lastSessionStatus"],
-        lastSessionError: null,
-        lastError: null,
-      });
-    } catch (error) {
-      this.setState({
-        ...this.state,
-        lastError: error instanceof Error ? error.message.slice(0, 500) : "Daily audit failed",
-      });
-    }
-  }
-
-  async runCycle(): Promise<void> {
-    const checkedAt = new Date().toISOString();
-    try {
-      const siteResponse = await fetch(this.env.SITE_URL, {
-        method: "GET",
-        redirect: "follow",
-        signal: AbortSignal.timeout(10000),
-      });
-      const siteHealthy = siteResponse.ok;
-
-      const [pulls, runs] = await Promise.all([
-        githubRequest<any[]>(this.env, "/pulls?state=open&per_page=20"),
-        githubRequest<any>(this.env, "/actions/runs?per_page=5"),
-      ]);
-      const latestRun = runs.workflow_runs?.[0];
-      let polledSessionStatus = this.state.lastSessionStatus;
-      let polledSessionError = this.state.lastSessionError;
-      let activeSession = false;
-      if (this.state.lastSessionId && this.env.OPENAI_API_KEY) {
-        const sessionResponse = await fetch(
-          `https://api.openai.com/v1/agents/sessions/${encodeURIComponent(this.state.lastSessionId)}`,
-          { headers: { Authorization: `Bearer ${this.env.OPENAI_API_KEY}`, "OpenAI-Beta": "agents=v1" } },
-        );
-        if (sessionResponse.ok) {
-          const session = await sessionResponse.json() as any;
-          polledSessionStatus = session.status ?? "unknown";
-          polledSessionError = session.error ?? null;
-          activeSession = polledSessionStatus === "in_progress" || polledSessionStatus === "requires_action";
-        } else {
-          polledSessionError = `Session status check returned HTTP ${sessionResponse.status}`;
-          activeSession = true;
-        }
-      }
-      const reviewPRs = pulls.filter((pr) => Number(pr.review_comments ?? 0) > 0);
-      const failedRun = latestRun?.conclusion === "failure";
-      const alert = !siteHealthy || failedRun || reviewPRs.length > 0;
-      const signature = alert
-        ? JSON.stringify({
-            siteHealthy,
-            failedRun: latestRun?.id ?? null,
-            reviewPRs: reviewPRs.map((pr) => [pr.number, pr.updated_at, pr.review_comments]),
-          })
-        : null;
-
-      const nextState: CTOState = {
-        ...this.state,
-        lastCheckAt: checkedAt,
-        siteStatus: siteHealthy ? "healthy" : "unhealthy",
-        latestWorkflow: latestRun ? `${latestRun.name ?? "workflow"}: ${latestRun.status}/${latestRun.conclusion ?? "pending"}` : "no workflow runs found",
-        openPullRequests: pulls.length,
-        lastSessionStatus: polledSessionStatus,
-        lastSessionError: polledSessionError,
-        lastError: null,
-      };
-
-      if (signature && signature !== this.state.lastAlertSignature && !activeSession) {
-        if (
-          this.env.AUTOPILOT_ENABLED === "true" &&
-          this.env.OPENAI_API_KEY &&
-          this.env.GITHUB_TOKEN &&
-          this.env.MCP_AUTH_TOKEN &&
-          this.state.mcpServerUrl
-        ) {
-          const session = await this.startCodingSession({
-            siteHealthy,
-            latestRun,
-            reviewPRs: reviewPRs.map((pr) => ({
-              number: pr.number,
-              title: pr.title,
-              head: pr.head?.ref,
-              reviewComments: pr.review_comments,
-              url: pr.html_url,
-            })),
-          });
-          nextState.lastSessionId = session.id;
-          nextState.lastSessionAt = checkedAt;
-          nextState.lastSessionStatus = session.status as CTOState["lastSessionStatus"];
-          nextState.lastSessionError = null;
-        } else {
-          nextState.lastError = "Autopilot belum diaktifkan atau kredensial runtime belum lengkap.";
-        }
-      }
-
-      if (nextState.lastSessionId !== this.state.lastSessionId) {
-        nextState.lastAlertSignature = signature;
-      } else if (!signature) {
-        nextState.lastAlertSignature = null;
-      }
-      this.setState(nextState);
-    } catch (error) {
-      this.setState({
-        ...this.state,
-        lastCheckAt: checkedAt,
-        lastError: error instanceof Error ? error.message.slice(0, 500) : "Unknown monitoring error",
-      });
-    }
-  }
-
-  private async startCodingSession(context: {
-    siteHealthy: boolean;
-    latestRun: any;
-    reviewPRs: Array<{ number: number; title: string; head: string; reviewComments: number; url: string }>;
-    reason?: string;
-  }): Promise<{ id: string; status: string }> {
-    const response = await fetch("https://api.openai.com/v1/agents/sessions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${this.env.OPENAI_API_KEY}`,
-        "OpenAI-Beta": "agents=v1",
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({
-        agent: {
-          model: this.env.OPENAI_AGENT_MODEL || "gpt-6-astra",
-          instructions: CTO_INSTRUCTIONS,
-          tools: [{
-            type: "mcp",
-            server_label: "xpaypoint_level2",
-            transport: {
-              type: "http",
-              server_url: this.state.mcpServerUrl,
-              authorization: `Bearer ${this.env.MCP_AUTH_TOKEN}`,
-            },
-            connection_origin: "service",
-            required: true,
-            allowed_tools: ALLOWED_MCP_TOOLS,
-          }],
-        },
-        environment: { type: "openai_hosted" },
-        input: [
-          context.reason ?? "Investigate the following XPAYPOINT monitoring findings.",
-          JSON.stringify(context),
-          "Read relevant review feedback and repository files. If a safe fix is appropriate, create an autopilot/* branch, commit only permitted files, run tests in your sandbox when possible, and open a PR to main. If the problem involves protected payment, wallet, database, credential, or deployment areas, do not edit it; report that Founder approval is required.",
-          "Do not merge or deploy.",
-        ].join("\n\n"),
-        spend_control: { limit: 50 },
-        stream: false,
-      }),
-    });
-    if (!response.ok) {
-      const detail = (await response.text()).slice(0, 500);
-      throw new Error(`OpenAI Agents API ${response.status}: ${detail}`);
-    }
-    const result = await response.json() as any;
-    const id = result.session_id ?? result.id;
-    if (!id || typeof id !== "string") throw new Error("OpenAI Agents API did not return a session ID.");
-    return { id, status: result.status ?? "unknown" };
-  }
-}
-
-export default {
-  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-    const url = new URL(request.url);
-
-    if (url.pathname === "/health") {
-      return json({ ok: true, service: "xpaypoint-cto-agent-dev", time: new Date().toISOString() });
-    }
-
-    if (url.pathname === "/mcp") {
-      if (!isAuthorized(request, env.MCP_AUTH_TOKEN)) return new Response("Unauthorized", { status: 401 });
-      if (!env.GITHUB_TOKEN) return json({ error: "GitHub integration is not configured." }, 503);
-      const handler = makeMcpHandler(env);
-      return handler(request, env, ctx);
-    }
-
-    if (url.pathname === "/start" && request.method === "POST") {
-      if (!isAuthorized(request, env.ADMIN_TOKEN)) return new Response("Unauthorized", { status: 401 });
-      const agentRequest = new Request(new URL("/agents/xpaypointctoagent/founder", url.origin), {
-        method: "GET",
-        headers: request.headers,
-      });
-      return (await routeAgentRequest(agentRequest, env)) ?? new Response("Agent route not found", { status: 404 });
-    }
-
-    if (url.pathname.startsWith("/agents/")) {
-      if (!isAuthorized(request, env.ADMIN_TOKEN)) return new Response("Unauthorized", { status: 401 });
-      return (await routeAgentRequest(request, env)) ?? new Response("Agent route not found", { status: 404 });
-    }
-
-    return new Response("Not found", { status: 404 });
-  },
-} satisfies ExportedHandler<Env>;
+export default {async fetch(request:Request,env:Env):Promise<Response>{
+ const u=new URL(request.url);if(u.pathname==="/health")return json({ok:true,service:"xpaypoint-cto-agent",time:new Date().toISOString()});
+ if(u.pathname==="/start"&&request.method==="POST"){if(!auth(request,env.ADMIN_TOKEN))return new Response("Unauthorized",{status:401});const r=new Request(new URL("/agents/xpaypointctoagent/founder",u.origin),{method:"GET"});return (await routeAgentRequest(r,env))??new Response("Agent route not found",{status:404});}
+ if(u.pathname.startsWith("/agents/")){if(!auth(request,env.ADMIN_TOKEN))return new Response("Unauthorized",{status:401});return (await routeAgentRequest(request,env))??new Response("Agent route not found",{status:404});}
+ return new Response("Not found",{status:404});
+}} satisfies ExportedHandler<Env>;
