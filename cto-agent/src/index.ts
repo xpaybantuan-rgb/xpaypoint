@@ -407,7 +407,7 @@ export class XPayPointCTOAgent extends Agent<Env, CTOState> {
     }
   }
 
-  async runCycle(): Promise<void>
+  async runCycle(): Promise<void> {
     const checkedAt = new Date().toISOString();
     try {
       const siteResponse = await fetch(this.env.SITE_URL, {
