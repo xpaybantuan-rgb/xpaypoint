@@ -332,11 +332,11 @@ async function createMcpServer(env: Env): Promise<McpServer> {
   return server;
 }
 
-function makeMcpHandler(env: Env, authInfo: { token: string; clientId: string; scopes: string[] }) {
+function makeMcpHandler(env: Env) {
   return createMcpHandler(() => createMcpServer(env), {
     route: "/mcp",
     responseMode: "json",
-    authContext: { props: { clientId: authInfo.clientId, role: "level2" } },
+    corsOptions: false,
   });
 }
 
@@ -346,6 +346,10 @@ export class XPayPointCTOAgent extends Agent<Env, CTOState> {
   async onStart(): Promise<void> {
     await this.scheduleEvery(300, "runCycle", {}, {
       retry: { maxAttempts: 3, baseDelayMs: 1000, maxDelayMs: 15000 },
+    });
+    await this.schedule("0 2 * * *", "runDailyAudit", {}, {
+      idempotent: true,
+      retry: { maxAttempts: 2, baseDelayMs: 5000, maxDelayMs: 30000 },
     });
   }
 
@@ -364,7 +368,46 @@ export class XPayPointCTOAgent extends Agent<Env, CTOState> {
     });
   }
 
-  async runCycle(): Promise<void> {
+  async runDailyAudit(): Promise<void> {
+    if (
+      this.env.AUTOPILOT_ENABLED !== "true" ||
+      !this.env.OPENAI_API_KEY ||
+      !this.env.GITHUB_TOKEN ||
+      !this.env.MCP_AUTH_TOKEN ||
+      !this.state.mcpServerUrl
+    ) return;
+
+    if (
+      this.state.lastSessionId &&
+      this.state.lastSessionStatus !== "idle" &&
+      this.state.lastSessionStatus !== "failed"
+    ) return;
+
+    try {
+      const checkedAt = new Date().toISOString();
+      const session = await this.startCodingSession({
+        siteHealthy: this.state.siteStatus === "healthy",
+        latestRun: null,
+        reviewPRs: [],
+        reason: "Scheduled daily proactive audit: inspect open PRs, code health, documentation, and CI. Make only safe Level 2 changes.",
+      });
+      this.setState({
+        ...this.state,
+        lastSessionId: session.id,
+        lastSessionAt: checkedAt,
+        lastSessionStatus: session.status as CTOState["lastSessionStatus"],
+        lastSessionError: null,
+        lastError: null,
+      });
+    } catch (error) {
+      this.setState({
+        ...this.state,
+        lastError: error instanceof Error ? error.message.slice(0, 500) : "Daily audit failed",
+      });
+    }
+  }
+
+  async runCycle(): Promise<void>
     const checkedAt = new Date().toISOString();
     try {
       const siteResponse = await fetch(this.env.SITE_URL, {
@@ -466,6 +509,7 @@ export class XPayPointCTOAgent extends Agent<Env, CTOState> {
     siteHealthy: boolean;
     latestRun: any;
     reviewPRs: Array<{ number: number; title: string; head: string; reviewComments: number; url: string }>;
+    reason?: string;
   }): Promise<{ id: string; status: string }> {
     const response = await fetch("https://api.openai.com/v1/agents/sessions", {
       method: "POST",
@@ -493,7 +537,7 @@ export class XPayPointCTOAgent extends Agent<Env, CTOState> {
         },
         environment: { type: "openai_hosted" },
         input: [
-          "Investigate the following XPAYPOINT monitoring findings.",
+          context.reason ?? "Investigate the following XPAYPOINT monitoring findings.",
           JSON.stringify(context),
           "Read relevant review feedback and repository files. If a safe fix is appropriate, create an autopilot/* branch, commit only permitted files, run tests in your sandbox when possible, and open a PR to main. If the problem involves protected payment, wallet, database, credential, or deployment areas, do not edit it; report that Founder approval is required.",
           "Do not merge or deploy.",
@@ -524,11 +568,7 @@ export default {
     if (url.pathname === "/mcp") {
       if (!isAuthorized(request, env.MCP_AUTH_TOKEN)) return new Response("Unauthorized", { status: 401 });
       if (!env.GITHUB_TOKEN) return json({ error: "GitHub integration is not configured." }, 503);
-      const handler = makeMcpHandler(env, {
-        token: env.MCP_AUTH_TOKEN!,
-        clientId: "openai-agents-api",
-        scopes: ["repository:read", "development:write", "pull_request:create"],
-      });
+      const handler = makeMcpHandler(env);
       return handler(request, env, ctx);
     }
 
