@@ -1,0 +1,38 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "xpaypoint-cto-agent-dev",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-09",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "preview_urls": false,
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "XPayPointCTOAgent",
+        "class_name": "XPayPointCTOAgent"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["XPayPointCTOAgent"]
+    }
+  ],
+  "vars": {
+    "REPO_OWNER": "xpaybantuan-rgb",
+    "REPO_NAME": "xpaypoint",
+    "SITE_URL": "https://xpaypoint.pages.dev",
+    "AUTOPILOT_ENABLED": "false",
+    "OPENAI_AGENT_MODEL": "gpt-6-astra"
+  },
+  "observability": {
+    "enabled": true,
+    "logs": {
+      "enabled": true,
+      "invocation_logs": true,
+      "persist": true
+    }
+  }
+}
