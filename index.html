@@ -257,6 +257,8 @@ function renderProducts(){if(!activeGame)return;const q=$("productSearch").value
 function selectGame(id){const game=games.find(g=>g.id===id);if(!game)return;location.href="topup.html?game="+encodeURIComponent(game.id)}
 
 async function init(){ $("year").textContent=new Date().getFullYear();try{const g=await api("xpaypoint_games?select=id,slug,name,category,image_url,banner_url,sort_order&is_active=eq.true&order=sort_order.asc,name.asc");games=g.map(x=>({...x,active_products:0}));renderGames();try{products=await api("xpaypoint_products?select=id,game_id,name,description,nominal_value,sell_price,is_active,sort_order,region&is_active=eq.true&order=sort_order.asc");games=games.map(x=>({...x,active_products:products.filter(z=>z.game_id===x.id).length}));renderGames();}catch(productError){console.error("Produk katalog belum termuat:",productError);notify("Daftar game tampil, tetapi produk belum berhasil dimuat.");}}catch(e){$("gameGrid").innerHTML='<div class="state">Katalog belum dapat dimuat. Periksa koneksi lalu muat ulang halaman.</div>';notify(e.name==="TimeoutError"?"Koneksi katalog terlalu lama. Coba muat ulang.":e.message)}}
+// Start game catalog before optional chat initialization so chat errors cannot block the catalog.
+init();
 $("gameSearch").addEventListener("input",()=>{gameVisibleCount=9;renderGames()});$("catalogMoreBtn").addEventListener("click",()=>{const q=$("gameSearch").value.trim().toLowerCase();const total=games.filter(g=>(activeFilter==="all"||g.category===activeFilter)&&g.name.toLowerCase().includes(q)).length;if($("catalogMoreBtn").dataset.action==="less"){gameVisibleCount=9}else{const firstStep=9+Math.ceil(Math.max(0,total-9)/2);gameVisibleCount=gameVisibleCount<firstStep?firstStep:total}renderGames()});$("productSearch").addEventListener("input",renderProducts);$("clearGame").addEventListener("click",()=>{$("productArea").hidden=true;activeGame=null});$("gameFilters").addEventListener("click",e=>{const b=e.target.closest("[data-filter]");if(!b)return;activeFilter=b.dataset.filter;gameVisibleCount=9;document.querySelectorAll(".chip").forEach(x=>x.classList.toggle("active",x===b));renderGames()});
 document.documentElement.dataset.theme="light";localStorage.removeItem("xp-theme");
 
@@ -377,6 +379,5 @@ chatExpand.addEventListener("click",()=>{const expanded=chatInput.classList.togg
 chatInput.addEventListener("keydown",e=>{if(e.key==="Escape"&&chatInput.classList.contains("expanded")){chatInput.classList.remove("expanded");chatExpand.textContent="⤢"}else if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();$("chatForm").requestSubmit()}});
 syncComposer();
 
-init();
 </script>
 </body></html>
