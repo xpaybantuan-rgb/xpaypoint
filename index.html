@@ -247,7 +247,7 @@ function renderGames(){
  const q=$("gameSearch").value.trim().toLowerCase();
  const list=games.filter(g=>(activeFilter==="all"||g.category===activeFilter)&&g.name.toLowerCase().includes(q));
  const shown=list.slice(0,gameVisibleCount);
- $("gameGrid").innerHTML=shown.length?shown.map(g=>'<button class="gamecard" data-game="'+g.id+'"><span class="gameart">'+(g.image_url?'<img loading="lazy" src="'+safe(g.image_url)+'" alt="">':gameArtwork(g))+'</span><span class="gameinfo"><strong>'+safe(g.name)+'</strong><small>'+Number(g.active_products||0)+' produk aktif</small></span><span class="gamearrow">›</span></button>').join(""):'<div class="state">Game tidak ditemukan.</div>';
+ $("gameGrid").innerHTML=shown.length?shown.map(g=>'<button class="gamecard" data-game="'+g.id+'"><span class="gameart">'+(g.image_url?'<img loading="lazy" src="'+safe(g.image_url)+'" alt="">':gameArtwork(g))+'</span><span class="gameinfo"><strong>'+safe(g.name)+'</strong><small>'+Number(g.active_products||0)+' produk aktif</small></span><span class="gamearrow">›</span></button>').join(""):'<div class="state">Game tidak ditemukan.</div>';\n $("gameGrid").querySelectorAll(".gameart img").forEach(img=>{img.onerror=()=>{const card=img.closest("[data-game]");const game=games.find(x=>x.id===card?.dataset.game);if(game)img.parentElement.innerHTML=gameArtwork(game)}});
  const wrap=$("catalogMoreWrap"),btn=$("catalogMoreBtn");
  if(list.length>9){wrap.hidden=false;if(gameVisibleCount>=list.length){btn.textContent="Muat lebih sedikit";btn.dataset.action="less"}else{btn.textContent="Muat lebih banyak lagi";btn.dataset.action="more"}}else{wrap.hidden=true}
  document.querySelectorAll("[data-game]").forEach(b=>b.addEventListener("click",()=>selectGame(b.dataset.game)))
