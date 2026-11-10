@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Admin VIPayment — XPAYPOINT</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Admin VIPayment — XPAYPOINT</title>
 <style>
 :root{font-family:Inter,system-ui,sans-serif;color:#191b22;background:#f6f7fa}*{box-sizing:border-box}body{margin:0;padding:16px}.wrap{max-width:1100px;margin:20px auto}.panel{background:#fff;border:1px solid #e7e8ed;border-radius:18px;padding:18px;margin-bottom:14px;box-shadow:0 8px 26px #18213a08}.brand{font-weight:900;color:#e9364c;font-size:13px}.title{font-size:24px;font-weight:850;margin:8px 0}.muted{color:#697386;font-size:13px;line-height:1.6}.field,select{width:100%;padding:12px;border:1px solid #dfe2e8;border-radius:11px;margin:6px 0;font:inherit;background:white}.btn{border:0;border-radius:11px;background:#e9364c;color:white;font-weight:800;padding:12px 16px;cursor:pointer}.btn:disabled{opacity:.5}.dark{background:#303643}.hidden{display:none!important}.status{margin-top:12px;padding:12px;border-radius:11px;background:#f3f4f6;font-size:13px;white-space:pre-wrap}.warning{background:#fff8e8;border:1px solid #f3dfaa;padding:12px;border-radius:11px;font-size:12px;color:#755b20;margin:12px 0}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:14px 0}.stat{background:#fafafa;border:1px solid #eee;border-radius:12px;padding:12px}.stat b{display:block;font-size:21px}.stat small{color:#697386}.filters{display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr;gap:8px}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.tab{border:1px solid #ddd;background:white;padding:10px 13px;border-radius:10px;font-weight:750}.tab.active{background:#191b22;color:white;border-color:#191b22}.tablewrap{overflow:auto;max-height:58vh;border:1px solid #eee;border-radius:12px}table{width:100%;border-collapse:collapse;font-size:12px}th,td{text-align:left;padding:10px;border-bottom:1px solid #eee;white-space:nowrap}th{position:sticky;top:0;background:#fafafa;z-index:1}.pill{display:inline-block;padding:4px 7px;border-radius:7px;background:#f1f2f4}.pager{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:12px;font-size:13px}.check{width:19px;height:19px;accent-color:#e9364c}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}@media(max-width:700px){.filters{grid-template-columns:1fr 1fr}.title{font-size:21px}.panel{padding:14px}}
 </style></head><body><main class="wrap"><section class="panel"><div class="brand">XPAYPOINT / ADMIN</div><h1 class="title">Katalog & Pilihan Produk VIPAYMENT</h1><p class="muted">Semua region ditampilkan. Pilih game, cari nominal Diamond/DM atau produk, lalu centang item yang ingin dimasukkan ke menu jual XPAYPOINT.</p><div class="warning">Pilihan disimpan sebagai daftar calon produk jual di Supabase. Ini BELUM mengaktifkan produk di website pelanggan dan tidak mengubah harga produk live.</div>
@@ -14,7 +14,32 @@
 <p class="muted">Centang produk untuk menyimpannya ke tab “Menu yang Mau Dijual”. Harga jual otomatis memakai margin bertahap sesuai harga modal. Produk yang sudah live tidak berubah sampai dipilih dan diterbitkan.</p>
 </section></section></main>
 <script>
-(()=>{const URL="https://rjgeitbkpcyymgemcztx.supabase.co",KEY="sb_publishable_1b6C4q5vgbX0XfP_EV5yjQ_Qk9Cq4lR",db=window.supabase.createClient(URL,KEY),$=id=>document.getElementById(id),money=n=>"Rp"+new Intl.NumberFormat("id-ID").format(Number(n||0)),PAGE=50;
+(async()=>{
+const loginStatus=document.getElementById("loginStatus");
+async function ensureSupabaseSdk(){
+  if(window.supabase&&typeof window.supabase.createClient==="function")return true;
+  const sources=[
+    "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2",
+    "https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"
+  ];
+  for(const src of sources){
+    const loaded=await new Promise(resolve=>{
+      const script=document.createElement("script");let settled=false;
+      const finish=ok=>{if(settled)return;settled=true;clearTimeout(timer);resolve(ok)};
+      const timer=setTimeout(()=>finish(false),12000);
+      script.src=src;script.async=true;script.onload=()=>finish(!!(window.supabase&&window.supabase.createClient));script.onerror=()=>finish(false);
+      document.head.appendChild(script);
+    });
+    if(loaded)return true;
+  }
+  return !!(window.supabase&&window.supabase.createClient);
+}
+if(!(await ensureSupabaseSdk())){
+  loginStatus.textContent="Gagal memuat modul koneksi Supabase. Periksa koneksi internet, lalu muat ulang halaman.";
+  document.getElementById("loginBtn").disabled=true;
+  return;
+}
+const URL="https://rjgeitbkpcyymgemcztx.supabase.co",KEY="sb_publishable_1b6C4q5vgbX0XfP_EV5yjQ_Qk9Cq4lR",db=window.supabase.createClient(URL,KEY),$=id=>document.getElementById(id),money=n=>"Rp"+new Intl.NumberFormat("id-ID").format(Number(n||0)),PAGE=50;
 let catalog=[],selected=new Map(),page=0,mode="all",busy=false;
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 function region(g){let s=String(g||"").toLowerCase();if(/\bglobal\b/.test(s))return"GLOBAL";if(/\bindo(?:nesia)?\b/.test(s)||/\(\s*id\s*\)/.test(s)||/\bid\b/.test(s))return"ID";return"OTHER"}
