@@ -243,11 +243,23 @@ function gameArtwork(g){
 function notify(msg){const t=$("toast");t.textContent=msg;t.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.hidden=true,2600)}
 async function api(path){const headers={apikey:SUPABASE_KEY,Authorization:"Bearer "+SUPABASE_KEY};let all=[],offset=0;while(true){const sep=path.includes("?")?"&":"?";const r=await fetch(SUPABASE_URL+"/rest/v1/"+path+sep+"limit=1000&offset="+offset,{headers});if(!r.ok)throw new Error("Katalog tidak dapat dimuat ("+r.status+")");const batch=await r.json();all.push(...batch);if(batch.length<1000)break;offset+=1000;if(offset>=10000)break}return all}
 let gameVisibleCount=9;
+// Official app icons discovered from the publishers' Google Play listings.
+// Keep the SVG fallback for titles without a verified listing icon.
+const officialGameIcons={
+ "mobile-legends":"https://play-lh.googleusercontent.com/D8r13ijO9c-0_1N-CP4d63mR1w6YhDuR2mBQUl27ELJAx0sKdaKtM5vCUnSLODKBVzUx7rZ9cW4Ir9jYiufsSQ=w240-h480",
+ "free-fire":"https://play-lh.googleusercontent.com/1wE91ae_1YIJtIjQ1YJz5RhAajxEpF1TfrXGg7tcrKl90MOnF7XdFj71pw_MSQbyhM5PYz-eRdeBFQBzSGrV=w240-h480",
+ "pubg-mobile":"https://play-lh.googleusercontent.com/zCSGnBtZk0Lmp1BAbyaZfLktDzHmC6oke67qzz3G1lBegAF2asyt5KzXOJ2PVdHDYkU=w240-h480",
+ "genshin-impact":"https://play-lh.googleusercontent.com/YQqyKaXX-63krqsfIzUEJWUWLINxcb5tbS6QVySdxbS7eZV7YB2dUjUvX27xA0TIGtfxQ5v-tQjwlT5tTB-O=w240-h480"
+};
+function renderGameIcon(g){
+ const src=g.image_url||officialGameIcons[g.slug];
+ return src?'<img loading="lazy" data-slug="'+safe(g.slug)+'" src="'+safe(src)+'" alt="'+safe(g.name)+'" referrerpolicy="no-referrer" onerror="this.onerror=null;const g=games.find(x=>x.slug===this.dataset.slug);if(g)this.outerHTML=gameArtwork(g);">':gameArtwork(g);
+}
 function renderGames(){
  const q=$("gameSearch").value.trim().toLowerCase();
  const list=games.filter(g=>(activeFilter==="all"||g.category===activeFilter)&&g.name.toLowerCase().includes(q));
  const shown=list.slice(0,gameVisibleCount);
- $("gameGrid").innerHTML=shown.length?shown.map(g=>'<button class="gamecard" data-game="'+g.id+'"><span class="gameart">'+(g.image_url?'<img loading="lazy" src="'+safe(g.image_url)+'" alt="">':gameArtwork(g))+'</span><span class="gameinfo"><strong>'+safe(g.name)+'</strong><small>'+Number(g.active_products||0)+' produk aktif</small></span><span class="gamearrow">›</span></button>').join(""):'<div class="state">Game tidak ditemukan.</div>';
+ $("gameGrid").innerHTML=shown.length?shown.map(g=>'<button class="gamecard" data-game="'+g.id+'"><span class="gameart">'+renderGameIcon(g)+'</span><span class="gameinfo"><strong>'+safe(g.name)+'</strong><small>'+Number(g.active_products||0)+' produk aktif</small></span><span class="gamearrow">›</span></button>').join(""):'<div class="state">Game tidak ditemukan.</div>';
  const wrap=$("catalogMoreWrap"),btn=$("catalogMoreBtn");
  if(list.length>9){wrap.hidden=false;if(gameVisibleCount>=list.length){btn.textContent="Muat lebih sedikit";btn.dataset.action="less"}else{btn.textContent="Muat lebih banyak lagi";btn.dataset.action="more"}}else{wrap.hidden=true}
  document.querySelectorAll("[data-game]").forEach(b=>b.addEventListener("click",()=>selectGame(b.dataset.game)))
