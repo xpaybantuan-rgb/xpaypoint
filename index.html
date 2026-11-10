@@ -253,7 +253,7 @@ const officialGameIcons={
 };
 function renderGameIcon(g){
  const src=g.image_url||officialGameIcons[g.slug];
- return src?'<img loading="lazy" src="'+safe(src)+'" alt="'+safe(g.name)+'" referrerpolicy="no-referrer" onerror="this.replaceWith(document.createTextNode(\"\"));">':gameArtwork(g);
+ return src?'<img loading="lazy" data-slug="'+safe(g.slug)+'" src="'+safe(src)+'" alt="'+safe(g.name)+'" referrerpolicy="no-referrer" onerror="this.onerror=null;const g=games.find(x=>x.slug===this.dataset.slug);if(g)this.outerHTML=gameArtwork(g);">':gameArtwork(g);
 }
 function renderGames(){
  const q=$("gameSearch").value.trim().toLowerCase();
