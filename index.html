@@ -148,6 +148,20 @@ body,body *{color:#111111!important}
 input,textarea,select,input::placeholder,textarea::placeholder{background:#ffffff!important;color:#111111!important;border-color:#dedede!important}
 input::placeholder,textarea::placeholder{opacity:1!important;color:#333333!important}
 .gameart .xp-game-art{width:100%;height:100%;display:block;object-fit:cover;border-radius:inherit}.gameart img{object-fit:cover!important;padding:0!important}
+
+/* XP-A11Y-001: restore readable contrast after the legacy global color reset */
+.topline{color:#ffffff!important}
+.brandmark{color:#ffffff!important}
+.primary,.chat-fab,.btn-primary,.btn:not(.btn-light):not(.btn-outline),button.primary,.chat-tool-btn.primary{color:#ffffff!important}
+a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{
+ outline:3px solid #e9364c!important;outline-offset:3px!important
+}
+.chat-close:focus-visible,.chat-tool-btn:focus-visible{outline:3px solid #e9364c!important;outline-offset:3px!important}
+@media(prefers-reduced-motion:reduce){
+ html{scroll-behavior:auto!important}
+ *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+
 </style>
 </head>
 <body>
