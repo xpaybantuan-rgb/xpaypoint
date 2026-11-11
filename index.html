@@ -183,8 +183,8 @@ input::placeholder,textarea::placeholder{opacity:1!important;color:#333333!impor
 body{padding-top:110px!important}
 @media(max-width:620px){body{padding-top:160px!important}.topline{height:28px!important;min-height:28px}.header{top:28px!important}.header .head,.header .headrow{min-height:122px!important;height:auto!important;display:flex;flex-wrap:wrap;align-content:center;justify-content:space-between;gap:7px;padding:9px 0!important}.header .brand-image img{width:178px}.header .nav{order:3!important;width:100%!important;display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:2px!important;margin:0!important;padding:4px!important}.header .nav a{text-align:center;padding:10px 2px!important;font-size:clamp(8px,2.5vw,10px)!important;white-space:nowrap}.header .actions{margin-left:auto}.header .account,.header .profile{font-size:10px;padding:9px 11px}}
 
-/* Single mobile navigation: keep header tabs, remove duplicate bottom bar */
-@media(max-width:620px){.bottomnav{display:none!important}}
+/* Mobile navigation belongs at the bottom; hide duplicate header tabs */
+@media(max-width:620px){.header .nav{display:none!important}.bottomnav{display:grid!important;position:fixed!important;z-index:1100!important;left:0;right:0;bottom:0!important}}
 </style>
 </head>
 <body>
