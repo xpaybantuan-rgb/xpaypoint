@@ -148,15 +148,23 @@ body,body *{color:#111111!important}
 input,textarea,select,input::placeholder,textarea::placeholder{background:#ffffff!important;color:#111111!important;border-color:#dedede!important}
 input::placeholder,textarea::placeholder{opacity:1!important;color:#333333!important}
 .gameart .xp-game-art{width:100%;height:100%;display:block;object-fit:cover;border-radius:inherit}.gameart img{object-fit:cover!important;padding:0!important}
-.brand-image{display:inline-flex;align-items:center;gap:0}.brand-image img{display:block;width:218px;height:auto;max-width:100%}@media(max-width:620px){.brand-image img{width:190px}}\n</style>
+.brand-image{display:inline-flex;align-items:center;gap:0}.brand-image img{display:block;width:218px;height:auto;max-width:100%}@media(max-width:620px){.brand-image img{width:190px}}\n
+/* Header icon controls */
+.header-actions{margin-left:auto;gap:9px}.header-actions .iconbtn{width:42px;padding:0;border-radius:13px}.header-actions svg{width:19px;height:19px}.header-menu-wrap{position:relative}.header-menu-panel{position:absolute;z-index:80;right:0;top:49px;min-width:180px;padding:7px;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 14px 36px #10182820}.header-menu-panel[hidden],.header-search-panel[hidden]{display:none}.header-menu-panel a{display:block;padding:11px 12px;border-radius:9px;color:var(--text);font-size:12px;font-weight:750}.header-menu-panel a:hover{background:var(--soft);color:var(--accent)}.header-search-panel{padding:12px 0;border-bottom:1px solid var(--line);background:#fff}.header-search-panel .searchbox{max-width:none;margin:0}.section-head{justify-content:flex-start}
+@media(max-width:620px){.header-actions{gap:7px}.header-actions .iconbtn{width:40px;height:40px}.header-search-panel{padding:10px 0}}
+</style>
 </head>
 <body>
 <div class="topline">XPAYPOINT • TOP UP GAME & VOUCHER DIGITAL</div>
 <header class="header"><div class="container headrow">
 <a class="brand brand-image" href="#" aria-label="XPAYPOINT Beranda"><img src="assets/xpaypoint-logo.svg" alt="XPAYPOINT"></a>
 <nav class="nav"><a class="active" href="index.html">Beranda</a><a href="cek-pesanan.html">Cek Pesanan</a><a href="topup.html">Top Up</a><a href="profil.html">Profil</a></nav>
-<div class="actions"><a class="ghostbtn" href="profil.html">Profil</a></div>
+<div class="actions header-actions">
+<button class="iconbtn header-search-toggle" id="headerSearchToggle" type="button" aria-label="Cari game" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg></button>
+<div class="header-menu-wrap"><button class="iconbtn header-menu-toggle" id="headerMenuToggle" type="button" aria-label="Buka menu" aria-expanded="false"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button><div class="header-menu-panel" id="headerMenuPanel" hidden><a href="index.html">Beranda</a><a href="cek-pesanan.html">Cek Pesanan</a><a href="topup.html">Top Up</a><a href="profil.html">Profil</a></div></div>
+</div>
 </div></header>
+<div class="header-search-panel" id="headerSearchPanel" hidden><div class="container"><label class="searchbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="gameSearch" type="search" placeholder="Cari nama game..." autocomplete="off"></label></div></div>
 <main>
 <section class="hero"><div class="container"><div class="hero-card"><div class="hero-copy">
 <div class="eyebrow">Your game. Your point. XPAYPOINT.</div>
@@ -167,7 +175,7 @@ input::placeholder,textarea::placeholder{opacity:1!important;color:#333333!impor
 </div></div></div></section>
 <section class="section" id="games"><div class="container">
 <div class="section-head"><div><div class="kicker">Pilih permainanmu</div><h2>Jelajahi Games</h2><p class="sub">Katalog game yang tersedia di sistem XPAYPOINT.</p></div>
-<label class="searchbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="gameSearch" type="search" placeholder="Cari nama game..."></label></div>
+</div>
 <div class="chips" id="gameFilters"><button class="chip active" data-filter="Mobile">Mobile</button><button class="chip" data-filter="PC">Pc</button><button class="chip" data-filter="Voucher">Voucher</button><button class="chip" data-filter="Apps streaming">Apps streaming</button></div>
 <div class="gamegrid" id="gameGrid"><div class="state loading">Memuat katalog game…</div></div>
 <div class="catalog-more-wrap" id="catalogMoreWrap" hidden><button class="btn secondary catalog-more" id="catalogMoreBtn" type="button">Muat lebih banyak lagi</button></div>
@@ -260,7 +268,11 @@ function selectGame(id){const game=games.find(g=>g.id===id);if(!game)return;loca
 async function init(){ $("year").textContent=new Date().getFullYear();try{const g=await api("xpaypoint_games?select=id,slug,name,category,image_url,banner_url,sort_order&is_active=eq.true&order=sort_order.asc,name.asc");games=g.map(x=>({...x,active_products:0}));renderGames();try{products=await api("xpaypoint_products?select=id,game_id,name,description,nominal_value,sell_price,is_active,sort_order,region&is_active=eq.true&order=sort_order.asc");games=games.map(x=>({...x,active_products:products.filter(z=>z.game_id===x.id).length}));renderGames();}catch(productError){console.error("Produk katalog belum termuat:",productError);notify("Daftar game tampil, tetapi produk belum berhasil dimuat.");}}catch(e){$("gameGrid").innerHTML='<div class="state">Katalog belum dapat dimuat. Periksa koneksi lalu muat ulang halaman.</div>';notify(e.name==="TimeoutError"?"Koneksi katalog terlalu lama. Coba muat ulang.":e.message)}}
 // Start game catalog before optional chat initialization so chat errors cannot block the catalog.
 init();
-$("gameSearch").addEventListener("input",()=>{gameVisibleCount=9;renderGames()});$("catalogMoreBtn").addEventListener("click",()=>{const q=$("gameSearch").value.trim().toLowerCase();const total=games.filter(g=>(activeFilter==="all"||g.category===activeFilter)&&g.name.toLowerCase().includes(q)).length;if($("catalogMoreBtn").dataset.action==="less"){gameVisibleCount=9}else{const firstStep=9+Math.ceil(Math.max(0,total-9)/2);gameVisibleCount=gameVisibleCount<firstStep?firstStep:total}renderGames()});$("productSearch").addEventListener("input",renderProducts);$("clearGame").addEventListener("click",()=>{$("productArea").hidden=true;activeGame=null});$("gameFilters").addEventListener("click",e=>{const b=e.target.closest("[data-filter]");if(!b)return;activeFilter=b.dataset.filter;gameVisibleCount=9;document.querySelectorAll(".chip").forEach(x=>x.classList.toggle("active",x===b));renderGames()});
+$("gameSearch").addEventListener("input",()=>{gameVisibleCount=9;renderGames()});
+$("headerSearchToggle").addEventListener("click",()=>{const panel=$("headerSearchPanel"),open=panel.hidden;panel.hidden=!open;$("headerSearchToggle").setAttribute("aria-expanded",String(open));if(open)setTimeout(()=>$("gameSearch").focus(),0)});
+$("headerMenuToggle").addEventListener("click",()=>{const panel=$("headerMenuPanel"),open=panel.hidden;panel.hidden=!open;$("headerMenuToggle").setAttribute("aria-expanded",String(open))});
+document.addEventListener("click",e=>{if(!e.target.closest(".header-menu-wrap")){$("headerMenuPanel").hidden=true;$("headerMenuToggle").setAttribute("aria-expanded","false")}});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){$("headerSearchPanel").hidden=true;$("headerMenuPanel").hidden=true;$("headerSearchToggle").setAttribute("aria-expanded","false");$("headerMenuToggle").setAttribute("aria-expanded","false")}});$("catalogMoreBtn").addEventListener("click",()=>{const q=$("gameSearch").value.trim().toLowerCase();const total=games.filter(g=>(activeFilter==="all"||g.category===activeFilter)&&g.name.toLowerCase().includes(q)).length;if($("catalogMoreBtn").dataset.action==="less"){gameVisibleCount=9}else{const firstStep=9+Math.ceil(Math.max(0,total-9)/2);gameVisibleCount=gameVisibleCount<firstStep?firstStep:total}renderGames()});$("productSearch").addEventListener("input",renderProducts);$("clearGame").addEventListener("click",()=>{$("productArea").hidden=true;activeGame=null});$("gameFilters").addEventListener("click",e=>{const b=e.target.closest("[data-filter]");if(!b)return;activeFilter=b.dataset.filter;gameVisibleCount=9;document.querySelectorAll(".chip").forEach(x=>x.classList.toggle("active",x===b));renderGames()});
 document.documentElement.dataset.theme="light";localStorage.removeItem("xp-theme");
 
 
