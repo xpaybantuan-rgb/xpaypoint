@@ -191,10 +191,13 @@ input::placeholder,textarea::placeholder{opacity:1!important;color:#333333!impor
 .header-menu-panel a:hover{background:var(--soft);color:var(--accent)}
 @media(max-width:800px){.headrow{gap:12px}.brand-image img{width:190px}.header-actions{margin-left:auto}}
 @media(max-width:620px){.topline{font-size:9px;height:34px}.headrow{height:62px;gap:10px;flex-wrap:nowrap;padding:0}.brand-image img{width:160px;max-width:52vw}.header-actions{gap:7px;margin-left:auto}.header-actions .iconbtn{width:40px;height:40px}.nav{display:none}}
+
+/* Header search panel shared across all customer pages */
+.header-search-panel[hidden]{display:none!important}.header-search-panel{position:relative;z-index:60;padding:10px 0;background:#fff;border-bottom:1px solid var(--line);box-shadow:0 10px 24px #10182810}.header-search-panel .searchbox{max-width:none;margin:0}.header-search-panel input{min-width:0}
+@media(max-width:620px){.headrow{height:62px!important}.header-search-panel{padding:9px 0}}
 </style>
 </head>
 <body>
-<div class="topline">XPAYPOINT • PILIH GAME DAN NOMINAL TOP UP</div>
 <header class="header"><div class="container headrow">
 <a class="brand brand-image" href="#" aria-label="XPAYPOINT Beranda"><img src="assets/xpaypoint-logo.svg" alt="XPAYPOINT"></a>
 <nav class="nav"><a class="active" href="index.html">Beranda</a><a href="cek-pesanan.html">Cek Pesanan</a><a href="topup.html">Top Up</a><a href="profil.html">Profil</a></nav>
