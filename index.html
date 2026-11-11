@@ -170,6 +170,10 @@ input::placeholder,textarea::placeholder{opacity:1!important;color:#333333!impor
 
 /* Hamburger menu inspired by the reference header */
 .header-menu-toggle svg{width:22px;height:22px;display:block}.header-menu-panel{min-width:205px;padding:8px;border-radius:15px}.header-menu-panel a{padding:12px 13px;font-size:13px}
+
+/* Keep header action icons close to the right edge */
+.header-actions{margin-left:auto;margin-right:-8px;flex-shrink:0}
+@media(max-width:620px){.headrow{justify-content:space-between}.header-actions{margin-left:auto;margin-right:-10px;gap:7px}.header-actions .iconbtn{width:40px;height:40px}}
 </style>
 </head>
 <body>
