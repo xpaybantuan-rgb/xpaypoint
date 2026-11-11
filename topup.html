@@ -138,7 +138,7 @@ input::placeholder,textarea::placeholder{opacity:1!important;color:#333333!impor
 @media(max-width:620px){.topline{font-size:9px;height:34px}.headrow{height:62px;gap:10px;flex-wrap:nowrap;padding:0}.brand-image img{width:160px;max-width:52vw}.header-actions{gap:7px;margin-left:auto}.header-actions .iconbtn{width:40px;height:40px}.nav{display:none}}
 
 /* Header search panel shared across all customer pages */
-.header-search-panel[hidden]{display:none!important}.header-search-panel{position:relative;z-index:60;padding:10px 0;background:#fff;border-bottom:1px solid var(--line);box-shadow:0 10px 24px #10182810}.header-search-panel .searchbox{max-width:none;margin:0}.header-search-panel input{min-width:0}
+.header-search-panel[hidden]{display:none!important}.header-search-panel{position:relative;z-index:60;padding:10px 0;background:#fff;border-bottom:1px solid var(--line);box-shadow:0 10px 24px #10182810}.header-search-panel .searchbox{max-width:none;margin:0}.header-search-panel .searchbox svg{display:block;width:18px;height:18px;min-width:18px;max-width:18px;flex:0 0 18px;}.header-search-panel input{min-width:0}
 @media(max-width:620px){.headrow{height:62px!important}.header-search-panel{padding:9px 0}}
 </style></head><body><header class="header"><div class="container headrow">
 <a class="brand brand-image" href="index.html" aria-label="XPAYPOINT Beranda"><img src="assets/xpaypoint-logo.svg" alt="XPAYPOINT"></a>
@@ -212,5 +212,6 @@ function openGameFromHistory(id){selected=games.find(g=>g.id===id);if(!selected)
 </script>
 <script>
 (()=>{const b=document.getElementById('headerSearchToggle'),p=document.getElementById('headerSearchPanel'),i=document.getElementById('globalGameSearch');if(!b||!p||!i)return;b.addEventListener('click',()=>{const open=p.hidden;p.hidden=!open;b.setAttribute('aria-expanded',String(open));if(open)i.focus();});i.addEventListener('keydown',e=>{if(e.key==='Enter'){const q=i.value.trim();if(q)location.href='topup.html?q='+encodeURIComponent(q);}});document.addEventListener('click',e=>{if(!e.target.closest('#headerSearchPanel')&&!e.target.closest('#headerSearchToggle')){p.hidden=true;b.setAttribute('aria-expanded','false');}});})();
+(()=>{const i=document.getElementById('globalGameSearch');if(!i)return;const q=new URLSearchParams(location.search).get('q')||'';if(q){i.value=q;globalQuery=q.toLowerCase();}i.addEventListener('input',()=>{globalQuery=i.value.trim().toLowerCase();renderGames();});})();
 </script>
 </body></html>
