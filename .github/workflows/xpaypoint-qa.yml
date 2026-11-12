@@ -1,6 +1,9 @@
 name: XPAYPOINT Browser QA
 
 on:
+  push:
+    paths:
+      - ".github/workflows/xpaypoint-qa.yml"
   workflow_dispatch:
   schedule:
     - cron: "23 2 * * 1"
