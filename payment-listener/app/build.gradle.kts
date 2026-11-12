@@ -4,6 +4,10 @@ plugins {
 }
 
 val buildNumber = System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull() ?: 1
+val releaseStoreFile = System.getenv("XPAYPOINT_KEYSTORE_FILE")
+val releaseStorePassword = System.getenv("XPAYPOINT_KEYSTORE_PASSWORD")
+val releaseKeyAlias = System.getenv("XPAYPOINT_KEY_ALIAS")
+val releaseKeyPassword = System.getenv("XPAYPOINT_KEY_PASSWORD")
 
 android {
     namespace = "id.xpaypoint.paymentlistener"
@@ -15,6 +19,24 @@ android {
         targetSdk = 35
         versionCode = buildNumber
         versionName = "0.2.$buildNumber"
+    }
+
+    signingConfigs {
+        create("release") {
+            if (!releaseStoreFile.isNullOrBlank()) {
+                storeFile = file(releaseStoreFile)
+                storePassword = releaseStorePassword
+                keyAlias = releaseKeyAlias
+                keyPassword = releaseKeyPassword
+            }
+        }
+    }
+
+    buildTypes {
+        getByName("release") {
+            signingConfig = signingConfigs.getByName("release")
+            isMinifyEnabled = false
+        }
     }
 
     compileOptions {
