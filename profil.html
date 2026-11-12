@@ -97,6 +97,58 @@ input::placeholder,textarea::placeholder{opacity:1!important;color:#333333!impor
 @media(max-width:760px){.xp-footer{padding:30px 0 16px;margin-top:28px}.xp-footer .xp-foot-wrap{width:calc(100% - 36px)}.xp-footer .xp-foot-grid{grid-template-columns:1fr;gap:23px}.xp-footer .xp-foot-desc{margin-bottom:22px}.xp-footer h3{margin-bottom:10px}.xp-footer .xp-foot-links{gap:10px}}
 </style>
 <link rel="stylesheet" href="assets/xpaypoint-global.css">
+<style>
+/* Profile page — premium member dashboard */
+.profile-page{max-width:980px!important;padding:42px 0 70px!important}
+.profile-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin:0 0 25px}
+.profile-eyebrow{display:flex;align-items:center;gap:8px;color:#e9364c;font-size:10px;font-weight:900;letter-spacing:.16em}
+.eyebrow-dot{width:7px;height:7px;border-radius:50%;background:#e9364c;box-shadow:0 0 0 4px #e9364c16}
+.profile-heading h1{font:700 clamp(29px,4vw,38px) "Space Grotesk",sans-serif;letter-spacing:-1.2px;margin:9px 0 6px;color:#17181d}
+.profile-heading p{margin:0;color:#747985;font-size:13px;line-height:1.7}
+.profile-help{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border:1px solid #e8e9ed;border-radius:12px;font-size:11px;font-weight:800;color:#41444c;white-space:nowrap}
+.profile-help span{display:grid;place-items:center;width:18px;height:18px;border-radius:50%;background:#fff0f2;color:#e9364c}
+.member-card{position:relative;overflow:hidden;border-radius:22px;padding:27px 29px 22px;background:linear-gradient(112deg,#191a20 0%,#29232a 58%,#552c39 100%);color:#fff;box-shadow:0 16px 36px #1b17201c}
+.member-card *{position:relative;z-index:1}
+.member-glow{position:absolute!important;z-index:0!important;width:280px;height:280px;border-radius:50%;right:-75px;top:-145px;background:#e9364c;filter:blur(90px);opacity:.35}
+.member-card-top{display:flex;align-items:center;justify-content:space-between;gap:18px}
+.member-identity{display:flex;align-items:center;gap:16px;min-width:0}
+.member-avatar{width:58px;height:58px;flex:0 0 58px;border-radius:18px;display:grid;place-items:center;background:#ffffff17;border:1px solid #ffffff26}
+.member-avatar svg{width:29px;height:29px;stroke:#fff;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.member-label{display:block;color:#ffffff91;font-size:9px;font-weight:850;letter-spacing:.13em}
+.member-identity h2{font:700 19px "Space Grotesk",sans-serif;color:#fff;margin:5px 0 4px;letter-spacing:-.3px}
+.member-identity p{font-size:11px;color:#ffffffa8;margin:0}
+.guest-badge{display:inline-flex;align-items:center;gap:7px;padding:8px 11px;border-radius:30px;background:#ffffff15;border:1px solid #ffffff24;color:#fff;font-size:10px;font-weight:800;white-space:nowrap}
+.guest-badge i{width:6px;height:6px;border-radius:50%;background:#f6bd61}
+.member-card-bottom{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;border-top:1px solid #ffffff24;margin-top:25px;padding-top:17px}
+.member-card-bottom strong{display:block;color:#fff;font-size:13px;margin-top:5px}
+.member-card-note{max-width:360px;text-align:right;color:#ffffff9c;font-size:10px;line-height:1.65}
+.profile-shortcuts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin:17px 0 37px}
+.shortcut-card{display:flex;align-items:center;gap:13px;padding:17px;border:1px solid #e9e9ed;border-radius:16px;background:#fff;box-shadow:0 6px 20px #10182808;transition:border-color .2s,transform .2s}
+.shortcut-card:hover{border-color:#f2aab5;transform:translateY(-2px)}
+.shortcut-icon{width:43px;height:43px;flex:0 0 43px;display:grid;place-items:center;border-radius:13px}
+.shortcut-icon.red{background:#fff0f2;color:#e9364c}.shortcut-icon.dark{background:#f1f2f4;color:#24262d}
+.shortcut-icon svg{width:21px;height:21px;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.shortcut-card>span:nth-child(2){min-width:0;display:grid;gap:5px}
+.shortcut-card b{font-size:12px;color:#24252b}.shortcut-card small{font-size:10px;color:#858994;line-height:1.5}
+.shortcut-arrow{margin-left:auto;color:#a2a5ad;font-size:23px}
+.profile-section{margin-bottom:30px}
+.section-title{display:flex;align-items:flex-end;justify-content:space-between;gap:15px;margin-bottom:15px}
+.section-title h2,.profile-bottom h2{font:700 21px "Space Grotesk",sans-serif;letter-spacing:-.5px;color:#202127;margin:6px 0 0}
+.coming-soon{padding:7px 10px;border-radius:20px;background:#fff0f2;color:#cf3046;font-size:9px;font-weight:900;white-space:nowrap}
+.member-features{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.feature-card{min-width:0;border:1px solid #e9e9ed;border-radius:16px;padding:17px;background:#fff}
+.feature-icon{display:grid;place-items:center;width:35px;height:35px;border-radius:11px;background:#fff0f2;color:#e9364c;font-size:19px;margin-bottom:14px}
+.feature-card b{display:block;font-size:12px;color:#25262c;margin-bottom:6px}
+.feature-card p{font-size:10px;line-height:1.7;color:#777c87;margin:0;min-height:51px}
+.feature-tag{display:inline-block;margin-top:12px;color:#a0a3ab;font-size:9px;font-weight:800;letter-spacing:.06em}
+.profile-bottom{display:flex;justify-content:space-between;align-items:center;gap:22px;padding:22px 24px;border:1px solid #f2d7dc;border-radius:17px;background:linear-gradient(110deg,#fff8f9,#fff)}
+.profile-bottom h2{font-size:17px}
+.profile-bottom p{max-width:510px;margin:7px 0 0;color:#777c87;font-size:10px;line-height:1.7}
+.profile-bottom>a{display:inline-flex;align-items:center;gap:10px;padding:12px 15px;border-radius:11px;background:#e9364c;color:#fff;font-size:10px;font-weight:850;white-space:nowrap}
+.profile-bottom>a span{font-size:15px}
+@media(max-width:700px){.profile-page{padding:25px 0 95px!important}.profile-heading{align-items:flex-start}.profile-heading p{max-width:290px}.member-card{padding:21px 18px 18px;border-radius:18px}.member-avatar{width:49px;height:49px;flex-basis:49px;border-radius:15px}.member-identity h2{font-size:16px}.guest-badge{font-size:9px;padding:7px 9px}.member-card-bottom{align-items:flex-start;flex-direction:column;gap:9px;margin-top:19px;padding-top:14px}.member-card-note{text-align:left}.profile-shortcuts{gap:9px;margin:13px 0 29px}.shortcut-card{padding:12px;gap:9px}.shortcut-icon{width:37px;height:37px;flex-basis:37px}.shortcut-card b{font-size:10px}.shortcut-card small{font-size:9px}.member-features{grid-template-columns:1fr;gap:9px}.feature-card{display:grid;grid-template-columns:37px 1fr auto;align-items:center;gap:11px;padding:13px}.feature-icon{margin:0}.feature-card p{min-height:0}.feature-tag{margin:0;align-self:start}.profile-bottom{align-items:flex-start;flex-direction:column;padding:18px}.profile-bottom>a{width:100%;justify-content:center}}
+@media(max-width:380px){.profile-heading{gap:8px}.profile-help{padding:9px;font-size:10px}.member-identity{gap:10px}.member-identity h2{font-size:14px}.guest-badge{font-size:8px}.profile-shortcuts{grid-template-columns:1fr}.feature-card{grid-template-columns:34px 1fr}.feature-tag{display:none}}
+</style>
 </head><body><header class="header"><div class="container headrow">
 <a class="brand brand-image" href="index.html" aria-label="XPAYPOINT Beranda"><img src="assets/xpaypoint-logo.svg" alt="XPAYPOINT"></a>
 <nav class="nav"><a class="active" href="index.html">Beranda</a><a href="cek-pesanan.html">Cek Pesanan</a><a href="topup.html">Top Up</a><a href="profil.html">Profil</a></nav>
@@ -105,7 +157,46 @@ input::placeholder,textarea::placeholder{opacity:1!important;color:#333333!impor
 <div class="header-menu-wrap"><button class="iconbtn header-menu-toggle" id="headerMenuToggle" type="button" aria-label="Buka menu" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><div class="header-menu-panel" id="headerMenuPanel" hidden><a href="index.html">Beranda</a><a href="cek-pesanan.html">Cek Pesanan</a><a href="topup.html">Top Up</a><a href="profil.html">Profil</a></div></div>
 </div>
 </div></header>
-<div class="header-search-panel" id="headerSearchPanel" hidden><div class="container"><label class="searchbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="globalGameSearch" type="search" placeholder="Cari game..." autocomplete="off" aria-label="Cari game"></label></div></div><main class="container main"><section class="panel"><div class="kicker">MEMBER XPAYPOINT</div><h1>Profil</h1><p class="muted">Area profil member XPAYPOINT. Di sini nantinya kamu bisa masuk ke akun, melihat XPAYCOIN, riwayat transaksi, dan mengelola data akun.</p><div class="notice"><strong>Login member sedang disiapkan.</strong><br>Fitur akun belum diaktifkan, jadi jangan masukkan kata sandi atau data pribadi di halaman ini dulu.</div><div class="links"><a href="cek-pesanan.html">Cek Pesanan</a><a class="secondary" href="topup.html">Mulai Top Up</a></div></section></main><footer class="xp-footer" id="footer"><div class="xp-foot-wrap">
+<div class="header-search-panel" id="headerSearchPanel" hidden><div class="container"><label class="searchbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="globalGameSearch" type="search" placeholder="Cari game..." autocomplete="off" aria-label="Cari game"></label></div></div><main class="container main profile-page">
+  <div class="profile-heading">
+    <div><div class="profile-eyebrow"><span class="eyebrow-dot"></span> MEMBER AREA</div><h1>Profil Saya</h1><p>Kelola akun, pantau aktivitas, dan nikmati pengalaman top up yang lebih praktis.</p></div>
+    <a class="profile-help" href="pusat-bantuan.html"><span>?</span> Bantuan</a>
+  </div>
+
+  <section class="member-card">
+    <div class="member-card-top">
+      <div class="member-identity">
+        <div class="member-avatar"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M4.8 20c.5-3.5 3.3-5.5 7.2-5.5s6.7 2 7.2 5.5"/></svg></div>
+        <div><span class="member-label">STATUS AKUN</span><h2>Selamat datang, Guest!</h2><p>Anda sedang menjelajah sebagai tamu.</p></div>
+      </div>
+      <span class="guest-badge"><i></i> Mode tamu</span>
+    </div>
+    <div class="member-card-bottom">
+      <div><span class="member-label">AKSES MEMBER</span><strong>Belum terhubung</strong></div>
+      <div class="member-card-note">Fitur login dan registrasi member sedang dalam tahap persiapan.</div>
+    </div>
+    <div class="member-glow"></div>
+  </section>
+
+  <section class="profile-shortcuts" aria-label="Akses cepat">
+    <a class="shortcut-card" href="cek-pesanan.html"><span class="shortcut-icon red"><svg viewBox="0 0 24 24" fill="none"><path d="M7 3.8h7l4 4V20H7a2 2 0 0 1-2-2V5.8a2 2 0 0 1 2-2Z"/><path d="M14 4v4h4M8.5 13h7M8.5 16.5h5"/></svg></span><span><b>Riwayat Pesanan</b><small>Cek status transaksi kamu</small></span><span class="shortcut-arrow">›</span></a>
+    <a class="shortcut-card" href="topup.html"><span class="shortcut-icon dark"><svg viewBox="0 0 24 24" fill="none"><path d="M4 7.5h16v12H4zM4 7.5l2-3h12l2 3M8 12h8M8 15.5h4"/></svg></span><span><b>Mulai Top Up</b><small>Pilih game dan produk digital</small></span><span class="shortcut-arrow">›</span></a>
+  </section>
+
+  <section class="profile-section">
+    <div class="section-title"><div><span class="profile-eyebrow">FITUR MEMBER</span><h2>Keuntungan akun XPAYPOINT</h2></div><span class="coming-soon">Segera hadir</span></div>
+    <div class="member-features">
+      <article class="feature-card"><span class="feature-icon">◉</span><div><b>XPAYCOIN Wallet</b><p>Simpan dan gunakan saldo XPAYCOIN untuk transaksi sesuai ketentuan.</p></div><span class="feature-tag">Wallet</span></article>
+      <article class="feature-card"><span class="feature-icon">✦</span><div><b>Rewards & Cashback</b><p>Nikmati program reward dari transaksi yang memenuhi syarat.</p></div><span class="feature-tag">Reward</span></article>
+      <article class="feature-card"><span class="feature-icon">▤</span><div><b>Riwayat Transaksi</b><p>Pantau pesanan dan aktivitas akun dalam satu tempat.</p></div><span class="feature-tag">Aktivitas</span></article>
+    </div>
+  </section>
+
+  <section class="profile-bottom">
+    <div><span class="profile-eyebrow">BUTUH BANTUAN?</span><h2>Ada yang bisa kami bantu?</h2><p>Kunjungi pusat bantuan untuk panduan transaksi dan informasi layanan XPAYPOINT.</p></div>
+    <a href="pusat-bantuan.html">Kunjungi Pusat Bantuan <span>↗</span></a>
+  </section>
+</main><footer class="xp-footer" id="footer"><div class="xp-foot-wrap">
 <a class="xp-foot-brand" href="index.html" aria-label="XPAYPOINT Beranda"><span class="xp-foot-mark">XP</span><span>XPAY <em>POINT</em></span></a>
 <p class="xp-foot-desc">XPAYPOINT adalah layanan pemesanan top up game dan produk digital. Pilih produk, masukkan data akun sesuai instruksi, periksa detail pesanan, lalu selesaikan pembayaran melalui metode yang tersedia pada halaman checkout.</p>
 <div class="xp-foot-grid">
