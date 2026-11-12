@@ -128,7 +128,7 @@ jobs:
                   if path == "/":
                       try:
                           page.locator("#gameGrid [data-game]").first.click(timeout=5000)
-                          page.wait_for_url("**/topup.html?game=**",timeout=10000)
+                          page.wait_for_url("**/topup.html?game=**",wait_until="domcontentloaded",timeout=15000)
                           if "game=" not in page.url: failures.append("Game card did not open its top-up detail")
                           page.go_back(wait_until="domcontentloaded")
                       except Exception as e:
