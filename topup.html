@@ -238,9 +238,9 @@ function getFormConfig(product,game){
  const cfg={playerLabel:"Data Tujuan",playerPlaceholder:"Masukkan data sesuai instruksi supplier",serverLabel:"Server / Zone ID",serverPlaceholder:"Masukkan Server / Zone ID",showServer:false,playerRequired:true,serverRequired:false,requiresManual:true,help:"Pilih produk untuk memeriksa kebutuhan data tujuan SKU VIPayment."};
  if(!raw||raw==="-"||lower==="null"){cfg.help="SKU ini belum memiliki instruksi data tujuan dari VIPayment. Pembayaran belum dapat dilanjutkan sampai data tujuan SKU diverifikasi.";return cfg;}
  if(/password|\botp\b|kode keamanan|security code|two.?factor|2 langkah/.test(lower)){cfg.help="SKU ini meminta password atau kode keamanan. XPAYPOINT tidak mengumpulkan password, OTP, atau kode keamanan. Produk tidak dapat dibayar melalui formulir ini.";return cfg;}
- const email=/((masuk(?:kan)?|input|isi|via|tujuan)[^.!]{0,60}(email|gmail))|((email|gmail)[^.!]{0,40}(penerima|tujuan|terdaftar))/.test(lower);
- const phone=/((masuk(?:kan)?|input|isi|via|tujuan)[^.!]{0,60}(nomor hp|no hp|nomor telepon|phone number|nomor tujuan))/.test(lower);
- const player=/((masuk(?:kan)?|input|isi|via|tujuan)[^.!]{0,60}(user id|userid|player id|uid|username|riot id|character id))|(user id and server)|(user id dan server)/.test(lower);
+ const email=/((masuk(?:kan|an)?|input|isi|via|tujuan)[^.!]{0,60}(email|gmail))|((email|gmail)[^.!]{0,40}(penerima|tujuan|terdaftar))/.test(lower);
+ const phone=/((masuk(?:kan|an)?|input|isi|via|tujuan)[^.!]{0,60}(nomor hp|no hp|nomor telepon|phone number|nomor tujuan))/.test(lower);
+ const player=/((masuk(?:kan|an)?|input|isi|via|tujuan)[^.!]{0,60}(user id|userid|player id|uid|username|riot id|character id))|(user id and server)|(user id dan server)/.test(lower);
  if(!email&&!phone&&!player){cfg.help="Deskripsi supplier belum menjelaskan jenis data tujuan yang harus diisi. Produk ini belum bisa menerima pembayaran sampai instruksi SKU dikonfirmasi.";return cfg;}
  cfg.requiresManual=false;
  cfg.help=plain+" Jangan masukkan password atau OTP.";
