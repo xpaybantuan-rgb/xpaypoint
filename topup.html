@@ -243,7 +243,7 @@ function getFormConfig(product){
  else if(/character id/.test(lower)){cfg.playerLabel="Character ID";cfg.playerPlaceholder="Masukkan Character ID";}
  else if(/riot id/.test(lower)){cfg.playerLabel="Riot ID";cfg.playerPlaceholder="Masukkan Riot ID";}
  else if(/username/.test(lower)){cfg.playerLabel="Username";cfg.playerPlaceholder="Masukkan Username akun";}
- if(/\b(server|zone id|data_zone)\b/.test(lower)){cfg.showServer=true;cfg.serverRequired=/user id and server|user id dan server|server (wajib|required)/.test(lower);}
+ const serverInstruction=/masukan.{0,40}server|user id and server|user id dan server|server id|zone id|data_zone|input.{0,20}server/.test(lower);if(serverInstruction){cfg.showServer=true;cfg.serverRequired=!/if needed|jika dibutuhkan|optional|opsional/.test(lower)&&/user id and server|user id dan server|server id|zone id|server (wajib|required)/.test(lower);}
  if(/masukan user id dan server|user id and server/.test(lower)){cfg.playerLabel="User ID";cfg.playerPlaceholder="Masukkan User ID";}
  if(/password|kode keamanan|security code|2 langkah|two.?factor/.test(lower)){
   cfg.playerLabel="Data Akun";cfg.playerPlaceholder="Jangan isi password atau kode keamanan di sini";
