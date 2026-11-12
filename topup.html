@@ -282,33 +282,27 @@ document.querySelectorAll("input[name=paymentMethod]").forEach(input=>input.addE
  button.disabled=true;button.textContent="MENYIAPKAN PEMBAYARAN…";
  try{
   if(method==="qris"){
-   let methods=null;
-   try{const mr=await fetch("https://xpayway-payment-engine.xpaybantuan.workers.dev/v1/payment/methods",{cache:"no-store"});methods=await mr.json();}catch{}
-   if(methods?.methods?.some(x=>x.code==="qris"&&x.enabled===true)){
-    status.textContent="Membuat pesanan melalui SkieePay…";
-    const orderKey=crypto.randomUUID()+crypto.randomUUID().slice(0,8);
-    const orderResponse=await fetch("https://xpayway-payment-engine.xpaybantuan.workers.dev/v1/order/create",{
-     method:"POST",headers:{"content-type":"application/json","Idempotency-Key":orderKey},
-     body:JSON.stringify({game_id:selected.id,product_id:selectedProduct.id,target_id:activeForm.requiresTarget===false?"AUTO":$("playerId").value.trim(),zone_id:$("serverId").value.trim(),receipt_email:$("receiptEmail").value.trim(),receipt_whatsapp:$("receiptWhatsapp").value.trim()})
-    });
-    const orderData=await orderResponse.json().catch(()=>({}));
-    if(!orderResponse.ok||!orderData.order?.id)throw Error(orderData.message||orderData.code||"Gagal membuat pesanan SkieePay.");
-    status.textContent="Menerbitkan QRIS…";
-    const paymentKey=crypto.randomUUID()+crypto.randomUUID().slice(0,8);
-    const paymentResponse=await fetch("https://xpayway-payment-engine.xpaybantuan.workers.dev/v1/payment/create",{
-     method:"POST",headers:{"content-type":"application/json","Idempotency-Key":paymentKey},
-     body:JSON.stringify({order_id:orderData.order.id,guest_token:orderData.guest_token,idempotency_key:paymentKey})
-    });
-    const paymentData=await paymentResponse.json().catch(()=>({}));
-    if(!paymentResponse.ok||!paymentData.payment?.qr_string)throw Error(paymentData.message||paymentData.code||"QRIS belum berhasil diterbitkan.");
-    const payment=paymentData.payment;
-    sessionStorage.setItem("xpay_skieepay_token_"+payment.id,orderData.guest_token);
-    sessionStorage.setItem("xpay_skieepay_qr_"+payment.id,payment.qr_string);
-    sessionStorage.setItem("xpay_skieepay_exp_"+payment.id,payment.expires_at||"");
-    sessionStorage.setItem("xpay_skieepay_order_"+payment.id,orderData.order.order_code||payment.order_code||"");
-    location.href="pembayaran.html?payment_id="+encodeURIComponent(payment.id);
-    return;
-   }
+   status.textContent="Membuat pesanan XPAYPOINT…";
+   const orderKey=crypto.randomUUID()+crypto.randomUUID().slice(0,8);
+   const orderResponse=await fetch("https://xpayway-payment-engine.xpaybantuan.workers.dev/v1/order/create",{
+    method:"POST",headers:{"content-type":"application/json","Idempotency-Key":orderKey},
+    body:JSON.stringify({game_id:selected.id,product_id:selectedProduct.id,target_id:activeForm.requiresTarget===false?"AUTO":$("playerId").value.trim(),zone_id:$("serverId").value.trim(),receipt_email:$("receiptEmail").value.trim(),receipt_whatsapp:$("receiptWhatsapp").value.trim()})
+   });
+   const orderData=await orderResponse.json().catch(()=>({}));
+   if(!orderResponse.ok||!orderData.order?.id)throw Error(orderData.message||orderData.code||"Gagal membuat pesanan XPAYPOINT.");
+   status.textContent="Menyiapkan invoice GoPay Merchant…";
+   const paymentResponse=await fetch(URL+"/functions/v1/gopay-manual",{
+    method:"POST",headers:{apikey:KEY,Authorization:"Bearer "+KEY,"content-type":"application/json"},
+    body:JSON.stringify({action:"create",order_id:orderData.order.id,guest_token:orderData.guest_token})
+   });
+   const paymentData=await paymentResponse.json().catch(()=>({}));
+   if(!paymentResponse.ok||!paymentData.ok||!paymentData.payment?.id)throw Error(paymentData.code||"Invoice pembayaran gagal dibuat.");
+   const payment=paymentData.payment;
+   sessionStorage.setItem("xpay_skieepay_token_"+payment.id,orderData.guest_token);
+   sessionStorage.setItem("xpay_skieepay_exp_"+payment.id,payment.expires_at||"");
+   sessionStorage.setItem("xpay_skieepay_order_"+payment.id,payment.order_code||orderData.order.order_code||"");
+   location.href="pembayaran.html?payment_id="+encodeURIComponent(payment.id);
+   return;
   }
   status.textContent="Menghubungkan ke pembayaran Midtrans…";
   const response=await fetch("https://xpaypoint-midtrans-gateway.xpaybantuan.workers.dev/create-payment",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({game_id:selected.id,product_id:selectedProduct.id,player_id:$("playerId").value.trim(),zone_id:$("serverId").value.trim(),email:$("receiptEmail").value.trim(),whatsapp:$("receiptWhatsapp").value.trim(),payment_method:method})});
