@@ -8,13 +8,19 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import java.security.MessageDigest
+import java.util.Locale
 
 class MerchantNotificationListener : NotificationListenerService() {
-    // Package names are provisional until confirmed from the real notification source.
+    // Initial known package IDs. Diagnostic mode records only app identity
+    // for DANA/GoPay-like apps if the merchant app uses a different package name.
     private val merchantPackages = setOf("id.dana", "com.gojek.gopaymerchant")
 
     override fun onNotificationPosted(sbn: StatusBarNotification) {
-        if (sbn.packageName !in merchantPackages) return
+        val packageName = sbn.packageName
+        if (packageName !in merchantPackages) {
+            rememberPossibleMerchantApp(packageName)
+            return
+        }
 
         val extras = sbn.notification.extras
         val title = extras.getCharSequence("android.title")?.toString().orEmpty()
@@ -22,7 +28,7 @@ class MerchantNotificationListener : NotificationListenerService() {
         val bigText = extras.getCharSequence("android.bigText")?.toString().orEmpty()
         if (title.isBlank() && text.isBlank() && bigText.isBlank()) return
 
-        val keySource = "${sbn.packageName}|${sbn.postTime}|${sbn.id}|$title|$text|$bigText"
+        val keySource = "\${sbn.packageName}|\${sbn.postTime}|\${sbn.id}|\$title|\$text|\$bigText"
         val key = MessageDigest.getInstance("SHA-256")
             .digest(keySource.toByteArray())
             .joinToString("") { "%02x".format(it) }
@@ -30,7 +36,7 @@ class MerchantNotificationListener : NotificationListenerService() {
         val work = OneTimeWorkRequestBuilder<NotificationForwardWorker>()
             .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
             .setInputData(androidx.work.workDataOf(
-                "sourcePackage" to sbn.packageName,
+                "sourcePackage" to packageName,
                 "title" to title.take(500),
                 "text" to text.take(2000),
                 "bigText" to bigText.take(4000),
@@ -40,6 +46,21 @@ class MerchantNotificationListener : NotificationListenerService() {
             .build()
 
         WorkManager.getInstance(applicationContext)
-            .enqueueUniqueWork("merchant-notification-$key", ExistingWorkPolicy.KEEP, work)
+            .enqueueUniqueWork("merchant-notification-\$key", ExistingWorkPolicy.KEEP, work)
+    }
+
+    private fun rememberPossibleMerchantApp(packageName: String) {
+        val label = try {
+            val info = packageManager.getApplicationInfo(packageName, 0)
+            packageManager.getApplicationLabel(info).toString()
+        } catch (_: Exception) {
+            return
+        }
+        val searchable = "\$packageName \$label".lowercase(Locale.ROOT)
+        if (listOf("dana", "gojek", "gopay", "merchant").none { searchable.contains(it) }) return
+        getSharedPreferences("listener_config", MODE_PRIVATE).edit()
+            .putString("last_detected_package", packageName)
+            .putString("last_detected_label", label)
+            .apply()
     }
 }
