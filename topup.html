@@ -255,13 +255,17 @@ function getFormConfig(product){
 }
 function applyFormConfig(){
  activeForm=getFormConfig(selectedProduct);
+ const hasProduct=!!selectedProduct,manual=hasProduct&&activeForm.requiresManual;
  $("accountTitle").textContent=/email|gmail/.test(activeForm.playerLabel)?"Data Penerima":"Data Tujuan";
  $("playerLabel").textContent=activeForm.playerLabel;$("playerId").placeholder=activeForm.playerPlaceholder;
  $("serverLabel").textContent=activeForm.serverLabel;$("serverId").placeholder=activeForm.serverPlaceholder;
- $("serverField").hidden=!activeForm.showServer;$("serverField").style.display=activeForm.showServer?"":"none";
- $("summaryServerRow").hidden=!activeForm.showServer;$("summaryServerRow").style.display=activeForm.showServer?"":"none";
- $("accountHelp").textContent=activeForm.help;$("summaryPlayerLabel").textContent=activeForm.playerLabel;
- $("playerId").required=activeForm.playerRequired;$("serverId").required=activeForm.serverRequired;
+ const showPlayer=hasProduct&&!manual,showServer=showPlayer&&activeForm.showServer;
+ $("playerField").hidden=!showPlayer;$("playerField").style.display=showPlayer?"":"none";
+ $("serverField").hidden=!showServer;$("serverField").style.display=showServer?"":"none";
+ $("summaryServerRow").hidden=!showServer;$("summaryServerRow").style.display=showServer?"":"none";
+ $("accountHelp").textContent=!hasProduct?"Pilih nominal produk terlebih dahulu. Formulir data akun akan tampil sesuai instruksi SKU VIPayment yang dipilih.":manual?activeForm.help:activeForm.help;
+ $("summaryPlayerLabel").textContent=activeForm.playerLabel;
+ $("playerId").required=showPlayer&&activeForm.playerRequired;$("serverId").required=showServer&&activeForm.serverRequired;
 }
 function updateSummary(){$("summaryGame").textContent=selected?.name||"—";$("summaryProduct").textContent=selectedProduct?.name||"Belum dipilih";$("summaryTotal").textContent=selectedProduct?money(selectedProduct.sell_price):"Rp0";$("summaryPlayer").textContent=$("playerId").value.trim()||"—";$("summaryServer").textContent=$("serverId").value.trim()||"—";$("summaryEmail").textContent=$("receiptEmail").value.trim()||"—";$("summaryWhatsapp").textContent=$("receiptWhatsapp").value.trim()||"—";const ready=!!(selected&&selectedProduct&&!activeForm.requiresManual&&$("playerId").value.trim()&&(!activeForm.serverRequired||$("serverId").value.trim())&&/^\S+@\S+\.\S+$/.test($("receiptEmail").value.trim())&&document.querySelector("input[name=paymentMethod]:checked"));$("checkoutButton").disabled=!ready;$("checkoutButton").classList.toggle("checkout-disabled",!ready);$("checkoutButton").style.background=ready?"#e9364c":"";$("checkoutButton").style.color=ready?"#fff":"";$("checkoutStatus").textContent=activeForm.requiresManual&&selectedProduct?"Konfirmasi ke Admin XPAYPOINT sebelum memesan produk ini.":ready?"Metode "+({qris:"QRIS",ewallet:"E-Wallet",bank_transfer:"Transfer Bank"}[document.querySelector("input[name=paymentMethod]:checked").value])+" dipilih. Lanjutkan ke pembayaran Midtrans.":"Pilih produk, isi data tujuan yang diminta, email, dan metode pembayaran."}
 function openGame(id){selected=games.find(g=>g.id===id);if(!selected)return;selectedProduct=null;openProductGroup=null;applyFormConfig();$("catalogPage").classList.add("hide");$("gameDetailPage").classList.add("show");$("heroName").textContent=selected.name;$("heroMeta").textContent=selected.count+" produk tersedia di katalog XPAYPOINT";$("heroArt").innerHTML=selected.image_url?'<img src="'+safe(selected.image_url)+'" alt="'+safe(selected.name)+'">':gameArtwork(selected);const heroImg=$("heroArt").querySelector("img");if(heroImg)heroImg.onerror=()=>{$("heroArt").innerHTML=gameArtwork(selected)};$("playerId").value="";$("serverId").value="";$("productSearch").value="";updateSummary();renderProducts();const u=new URL(location.href);u.searchParams.set("game",selected.id);history.pushState({game:selected.id},"",u);window.scrollTo({top:0,behavior:"smooth"})}
