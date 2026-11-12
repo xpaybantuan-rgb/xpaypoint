@@ -11,7 +11,7 @@ import java.security.MessageDigest
 
 class MerchantNotificationListener : NotificationListenerService() {
     // Package names are provisional until confirmed from the real notification source.
-    private val merchantPackages = setOf("id.dana", "com.gojek.app")
+    private val merchantPackages = setOf("id.dana", "com.gojek.gopaymerchant")
 
     override fun onNotificationPosted(sbn: StatusBarNotification) {
         if (sbn.packageName !in merchantPackages) return
