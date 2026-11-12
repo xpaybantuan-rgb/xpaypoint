@@ -10,6 +10,9 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class MainActivity : Activity() {
     private val prefs by lazy { getSharedPreferences("listener_config", MODE_PRIVATE) }
@@ -85,9 +88,18 @@ class MainActivity : Activity() {
         val detection = if (pkg.isNullOrBlank()) {
             "Belum ada notifikasi DANA/GoPay yang terdeteksi."
         } else {
-            "Aplikasi terdeteksi: $label\nPackage: $pkg"
+            "Aplikasi merchant terdeteksi: $label\nPackage: $pkg"
         }
-        statusView.text = "Akses notifikasi: $access\n$detection"
+        val sourcePackage = prefs.getString("last_notification_package", null)
+        val sourceLabel = prefs.getString("last_notification_label", null)
+        val sourceTime = prefs.getLong("last_notification_time", 0L)
+        val source = if (sourcePackage.isNullOrBlank()) {
+            "Sumber notifikasi terakhir: belum ada notifikasi yang diterima Android."
+        } else {
+            val time = SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault()).format(Date(sourceTime))
+            "Sumber notifikasi terakhir: $sourceLabel\nPackage: $sourcePackage\nWaktu: $time"
+        }
+        statusView.text = "Akses notifikasi: $access\n$detection\n\n$source"
     }
 
     private fun fieldParams() = LinearLayout.LayoutParams(
