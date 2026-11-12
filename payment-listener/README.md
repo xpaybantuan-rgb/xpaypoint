@@ -6,7 +6,7 @@ Prototype Android notification listener for DANA Bisnis and GoPay Merchant.
 This app forwards notification text as an **unverified payment candidate**. It must never be treated as proof of payment and must never trigger VIPayment fulfillment by itself. Notifications can be duplicated, delayed, edited, or spoofed by other apps. Only an official signed provider callback or a separately verified merchant transaction record may mark an order paid.
 
 ## Build
-Open this folder as an Android Studio project (or copy the module into an Android project), sync Gradle, then build an APK.
+A GitHub Actions workflow builds a debug APK when files in this folder change. Open the repository Actions tab, run **Build XPAYPOINT Payment Listener APK**, then download the `xpaypoint-payment-listener-debug` artifact. This is a debug build, not a Play Store release.
 
 ## Setup
 1. Install the app on the Android phone that receives merchant notifications.
