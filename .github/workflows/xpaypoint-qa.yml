@@ -133,9 +133,12 @@ jobs:
                           card.click(timeout=5000)
                           page.wait_for_timeout(1200)
                           print("QA GAME CARD URL AFTER CLICK:", page.url)
-                          if "topup.html?game=" not in page.url:
+                          if "/topup" not in page.url or "game=" not in page.url:
                               failures.append("Game card click did not navigate; card id=" + str(game_id) + "; url=" + page.url)
                           else:
+                              page.wait_for_load_state("domcontentloaded",timeout=15000)
+                              if "Top Up Game" not in page.title():
+                                  failures.append("Game card reached top-up route but page title is unexpected: " + page.title())
                               page.go_back(wait_until="domcontentloaded",timeout=15000)
                       except Exception as e:
                           failures.append("Game card navigation: " + str(e)[:200])
