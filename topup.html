@@ -263,7 +263,7 @@ function applyFormConfig(){
  $("accountTitle").textContent=/email|gmail/.test(activeForm.playerLabel)?"Data Penerima":"Data Tujuan";
  $("playerLabel").textContent=activeForm.playerLabel;$("playerId").placeholder=activeForm.playerPlaceholder;
  $("serverLabel").textContent=activeForm.serverLabel;$("serverId").placeholder=activeForm.serverPlaceholder;
- const showPlayer=true,showServer=hasProduct&&activeForm.showServer;
+ const showPlayer=true,showServer=activeForm.showServer;
  $("playerField").hidden=!showPlayer;$("playerField").style.display=showPlayer?"":"none";
  $("serverField").hidden=!showServer;$("serverField").style.display=showServer?"":"none";
  $("summaryServerRow").hidden=!showServer;$("summaryServerRow").style.display=showServer?"":"none";
