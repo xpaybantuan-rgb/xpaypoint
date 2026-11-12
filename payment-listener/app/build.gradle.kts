@@ -3,6 +3,8 @@ plugins {
     id("org.jetbrains.kotlin.android")
 }
 
+val buildNumber = System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull() ?: 1
+
 android {
     namespace = "id.xpaypoint.paymentlistener"
     compileSdk = 35
@@ -11,8 +13,8 @@ android {
         applicationId = "id.xpaypoint.paymentlistener"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = buildNumber
+        versionName = "0.2.$buildNumber"
     }
 
     compileOptions {
