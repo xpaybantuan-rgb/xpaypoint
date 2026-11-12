@@ -8,7 +8,7 @@ on:
       - ".github/workflows/build-payment-listener.yml"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -30,9 +30,19 @@ jobs:
           gradle-version: 8.9
       - name: Build debug APK
         run: gradle --no-daemon assembleDebug
-      - name: Upload APK
+      - name: Prepare update APK
+        run: cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/xpaypoint-payment-listener.apk
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: xpaypoint-payment-listener-debug
-          path: payment-listener/app/build/outputs/apk/debug/app-debug.apk
+          path: payment-listener/app/build/outputs/apk/debug/xpaypoint-payment-listener.apk
           if-no-files-found: error
+      - name: Publish in-app update release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: listener-v${{ github.run_number }}
+          name: XPAYPOINT Listener v0.2.${{ github.run_number }}
+          body: "Rilis otomatis XPAYPOINT Payment Listener."
+          files: payment-listener/app/build/outputs/apk/debug/xpaypoint-payment-listener.apk
+          make_latest: true
