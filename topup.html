@@ -234,7 +234,8 @@ function getFormConfig(product,game){
  const raw=String(product?.metadata?.supplier_description||product?.description||"").trim();
  const plain=raw.replace(/<br\s*\/?\s*>/gi," ").replace(/<\/(li|p|div|h[1-6])\s*>/gi," ").replace(/<[^>]*>/g," ").replace(/&nbsp;|&#160;/gi," ").replace(/&amp;/gi,"&").replace(/&quot;/gi,'"').replace(/&#39;|&apos;/gi,"'").replace(/\s+/g," ").trim();
  const lower=plain.toLowerCase();
- const cfg={playerLabel:"Data Tujuan",playerPlaceholder:"Masukkan data sesuai instruksi supplier",serverLabel:"Server / Zone ID",serverPlaceholder:"Masukkan Server / Zone ID",showServer:false,playerRequired:true,serverRequired:false,requiresManual:true,help:"Pilih produk untuk memeriksa kebutuhan data tujuan SKU VIPayment."};
+ const isMLBB=/mobile legends|mobilelegend|mlbb/i.test(String(game?.name||""));
+ const cfg={playerLabel:isMLBB?"User ID":"ID Akun",playerPlaceholder:isMLBB?"Masukkan User ID Mobile Legends":"Masukkan ID akun game",serverLabel:"Zone ID",serverPlaceholder:"Masukkan Zone ID Mobile Legends",showServer:isMLBB,playerRequired:true,serverRequired:isMLBB,requiresManual:true,help:isMLBB?"Masukkan User ID dan Zone ID Mobile Legends. Keduanya bisa diisi sebelum memilih nominal.":"Masukkan ID akun game terlebih dahulu, lalu pilih nominal produk."};
  if(!raw||raw==="-"||lower==="null"){cfg.help="SKU ini belum memiliki instruksi data tujuan dari VIPayment. Pembayaran belum dapat dilanjutkan sampai data tujuan SKU diverifikasi.";return cfg;}
  if(/password|\botp\b|kode keamanan|security code|two.?factor|2 langkah/.test(lower)){cfg.help="SKU ini meminta password atau kode keamanan. XPAYPOINT tidak mengumpulkan password, OTP, atau kode keamanan. Produk tidak dapat dibayar melalui formulir ini.";return cfg;}
  const email=/((masuk(?:kan|an)?|input|isi|via|tujuan)[^.!]{0,60}(email|gmail))|((email|gmail)[^.!]{0,40}(penerima|tujuan|terdaftar))/.test(lower);
@@ -253,6 +254,7 @@ function getFormConfig(product,game){
  else {cfg.playerLabel="User ID";cfg.playerPlaceholder="Masukkan User ID";}
  const zone=/(server|zone id|data_zone)/.test(lower);
  if(zone){cfg.showServer=true;cfg.serverRequired=!/(jika dibutuhkan|if needed|optional|opsional)/.test(lower);}
+ if(isMLBB){cfg.playerLabel="User ID";cfg.playerPlaceholder="Masukkan User ID Mobile Legends";cfg.serverLabel="Zone ID";cfg.serverPlaceholder="Masukkan Zone ID Mobile Legends";cfg.showServer=true;cfg.serverRequired=true;}
  return cfg;
 }
 function applyFormConfig(){
@@ -265,7 +267,7 @@ function applyFormConfig(){
  $("playerField").hidden=!showPlayer;$("playerField").style.display=showPlayer?"":"none";
  $("serverField").hidden=!showServer;$("serverField").style.display=showServer?"":"none";
  $("summaryServerRow").hidden=!showServer;$("summaryServerRow").style.display=showServer?"":"none";
- $("accountHelp").textContent=!hasProduct?"Isi ID / data tujuan akun game di sini terlebih dahulu. Kamu bisa memilih nominal produk setelahnya. Kolom tambahan akan menyesuaikan instruksi SKU VIPayment.":activeForm.help;
+ $("accountHelp").textContent=activeForm.help;
  $("summaryPlayerLabel").textContent=activeForm.playerLabel;
  $("playerId").required=showPlayer&&activeForm.playerRequired;$("serverId").required=showServer&&activeForm.serverRequired;
 }
