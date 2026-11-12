@@ -11,8 +11,6 @@ import java.security.MessageDigest
 import java.util.Locale
 
 class MerchantNotificationListener : NotificationListenerService() {
-    // Initial known package IDs. Diagnostic mode records only app identity
-    // for DANA/GoPay-like apps if the merchant app uses a different package name.
     private val merchantPackages = setOf("id.dana", "com.gojek.gopaymerchant")
 
     override fun onNotificationPosted(sbn: StatusBarNotification) {
@@ -28,7 +26,7 @@ class MerchantNotificationListener : NotificationListenerService() {
         val bigText = extras.getCharSequence("android.bigText")?.toString().orEmpty()
         if (title.isBlank() && text.isBlank() && bigText.isBlank()) return
 
-        val keySource = "\${sbn.packageName}|\${sbn.postTime}|\${sbn.id}|\$title|\$text|\$bigText"
+        val keySource = "${sbn.packageName}|${sbn.postTime}|${sbn.id}|$title|$text|$bigText"
         val key = MessageDigest.getInstance("SHA-256")
             .digest(keySource.toByteArray())
             .joinToString("") { "%02x".format(it) }
@@ -46,9 +44,10 @@ class MerchantNotificationListener : NotificationListenerService() {
             .build()
 
         WorkManager.getInstance(applicationContext)
-            .enqueueUniqueWork("merchant-notification-\$key", ExistingWorkPolicy.KEEP, work)
+            .enqueueUniqueWork("merchant-notification-$key", ExistingWorkPolicy.KEEP, work)
     }
 
+    // For unknown package IDs, save only the app name and package ID, never its notification text.
     private fun rememberPossibleMerchantApp(packageName: String) {
         val label = try {
             val info = packageManager.getApplicationInfo(packageName, 0)
@@ -56,7 +55,7 @@ class MerchantNotificationListener : NotificationListenerService() {
         } catch (_: Exception) {
             return
         }
-        val searchable = "\$packageName \$label".lowercase(Locale.ROOT)
+        val searchable = "$packageName $label".lowercase(Locale.ROOT)
         if (listOf("dana", "gojek", "gopay", "merchant").none { searchable.contains(it) }) return
         getSharedPreferences("listener_config", MODE_PRIVATE).edit()
             .putString("last_detected_package", packageName)
