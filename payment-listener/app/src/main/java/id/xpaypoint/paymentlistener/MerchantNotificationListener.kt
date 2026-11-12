@@ -15,8 +15,16 @@ class MerchantNotificationListener : NotificationListenerService() {
 
     override fun onNotificationPosted(sbn: StatusBarNotification) {
         val packageName = sbn.packageName
+        val label = appLabel(packageName)
+        // Store source metadata only (package + app label); never store other apps' notification text.
+        getSharedPreferences("listener_config", MODE_PRIVATE).edit()
+            .putString("last_notification_package", packageName)
+            .putString("last_notification_label", label)
+            .putLong("last_notification_time", sbn.postTime)
+            .apply()
+
         if (packageName !in merchantPackages) {
-            rememberPossibleMerchantApp(packageName)
+            rememberPossibleMerchantApp(packageName, label)
             return
         }
 
@@ -47,14 +55,14 @@ class MerchantNotificationListener : NotificationListenerService() {
             .enqueueUniqueWork("merchant-notification-$key", ExistingWorkPolicy.KEEP, work)
     }
 
-    // For unknown package IDs, save only the app name and package ID, never its notification text.
-    private fun rememberPossibleMerchantApp(packageName: String) {
-        val label = try {
-            val info = packageManager.getApplicationInfo(packageName, 0)
-            packageManager.getApplicationLabel(info).toString()
-        } catch (_: Exception) {
-            return
-        }
+    private fun appLabel(packageName: String): String = try {
+        val info = packageManager.getApplicationInfo(packageName, 0)
+        packageManager.getApplicationLabel(info).toString()
+    } catch (_: Exception) {
+        packageName
+    }
+
+    private fun rememberPossibleMerchantApp(packageName: String, label: String) {
         val searchable = "$packageName $label".lowercase(Locale.ROOT)
         if (listOf("dana", "gojek", "gopay", "merchant").none { searchable.contains(it) }) return
         getSharedPreferences("listener_config", MODE_PRIVATE).edit()
