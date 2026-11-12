@@ -10,10 +10,13 @@ A GitHub Actions workflow builds a debug APK when files in this folder change. O
 
 ## Setup
 1. Install the app on the Android phone that receives merchant notifications.
-2. Open XPAYPOINT Listener and enter the backend listener URL and device token supplied by the XPAYPOINT administrator.
+2. Open XPAYPOINT Listener. The backend URL is prefilled: `https://xpayway-payment-engine.xpaybantuan.workers.dev/v1/payment/listener/notification`. Enter the device token supplied by the XPAYPOINT administrator.
 3. Enable notification access for XPAYPOINT Listener in Android Settings.
 4. Enable transaction notifications in DANA Bisnis and GoPay Merchant.
 5. Make a small test payment and inspect the received notification fields in the app/backend logs.
+
+## Cloudflare setup
+The Worker route is `POST /v1/payment/listener/notification`. It requires the Cloudflare Worker secret `PAYMENT_LISTENER_TOKEN`. The route stores notification candidates in `public.xpaypoint_payment_notification_candidates` and returns HTTP 202. It never changes payment/order status and never starts VIPayment fulfillment.
 
 ## Required backend contract
 POST JSON to `/v1/payment/listener/notification` with header `X-Listener-Token`.
