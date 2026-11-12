@@ -2,87 +2,114 @@
 <html lang="id">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#17181d">
-<title>Pembayaran QRIS · XPAYPOINT</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>Pembayaran QRIS GoPay · XPAYPOINT</title>
 <link rel="icon" href="assets/xpaypoint-logo.svg">
-<link rel="stylesheet" href="assets/xpaypoint-global.css">
 <style>
-:root{color-scheme:light}
-*{box-sizing:border-box}
-body{margin:0;background:#f6f7f9;color:#1d2028;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}
-.pay-wrap{width:min(100% - 32px,520px);margin:36px auto 80px}
-.pay-brand{display:flex;align-items:center;justify-content:center;margin:0 auto 24px}
-.pay-brand img{width:170px;height:auto;max-height:48px;object-fit:contain}
-.pay-card{background:#fff;border:1px solid #e9eaf0;border-radius:22px;padding:25px;box-shadow:0 14px 40px #1519270c}
-.pay-kicker{text-align:center;color:#e9364c;font-size:10px;font-weight:900;letter-spacing:.16em}
-h1{font-size:24px;letter-spacing:-.7px;text-align:center;margin:9px 0 5px}
-.pay-sub{text-align:center;color:#777d89;font-size:12px;line-height:1.6;margin:0 0 21px}
-.amount{background:#f8f8fa;border:1px solid #ececf0;border-radius:14px;padding:15px;text-align:center}
-.amount small{display:block;color:#818692;font-size:10px;font-weight:800;letter-spacing:.08em}
-.amount strong{display:block;font-size:27px;letter-spacing:-.8px;margin-top:4px}
-.qr-box{display:grid;place-items:center;padding:20px 10px 14px}
-#qrCanvas{width:240px!important;height:240px!important;max-width:100%;border:9px solid #fff;box-shadow:0 0 0 1px #ececf0;border-radius:12px}
-.qr-hint{text-align:center;color:#777d89;font-size:11px;line-height:1.6;margin:0 auto 18px;max-width:330px}
-.pay-details{border-top:1px solid #eee;padding-top:15px;display:grid;gap:10px}
-.detail{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;font-size:11px}
-.detail span{color:#818692}.detail strong{text-align:right;overflow-wrap:anywhere}
-.timer{display:flex;justify-content:center;align-items:center;gap:8px;color:#a75b11;background:#fff7eb;border:1px solid #f6e2c3;border-radius:10px;padding:10px;font-size:11px;font-weight:800;margin-top:16px}
-.state{margin-top:14px;padding:12px;border-radius:11px;background:#f4f5f7;color:#606674;font-size:11px;line-height:1.6;text-align:center}
+:root{color-scheme:light;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;color:#171923;background:#f7f8fa}
+*{box-sizing:border-box}body{margin:0;background:#f7f8fa}.wrap{width:min(100% - 28px,520px);margin:24px auto 60px}
+.brand{display:flex;justify-content:center;margin:0 auto 18px}.brand img{width:170px;max-height:48px;object-fit:contain}
+.card{background:#fff;border:1px solid #e8eaf0;border-radius:22px;padding:22px;box-shadow:0 14px 40px #1519270c}
+.kicker{text-align:center;color:#e9364c;font-size:10px;font-weight:900;letter-spacing:.16em}
+h1{text-align:center;font-size:23px;letter-spacing:-.6px;margin:9px 0 5px}
+.sub{text-align:center;color:#737987;font-size:12px;line-height:1.65;margin:0 auto 18px;max-width:390px}
+.amount{background:#fafafa;border:1px solid #ececf0;border-radius:14px;padding:15px;text-align:center}
+.amount small{display:block;color:#858b97;font-size:10px;font-weight:800;letter-spacing:.08em}.amount strong{display:block;font-size:28px;margin-top:4px}
+.qr-wrap{display:none;place-items:center;padding:18px 0 10px}.qr-wrap.show{display:grid}
+.qr-wrap img{width:min(100%,300px);max-height:340px;object-fit:contain;border:8px solid white;border-radius:13px;box-shadow:0 0 0 1px #e8eaf0}
+.waiting{margin:16px 0;padding:18px 14px;border:1px dashed #f1b2bc;border-radius:14px;background:#fff8f9;text-align:center;color:#6e5660;font-size:12px;line-height:1.7}
+.waiting strong{display:block;color:#c92f49;font-size:13px;margin-bottom:5px}
+.hint{text-align:center;color:#737987;font-size:11px;line-height:1.65;margin:10px auto 17px;max-width:360px}
+.details{border-top:1px solid #eee;padding-top:14px;display:grid;gap:10px}
+.row{display:flex;justify-content:space-between;gap:12px;font-size:11px}.row span{color:#858b97}.row strong{text-align:right;overflow-wrap:anywhere}
+.timer{text-align:center;margin-top:15px;background:#fff7eb;border:1px solid #f6e2c3;border-radius:10px;padding:10px;color:#a75b11;font-size:11px;font-weight:800}
+.state{margin-top:13px;padding:12px;border-radius:11px;background:#f4f5f7;color:#606674;font-size:11px;line-height:1.6;text-align:center}
 .state.success{background:#eaf8ef;color:#176b39}.state.error{background:#fff0f1;color:#b52b3f}
-.pay-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:16px}
-.pay-actions a,.pay-actions button{display:flex;align-items:center;justify-content:center;min-height:43px;padding:10px;border-radius:11px;border:1px solid #e5e6eb;background:#fff;color:#343843;text-decoration:none;font-size:11px;font-weight:850;cursor:pointer}
-.pay-actions .primary{background:#e9364c;border-color:#e9364c;color:#fff}
-.foot{text-align:center;color:#a0a4ad;font-size:10px;margin-top:18px}
-@media(max-width:420px){.pay-wrap{margin-top:20px}.pay-card{padding:20px 16px}.pay-actions{grid-template-columns:1fr}}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:15px}
+.actions a,.actions button{display:flex;align-items:center;justify-content:center;min-height:43px;padding:10px;border-radius:11px;border:1px solid #e5e6eb;background:#fff;color:#343843;text-decoration:none;font-size:11px;font-weight:850;cursor:pointer}
+.actions .primary{background:#e9364c;border-color:#e9364c;color:#fff}.actions .wide{grid-column:1/-1}
+.foot{text-align:center;color:#a0a4ad;font-size:10px;margin-top:16px}
+[hidden]{display:none!important}
+@media(max-width:420px){.wrap{margin-top:15px}.card{padding:18px 15px}.actions{grid-template-columns:1fr}.actions .wide{grid-column:auto}}
 </style>
 </head>
 <body>
-<main class="pay-wrap">
-<a class="pay-brand" href="index.html" aria-label="XPAYPOINT"><img src="assets/xpaypoint-logo.svg" alt="XPAYPOINT"></a>
-<section class="pay-card">
-<div class="pay-kicker">PEMBAYARAN AMAN</div>
-<h1>Scan QRIS untuk membayar</h1>
-<p class="pay-sub">Buka aplikasi bank atau e-wallet yang mendukung QRIS, lalu scan kode di bawah ini.</p>
+<main class="wrap">
+<a class="brand" href="index.html" aria-label="XPAYPOINT"><img src="assets/xpaypoint-logo.svg" alt="XPAYPOINT"></a>
+<section class="card">
+<div class="kicker">PEMBAYARAN XPAYPOINT</div>
+<h1>QRIS GoPay Merchant</h1>
+<p class="sub">Selesaikan pembayaran menggunakan QRIS yang dibuat khusus untuk pesanan ini.</p>
 <div class="amount"><small>TOTAL PEMBAYARAN</small><strong id="amount">Memuat…</strong></div>
-<div class="qr-box"><canvas id="qrCanvas" width="240" height="240"></canvas></div>
-<p class="qr-hint">Pastikan nama merchant dan nominal pada aplikasi pembayaran sesuai sebelum mengonfirmasi transaksi.</p>
-<div class="pay-details">
-<div class="detail"><span>Kode pesanan</span><strong id="orderCode">—</strong></div>
-<div class="detail"><span>Metode</span><strong>QRIS</strong></div>
-<div class="detail"><span>Status</span><strong id="statusText">Menunggu pembayaran</strong></div>
+<div class="waiting" id="waiting"><strong>Menyiapkan QRIS untuk pesananmu</strong>Admin XPAYPOINT sedang membuat QRIS dinamis melalui GoPay Merchant. Halaman ini akan memperbarui otomatis.</div>
+<div class="qr-wrap" id="qrWrap"><img id="qrImage" alt="QRIS GoPay untuk pembayaran XPAYPOINT"></div>
+<p class="hint" id="hint" hidden>Pastikan nominal dan nama merchant sesuai sebelum menekan bayar di aplikasi bank atau e-wallet.</p>
+<div class="details">
+<div class="row"><span>Kode pesanan</span><strong id="orderCode">—</strong></div>
+<div class="row"><span>Nomor invoice merchant</span><strong id="invoiceRef">—</strong></div>
+<div class="row"><span>Metode</span><strong>QRIS GoPay Merchant</strong></div>
+<div class="row"><span>Status pembayaran</span><strong id="statusText">Menunggu QRIS</strong></div>
 </div>
-<div class="timer" id="timer">Memeriksa masa berlaku QRIS…</div>
-<div class="state" id="state" role="status">Jangan tutup halaman ini sampai pembayaran terkonfirmasi.</div>
-<div class="pay-actions">
+<div class="timer" id="timer">Memeriksa masa berlaku invoice…</div>
+<div class="state" id="state" role="status">Jangan melakukan pembayaran sebelum QRIS tampil. Setelah membayar, admin akan memverifikasi transaksi dari riwayat GoPay Merchant.</div>
+<div class="actions">
 <button type="button" id="copyOrder">Salin kode pesanan</button>
 <a class="primary" href="cek-pesanan.html">Cek pesanan</a>
+<a class="primary wide" id="payLink" href="#" target="_blank" rel="noopener" hidden>Buka invoice GoPay</a>
 </div>
 </section>
-<p class="foot">© 2026 XPAYPOINT · Pembayaran diproses melalui SkieePay</p>
+<p class="foot">© 2026 XPAYPOINT · Pembayaran GoPay Merchant</p>
 </main>
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
 <script>
 (()=>{
- const API="https://xpayway-payment-engine.xpaybantuan.workers.dev";
+ const URL="https://rjgeitbkpcyymgemcztx.supabase.co";
+ const KEY="sb_publishable_1b6C4q5vgbX0XfP_EV5yjQ_Qk9Cq4lR";
+ const ENDPOINT=URL+"/functions/v1/gopay-manual";
  const id=new URLSearchParams(location.search).get("payment_id");
  const token=id?sessionStorage.getItem("xpay_skieepay_token_"+id):null;
- const qr=id?sessionStorage.getItem("xpay_skieepay_qr_"+id):null;
- const expires=id?sessionStorage.getItem("xpay_skieepay_exp_"+id):null;
- const order=id?sessionStorage.getItem("xpay_skieepay_order_"+id):null;
+ const cachedOrder=id?sessionStorage.getItem("xpay_skieepay_order_"+id):"";
  const $=x=>document.getElementById(x);
  const money=n=>"Rp"+Number(n||0).toLocaleString("id-ID");
- let pollHandle=null,done=false;
- if(!id||!token||!qr){$("state").className="state error";$("state").textContent="Data pembayaran tidak ditemukan di sesi browser ini. Kembali ke XPAYPOINT dan buka ulang checkout."; $("timer").textContent="Sesi pembayaran tidak tersedia";return;}
- $("orderCode").textContent=order||"—";
- if(window.QRCode){QRCode.toCanvas($("qrCanvas"),qr,{width:240,margin:1,errorCorrectionLevel:"M"},err=>{if(err){$("state").className="state error";$("state").textContent="QRIS gagal ditampilkan. Muat ulang halaman."}});}else{$("state").className="state error";$("state").textContent="Komponen QR tidak berhasil dimuat. Periksa koneksi lalu muat ulang.";}
- $("copyOrder").onclick=async()=>{try{await navigator.clipboard.writeText(order||id);$("copyOrder").textContent="Tersalin";}catch{$("copyOrder").textContent="Gagal menyalin";}};
- function updateTimer(){if(!expires){$("timer").textContent="QRIS berlaku sesuai waktu dari penyedia";return;}const left=new Date(expires).getTime()-Date.now();if(left<=0){$("timer").textContent="Waktu QRIS telah berakhir";return;}const m=Math.floor(left/60000),s=Math.floor(left%60000/1000);$("timer").textContent="QRIS berlaku "+String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");}
- async function poll(){if(done)return;try{const r=await fetch(API+"/v1/payment/status/"+encodeURIComponent(id),{headers:{"X-Guest-Token":token},cache:"no-store"});const d=await r.json();if(!r.ok||!d.ok)throw Error(d.code||"Status pembayaran belum dapat diperiksa.");const p=d.payment;$("amount").textContent=money(p.amount);$("statusText").textContent=p.status==="paid"?"Lunas":p.status==="expired"?"Kedaluwarsa":p.status==="failed"?"Gagal":"Menunggu pembayaran";
-  if(p.status==="paid"){done=true;$("state").className="state success";$("state").textContent="Pembayaran berhasil diterima. Pesanan tercatat di XPAYPOINT."; $("timer").textContent="Pembayaran terkonfirmasi";sessionStorage.removeItem("xpay_skieepay_qr_"+id);clearInterval(pollHandle);}
-  else if(p.status==="expired"||p.status==="failed"){done=true;$("state").className="state error";$("state").textContent="Pembayaran ini sudah tidak aktif. Silakan kembali ke halaman top up untuk membuat pesanan baru.";clearInterval(pollHandle);}
- }catch(e){$("state").textContent="Menghubungkan ulang untuk memeriksa pembayaran…";}}
- updateTimer();poll();pollHandle=setInterval(()=>{updateTimer();poll();},5000);
+ let timerHandle=null,pollHandle=null,done=false,expiry="";
+ async function call(payload){
+  const r=await fetch(ENDPOINT,{method:"POST",headers:{apikey:KEY,Authorization:"Bearer "+KEY,"Content-Type":"application/json"},body:JSON.stringify(payload),cache:"no-store"});
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok||!d.ok)throw Error(d.code||"Status pembayaran belum dapat diperiksa.");
+  return d;
+ }
+ if(!id||!token){$("state").className="state error";$("state").textContent="Sesi pembayaran tidak ditemukan. Buka kembali halaman checkout dari perangkat yang membuat pesanan.";$("timer").textContent="Sesi tidak tersedia";return}
+ $("orderCode").textContent=cachedOrder||"Memuat…";
+ $("copyOrder").onclick=async()=>{try{await navigator.clipboard.writeText($("orderCode").textContent||id);$("copyOrder").textContent="Tersalin"}catch{$("copyOrder").textContent="Gagal menyalin"}};
+ function updateTimer(){
+  if(!expiry){$("timer").textContent="Invoice berlaku maksimal 24 jam sejak dibuat";return}
+  const left=new Date(expiry).getTime()-Date.now();
+  if(left<=0){$("timer").textContent="Batas waktu invoice telah lewat";return}
+  const h=Math.floor(left/3600000),m=Math.floor(left%3600000/60000),s=Math.floor(left%60000/1000);
+  $("timer").textContent="Batas pembayaran "+String(h).padStart(2,"0")+":"+String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");
+ }
+ async function poll(){
+  if(done)return;
+  try{
+   const d=await call({action:"details",payment_id:id,guest_token:token}),p=d.payment;
+   $("amount").textContent=money(p.amount);$("orderCode").textContent=p.order_code||cachedOrder||"—";
+   $("invoiceRef").textContent=p.merchant_invoice_reference||"—";expiry=p.expires_at||expiry;
+   if(p.qr_image_url){$("qrImage").src=p.qr_image_url;$("qrWrap").classList.add("show");$("waiting").hidden=true;$("hint").hidden=false}
+   else if(p.checkout_url){$("waiting").innerHTML="<strong>Invoice GoPay siap dibuka</strong>Gunakan tombol di bawah untuk membuka QRIS dinamis dari GoPay Merchant.";$("payLink").href=p.checkout_url;$("payLink").hidden=false}
+   else{$("waiting").hidden=false}
+   if(p.checkout_url){$("payLink").href=p.checkout_url;$("payLink").hidden=false}
+   if(p.admin_note){$("state").textContent=p.admin_note}
+   if(p.status==="paid"){
+    done=true;$("statusText").textContent="Lunas";$("state").className="state success";$("state").textContent="Pembayaran telah diverifikasi oleh admin XPAYPOINT. Pesanan sedang diteruskan ke supplier."; $("timer").textContent="Pembayaran terkonfirmasi";clearInterval(pollHandle);clearInterval(timerHandle)
+   }else if(p.status==="expired"||p.status==="failed"){
+    done=true;$("statusText").textContent=p.status==="expired"?"Kedaluwarsa":"Gagal";$("state").className="state error";$("state").textContent="Invoice ini sudah tidak aktif. Silakan hubungi bantuan XPAYPOINT." ;clearInterval(pollHandle);clearInterval(timerHandle)
+   }else{
+    $("statusText").textContent=p.qr_ready?"Menunggu pembayaran":"Menunggu QRIS dari admin";
+   }
+   updateTimer();
+  }catch(e){$("state").textContent="Menghubungkan ulang untuk memeriksa pembayaran…"}
+ }
+ poll();pollHandle=setInterval(poll,5000);timerHandle=setInterval(updateTimer,1000);
 })();
 </script>
 </body>
