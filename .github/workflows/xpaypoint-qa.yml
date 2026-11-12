@@ -34,7 +34,7 @@ jobs:
         run: |
           cat > qa_xpaypoint.py <<'PY'
           from playwright.sync_api import sync_playwright
-          import json, sys
+          import json, sys, re
 
           BASE = "https://xpaypoint.pages.dev"
           PAGES = [
@@ -110,7 +110,7 @@ jobs:
                     const rect = s => {const e=document.querySelector(s); if(!e)return null; const r=e.getBoundingClientRect(); return {top:r.top,bottom:r.bottom,left:r.left,right:r.right,width:r.width,height:r.height}};
                     const copy=[...document.querySelectorAll('.xp-foot-copy,.footer-copy')].find(e=>e.innerText.includes('©'));
                     const nav=rect('.bottomnav'), chat=rect('#chatToggle');
-                    let cr=null;if(copy){const r=copy.getBoundingClientRect();cr={top:r.top,bottom:r.bottom,left:r.left,right:r.right,width:r.width,height:r.height}}
+                    let cr=null;if(copy){const target=copy.querySelector('span')||copy;const range=document.createRange();range.selectNodeContents(target);const r=range.getBoundingClientRect();cr={top:r.top,bottom:r.bottom,left:r.left,right:r.right,width:r.width,height:r.height}}
                     const overlap=(a,b)=>!!(a&&b&&a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top);
                     return {copyrightRect:cr,bottomNavRect:nav,chatRect:chat,navOverCopyright:overlap(cr,nav),chatOverCopyright:overlap(cr,chat)};
                   }""")
@@ -128,7 +128,7 @@ jobs:
                   if path == "/":
                       try:
                           page.locator("#gameGrid [data-game]").first.click(timeout=5000)
-                          page.wait_for_url("**/topup.html?game=**",wait_until="domcontentloaded",timeout=15000)
+                          page.wait_for_url(re.compile(r".*/topup\\.html\\?game=.+"),wait_until="commit",timeout=10000)
                           if "game=" not in page.url: failures.append("Game card did not open its top-up detail")
                           page.go_back(wait_until="domcontentloaded")
                       except Exception as e:
