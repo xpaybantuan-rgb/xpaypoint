@@ -76,3 +76,50 @@
  .xp-footer .xp-foot-copy{padding:16px 0 0;font-size:12px}
  .xp-footer .chat-fab{right:16px;bottom:calc(88px + env(safe-area-inset-bottom));width:56px;height:56px}
 }
+
+
+/* XPAYPOINT responsive hardening — layout-only, all customer pages */
+html{width:100%;max-width:100%;overflow-x:clip}
+body{width:100%;max-width:100%;overflow-x:clip}
+img,svg,video,canvas,iframe{max-width:100%}
+button,input,select,textarea{max-width:100%;min-width:0}
+:where(main,section,article,aside,header,footer,nav,form,fieldset){min-width:0}
+:where(h1,h2,h3,h4,p,a,button,label,small,strong,span){overflow-wrap:anywhere}
+:where(.container,.wrap,.main,.content,.page,.panel,.card,.section,.intro,.form,.form-row,.row,.grid,.games,.products,.detail-layout,.detail-main,.summary-card){min-width:0;max-width:100%}
+:where(table){max-width:100%;border-collapse:collapse}
+:where(pre,code){max-width:100%;overflow-wrap:anywhere;white-space:pre-wrap}
+:where(input,select,textarea){font-size:max(16px,1em)}
+:where(button,a,input,select,textarea){touch-action:manipulation}
+@media(max-width:900px){
+  :where(.container,.wrap,.main,.content,.page){width:min(100% - 32px,100%);margin-inline:auto}
+  :where(.detail-layout,.two-column,.content-grid){grid-template-columns:minmax(0,1fr)}
+  :where(.summary-card){position:static!important;top:auto!important}
+  :where(.table-wrap,.table-responsive,.overflow-table){max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  :where(.table-wrap table,.table-responsive table,.overflow-table table){min-width:620px}
+}
+@media(max-width:620px){
+  :where(.container,.wrap,.main,.content,.page){width:calc(100% - 28px);margin-inline:auto}
+  :where(.panel,.card,.intro,.section-card){max-width:100%;min-width:0}
+  :where(.panel,.card){overflow-wrap:anywhere}
+  :where(.form,.form-row,.actions-row,.button-row){flex-wrap:wrap}
+  :where(.form input,.form select,.form textarea,.form button){min-width:0;max-width:100%}
+  :where(.form input,.form select,.form textarea){width:100%}
+  :where(.btn,.button,.primary,.submit-btn){min-height:44px}
+  :where(.section-head,.panel-head,.panelhead){flex-wrap:wrap;align-items:stretch}
+  :where(.section-head)>*,:where(.panel-head)>*,:where(.panelhead)>*{min-width:0}
+  :where(.content-grid,.two-column,.detail-layout){grid-template-columns:minmax(0,1fr)}
+  :where(.gamegrid,.games,.products,.product-grid){grid-template-columns:repeat(2,minmax(0,1fr))}
+  :where(.bottomnav){padding-left:max(8px,env(safe-area-inset-left));padding-right:max(8px,env(safe-area-inset-right));padding-bottom:calc(8px + env(safe-area-inset-bottom))}
+  :where(.bottomnav a){min-width:0;min-height:44px}
+  :where(.toast,.notice,.alert){max-width:calc(100vw - 28px);overflow-wrap:anywhere}
+}
+@media(max-width:360px){
+  :where(.container,.wrap,.main,.content,.page){width:calc(100% - 22px)}
+  :where(.gamegrid,.games,.products,.product-grid){grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  :where(.headrow,.header-actions,.actions){gap:6px}
+  :where(.brand-image img){max-width:46vw}
+  :where(.bottomnav a){font-size:8px}
+}
+@media(hover:none){
+  :where(.gamecard:hover,.game:hover,.product:hover,.nav a:hover){transform:none;box-shadow:none}
+}
