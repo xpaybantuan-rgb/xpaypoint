@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#ffffff"><title>Admin Pembayaran · XPAYPOINT</title>
+<link rel="icon" href="assets/xpaypoint-logo.svg">
+<style>
+:root{color-scheme:light;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;color:#171923;background:#f6f7f9}
+*{box-sizing:border-box}body{margin:0;background:#f6f7f9}.wrap{width:min(100% - 28px,1040px);margin:26px auto 70px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px}.brand{font-size:19px;font-weight:900;letter-spacing:-.5px}.brand em{color:#e9364c;font-style:normal}.top small{display:block;color:#737987;font-size:10px;font-weight:700;margin-top:3px}
+.btn{border:0;border-radius:10px;padding:11px 15px;background:#e9364c;color:#fff;font-size:11px;font-weight:850;cursor:pointer}.btn:disabled{opacity:.5;cursor:not-allowed}.btn.secondary{background:#fff;color:#333;border:1px solid #e5e7eb}
+.panel{background:#fff;border:1px solid #e7e9ef;border-radius:18px;padding:20px;box-shadow:0 10px 30px #15192708;margin-bottom:14px}
+h1{font-size:24px;letter-spacing:-.6px;margin:0 0 6px}.muted{color:#737987;font-size:11px;line-height:1.6;margin:0}
+.login{max-width:420px;margin:9vh auto}.field{display:grid;gap:6px;margin-top:13px}.field label{font-size:10px;font-weight:850;color:#555d6b}.field input,.field textarea{width:100%;border:1px solid #e1e4ea;border-radius:10px;padding:12px;font:500 12px Inter,system-ui;background:#fff;outline:none}.field input:focus,.field textarea:focus{border-color:#e9364c;box-shadow:0 0 0 3px #e9364c14}.field textarea{min-height:65px;resize:vertical}
+.toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.status{font-size:11px;color:#6b7280;margin-top:12px}.status.error{color:#bd3045}.status.success{color:#187044}
+.cards{display:grid;gap:12px}.payment{border:1px solid #e7e9ef;border-radius:15px;background:#fff;padding:16px}.payment-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.payment-code{font-size:13px;font-weight:900}.badge{display:inline-block;border-radius:99px;padding:5px 9px;background:#fff5e8;color:#996016;font-size:9px;font-weight:900}.meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:13px 0;padding:12px;border-radius:11px;background:#f8f9fb}.meta small{display:block;color:#858b97;font-size:9px}.meta strong{display:block;font-size:11px;overflow-wrap:anywhere;margin-top:4px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.preview{max-width:150px;max-height:150px;object-fit:contain;border:1px solid #e8eaf0;border-radius:10px;padding:4px;margin-top:8px}.empty{padding:28px;text-align:center;color:#777;font-size:12px;border:1px dashed #ddd;border-radius:14px}
+@media(max-width:640px){.wrap{margin-top:16px}.panel{padding:16px}.grid{grid-template-columns:1fr}.meta{grid-template-columns:1fr 1fr}.top{align-items:flex-start}}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main class="wrap">
+<header class="top"><div><div class="brand">XPAY<em>POINT</em> · ADMIN</div><small>Verifikasi pembayaran GoPay Merchant</small></div><div id="topActions" hidden><button class="btn secondary" id="refresh">Muat ulang</button> <button class="btn secondary" id="logout">Keluar</button></div></header>
+<section class="panel login" id="loginPanel">
+<h1>Admin XPAYPOINT</h1><p class="muted">Masuk menggunakan akun admin Supabase yang sudah terdaftar.</p>
+<form id="loginForm">
+<div class="field"><label for="email">Email admin</label><input id="email" type="email" autocomplete="username" required value="xpaybantuan@gmail.com"></div>
+<div class="field"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" required></div>
+<div class="actions"><button class="btn" type="submit">Masuk dashboard</button></div>
+<div class="status" id="loginStatus" role="status"></div>
+</form>
+</section>
+<section id="dashboard" hidden>
+<div class="panel toolbar"><div><h1>Pesanan menunggu pembayaran</h1><p class="muted">Buat QRIS dinamis di aplikasi GoPay Merchant, lalu unggah gambar QR atau tempel link invoice.</p></div><span class="badge">Verifikasi manual aktif</span></div>
+<div class="cards" id="payments"><div class="empty">Memuat pembayaran…</div></div>
+<div class="status" id="dashboardStatus" role="status"></div>
+</section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(()=>{
+ const URL="https://rjgeitbkpcyymgemcztx.supabase.co",KEY="sb_publishable_1b6C4q5vgbX0XfP_EV5yjQ_Qk9C4q1R";
+ const BUCKET="xpaypoint-payment-qr",EDGE=URL+"/functions/v1/gopay-manual";
+ const $=id=>document.getElementById(id);
+ const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+ const money=n=>"Rp"+Number(n||0).toLocaleString("id-ID");
+ const sb=window.supabase.createClient(URL,KEY);
+ let currentUser=null;
+ function status(id,msg,type=""){const el=$(id);el.textContent=msg;el.className="status "+type}
+ async function checkAdmin(user){
+  const {data,error}=await sb.from("xpaypoint_admins").select("user_id").eq("user_id",user.id).maybeSingle();
+  if(error||!data)throw Error("Akun ini belum memiliki akses admin XPAYPOINT.");
+ }
+ async function showDashboard(user){
+  await checkAdmin(user);currentUser=user;
+  $("loginPanel").hidden=true;$("dashboard").hidden=false;$("topActions").hidden=false;
+  await loadPayments();
+ }
+ async function boot(){
+  const {data}=await sb.auth.getSession();
+  if(data.session){try{await showDashboard(data.session.user)}catch(e){await sb.auth.signOut();$("loginPanel").hidden=false;status("loginStatus",e.message,"error")}}
+ }
+ $("loginForm").addEventListener("submit",async e=>{
+  e.preventDefault();status("loginStatus","Memeriksa akun…");
+  const {data,error}=await sb.auth.signInWithPassword({email:$("email").value.trim(),password:$("password").value});
+  if(error){status("loginStatus",error.message,"error");return}
+  try{await showDashboard(data.user)}catch(err){await sb.auth.signOut();status("loginStatus",err.message,"error")}
+ });
+ $("logout").onclick=async()=>{await sb.auth.signOut();location.reload()};
+ $("refresh").onclick=loadPayments;
+ async function loadPayments(){
+  $("payments").innerHTML='<div class="empty">Memuat pembayaran…</div>';status("dashboardStatus","");
+  const {data:payments,error}=await sb.from("xpaypoint_payments").select("id,order_id,amount,status,created_at,expires_at,gateway_reference,manual_transaction_reference").eq("gateway","gopay_manual").in("status",["pending","paid"]).order("created_at",{ascending:false}).limit(50);
+  if(error){$("payments").innerHTML='<div class="empty">'+esc(error.message)+'</div>';return}
+  if(!payments?.length){$("payments").innerHTML='<div class="empty">Belum ada invoice GoPay. Pesanan QRIS baru akan muncul di sini.</div>';return}
+  const ids=[...new Set(payments.map(p=>p.order_id).filter(Boolean))];
+  const {data:orders}=await sb.from("xpaypoint_orders").select("id,order_code,game_name_snapshot,product_name_snapshot,target_id,zone_id,payable_amount,status,created_at").in("id",ids);
+  const {data:assets}=await sb.from("xpaypoint_manual_payment_assets").select("payment_id,qr_image_path,checkout_url,merchant_invoice_reference,admin_note").in("payment_id",payments.map(p=>p.id));
+  const orderMap=new Map((orders||[]).map(x=>[x.id,x])),assetMap=new Map((assets||[]).map(x=>[x.payment_id,x]));
+  $("payments").innerHTML=payments.map(p=>{
+   const o=orderMap.get(p.order_id)||{},a=assetMap.get(p.id)||{};
+   return '<article class="payment" data-payment="'+esc(p.id)+'" data-order="'+esc(p.order_id)+'">'+
+    '<div class="payment-head"><div><div class="payment-code">'+esc(o.order_code||p.id)+'</div><div class="muted">'+esc(o.game_name_snapshot||"Game")+' · '+esc(o.product_name_snapshot||"Produk")+'</div></div><span class="badge">'+(p.status==="paid"?"SUDAH LUNAS":"MENUNGGU PEMBAYARAN")+'</span></div>'+
+    '<div class="meta"><div><small>Total wajib dibayar</small><strong>'+money(p.amount)+'</strong></div><div><small>ID / Tujuan</small><strong>'+esc(o.target_id||"—")+(o.zone_id?" / "+esc(o.zone_id):"")+'</strong></div><div><small>Dibuat</small><strong>'+new Date(p.created_at).toLocaleString("id-ID")+'</strong></div></div>'+
+    '<div class="grid">'+
+     '<div class="field"><label>Nomor invoice GoPay (opsional)</label><input data-invoice value="'+esc(a.merchant_invoice_reference||"")+'" placeholder="Nomor invoice / catatan GoPay"></div>'+
+     '<div class="field"><label>Link invoice GoPay (opsional)</label><input data-link type="url" value="'+esc(a.checkout_url||"")+'" placeholder="https://..."></div>'+
+     '<div class="field"><label>Upload gambar QRIS GoPay</label><input data-file type="file" accept="image/png,image/jpeg,image/webp"><small class="muted">Maksimal 5 MB · PNG, JPG, WEBP</small></div>'+
+     '<div class="field"><label>Catatan untuk pembeli</label><input data-note value="'+esc(a.admin_note||"")+'" placeholder="Contoh: Scan QR dan pastikan nominal tepat"></div>'+
+    '</div>'+
+    (a.qr_image_path?'<div class="muted">QRIS sudah tersimpan: '+esc(a.qr_image_path.split("/").pop())+'</div>':'')+
+    '<div class="actions">'+(p.status==="pending"?'<button class="btn" data-save>Simpan QRIS / Link</button><button class="btn secondary" data-confirm>Konfirmasi LUNAS & kirim ke VIPayment</button>':'<span class="badge">Transaksi terverifikasi: '+esc(p.manual_transaction_reference||"—")+'</span>')+'</div>'+
+    (p.status==="pending"?'<div class="grid" style="margin-top:8px"><div class="field"><label>Nomor transaksi / referensi dari riwayat GoPay</label><input data-txn placeholder="Masukkan ID transaksi GoPay"></div><div class="field"><label>Waktu transaksi di GoPay</label><input data-time type="datetime-local"></div></div>':'')+
+    '<div class="status" data-card-status></div></article>';
+  }).join("");
+  $("payments").querySelectorAll("[data-save]").forEach(b=>b.onclick=()=>saveAsset(b.closest("[data-payment]")));
+  $("payments").querySelectorAll("[data-confirm]").forEach(b=>b.onclick=()=>confirmPayment(b.closest("[data-payment]")));
+ }
+ async function saveAsset(card){
+  const id=card.dataset.payment,btn=card.querySelector("[data-save]");btn.disabled=true;statusCard(card,"Menyimpan QRIS…");
+  try{
+   let path=null;const file=card.querySelector("[data-file]").files[0];
+   if(file){
+    if(file.size>5*1024*1024)throw Error("Ukuran gambar maksimal 5 MB.");
+    if(!["image/png","image/jpeg","image/webp"].includes(file.type))throw Error("Format gambar harus PNG, JPG, atau WEBP.");
+    const ext=file.type==="image/png"?"png":file.type==="image/webp"?"webp":"jpg";
+    path=id+"/"+Date.now()+"."+ext;
+    const {error}=await sb.storage.from(BUCKET).upload(path,file,{contentType:file.type,upsert:false});
+    if(error)throw error;
+   }
+   const old=await sb.from("xpaypoint_manual_payment_assets").select("qr_image_path").eq("payment_id",id).maybeSingle();
+   const row={payment_id:id,qr_image_path:path||old.data?.qr_image_path||null,checkout_url:card.querySelector("[data-link]").value.trim()||null,merchant_invoice_reference:card.querySelector("[data-invoice]").value.trim()||null,admin_note:card.querySelector("[data-note]").value.trim()||null,created_by:currentUser.id,updated_at:new Date().toISOString()};
+   const {error}=await sb.from("xpaypoint_manual_payment_assets").upsert(row,{onConflict:"payment_id"});
+   if(error)throw error;
+   statusCard(card,"QRIS berhasil disimpan. Halaman pembeli akan menampilkan QR / link secara otomatis.","success");
+  }catch(e){statusCard(card,e.message||"Gagal menyimpan QRIS.","error")}
+  finally{btn.disabled=false}
+ }
+ function statusCard(card,msg,type=""){const el=card.querySelector("[data-card-status]");el.textContent=msg;el.className="status "+type}
+ async function confirmPayment(card){
+  const id=card.dataset.payment,orderId=card.dataset.order,txn=card.querySelector("[data-txn]").value.trim(),localTime=card.querySelector("[data-time]").value,btn=card.querySelector("[data-confirm]");
+  if(!txn||txn.length<4||!localTime){statusCard(card,"Isi nomor transaksi dan waktu transaksi sesuai riwayat GoPay.","error");return}
+  if(!confirm("Pastikan transaksi ini benar-benar terlihat di riwayat GoPay Merchant dan nominalnya cocok. Konfirmasi pembayaran sekarang?"))return;
+  btn.disabled=true;statusCard(card,"Memverifikasi pembayaran dan menyiapkan pengiriman…");
+  try{
+   const {data:confirmed,error}=await sb.rpc("xpaypoint_admin_confirm_gopay_payment",{p_payment_id:id,p_transaction_reference:txn,p_transaction_at:new Date(localTime).toISOString()});
+   if(error)throw error;
+   const {data:sessionData}=await sb.auth.getSession(),accessToken=sessionData.session?.access_token;
+   const r=await fetch(EDGE,{method:"POST",headers:{apikey:KEY,Authorization:"Bearer "+accessToken,"Content-Type":"application/json"},body:JSON.stringify({action:"fulfill",order_id:orderId})});
+   const d=await r.json().catch(()=>({}));
+   if(!r.ok||!d.ok)throw Error("Pembayaran sudah tercatat LUNAS, tetapi permintaan fulfillment gagal. Buka ulang dashboard lalu coba ulang pengiriman. "+(d.code||""));
+   statusCard(card,"LUNAS terverifikasi. Permintaan ke VIPayment dikirim. Periksa status supplier di pesanan.","success");
+   await loadPayments();
+  }catch(e){statusCard(card,e.message||"Konfirmasi gagal.","error");btn.disabled=false}
+ }
+ boot();
+})();
+</script>
+</body></html>
