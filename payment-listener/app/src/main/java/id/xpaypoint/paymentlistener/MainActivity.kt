@@ -25,7 +25,7 @@ class MainActivity : Activity() {
         })
         val endpoint = EditText(this).apply {
             hint = "URL endpoint listener dari admin"
-            setText(prefs.getString("endpoint", ""))
+            setText(prefs.getString("endpoint", "https://xpayway-payment-engine.xpaybantuan.workers.dev/v1/payment/listener/notification"))
         }
         val token = EditText(this).apply {
             hint = "Device token dari admin"
