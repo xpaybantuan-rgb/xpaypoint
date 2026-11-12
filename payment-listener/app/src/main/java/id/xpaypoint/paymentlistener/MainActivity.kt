@@ -24,6 +24,7 @@ class MainActivity : Activity() {
     private val prefs by lazy { getSharedPreferences("listener_config", MODE_PRIVATE) }
     private lateinit var statusView: TextView
     private lateinit var updateView: TextView
+    private var openedInstallSettings = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -98,7 +99,15 @@ class MainActivity : Activity() {
     override fun onResume() {
         super.onResume()
         if (::statusView.isInitialized) refreshStatus()
-        installPendingApkIfAllowed()
+        if (openedInstallSettings) {
+            openedInstallSettings = false
+            if (android.os.Build.VERSION.SDK_INT < 26 || packageManager.canRequestPackageInstalls()) {
+                installPendingApkIfAllowed()
+            } else {
+                updateView.text = "Izin instalasi belum diaktifkan. Aktifkan izin tersebut, lalu tekan Periksa Update lagi."
+            }
+            return
+        }
     }
 
     private fun checkForUpdate() {
@@ -171,7 +180,10 @@ class MainActivity : Activity() {
         }
         if (android.os.Build.VERSION.SDK_INT >= 26 && !packageManager.canRequestPackageInstalls()) {
             updateView.text = "Izinkan pemasangan aplikasi dari sumber ini, lalu kembali ke XPAYPOINT Listener."
-            startActivity(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:$packageName")))
+            if (!openedInstallSettings) {
+                openedInstallSettings = true
+                startActivity(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:$packageName")))
+            }
             return
         }
         try {
