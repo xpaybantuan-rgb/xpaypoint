@@ -14,7 +14,7 @@ permissions:
 jobs:
   mobile-browser-qa:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -30,11 +30,11 @@ jobs:
           pip install playwright
           python -m playwright install --with-deps chromium
 
-      - name: Run mobile browser QA against production
+      - name: Run deeper mobile browser QA against production
         run: |
           cat > qa_xpaypoint.py <<'PY'
           from playwright.sync_api import sync_playwright
-          import json, os, sys
+          import json, sys
 
           BASE = "https://xpaypoint.pages.dev"
           PAGES = [
@@ -51,11 +51,22 @@ jobs:
               page.on("pageerror", lambda e: failures.append("JS runtime: " + str(e)))
               page.on("console", lambda m: failures.append("console error: " + m.text[:300])
                       if m.type == "error" else None)
+
               for path in PAGES:
                   errors_before = len(failures)
                   response = page.goto(BASE + path, wait_until="domcontentloaded", timeout=45000)
-                  page.wait_for_timeout(1800)
+                  page.wait_for_timeout(1200)
                   status = response.status if response else 0
+
+                  if path == "/":
+                      try:
+                          page.wait_for_function("""() => {
+                            const cards=[...document.querySelectorAll('#gameGrid .gameinfo small')];
+                            return cards.length && cards.some(x => /[1-9][0-9]* produk aktif/.test(x.innerText));
+                          }""", timeout=30000)
+                      except Exception:
+                          failures.append("Homepage product counts stayed at zero/loading after 30 seconds")
+
                   data = page.evaluate("""() => ({
                     title: document.title,
                     width: innerWidth,
@@ -64,8 +75,11 @@ jobs:
                     copyright: document.body.innerText.includes('© 2026 XPAYPOINT. All Rights Reserved.'),
                     chatToggle: !!document.querySelector('#chatToggle'),
                     chatPanel: !!document.querySelector('#chatPanel'),
+                    bottomNav: !!document.querySelector('.bottomnav'),
+                    productCountText: [...document.querySelectorAll('#gameGrid .gameinfo small')].slice(0,9).map(x=>x.innerText),
                     brokenImages: [...document.images].filter(i => i.complete && i.naturalWidth === 0).map(i => i.currentSrc || i.src).slice(0,10)
                   })""")
+
                   issues = []
                   if status != 200: issues.append(f"HTTP {status}")
                   if data["scrollWidth"] > data["width"] + 2: issues.append("horizontal overflow")
@@ -73,35 +87,58 @@ jobs:
                   if not data["chatToggle"] or not data["chatPanel"]: issues.append("XP AI widget missing")
                   if data["brokenImages"]: issues.append("broken images: " + ", ".join(data["brokenImages"]))
                   if len(failures) > errors_before: issues.append("browser JS/console errors")
+                  if path == "/" and data["productCountText"] and all(x.startswith("0 ") for x in data["productCountText"]):
+                      issues.append("visible game cards show zero active products")
+
+                  # Open and close XP AI, and verify its floating button is not over the copyright at page bottom.
                   if data["chatToggle"] and data["chatPanel"]:
                       try:
                           page.locator("#chatToggle").click(timeout=4000)
-                          page.wait_for_timeout(350)
-                          if not page.locator("#chatPanel").is_visible(): issues.append("chat did not open")
+                          page.wait_for_timeout(300)
+                          if not page.locator("#chatPanel").is_visible():
+                              issues.append("chat did not open")
                           else:
                               page.locator("#chatClose").click(timeout=3000)
                               if page.locator("#chatPanel").is_visible(): issues.append("chat did not close")
                       except Exception as e:
                           issues.append("chat interaction: " + str(e)[:180])
-                  page.screenshot(path=f"qa-{path.strip('/').replace('/','_') or 'home'}.png", full_page=True)
-                  report.append({"page": path, "http": status, **data, "issues": issues})
-                  print(json.dumps(report[-1], ensure_ascii=False))
+
+                  # Scroll to the actual bottom and detect footer/copyright overlap with fixed navigation/chat.
+                  page.evaluate("window.scrollTo(0, document.documentElement.scrollHeight)")
+                  page.wait_for_timeout(400)
+                  geometry = page.evaluate("""() => {
+                    const rect = s => {const e=document.querySelector(s); if(!e)return null; const r=e.getBoundingClientRect(); return {top:r.top,bottom:r.bottom,left:r.left,right:r.right,width:r.width,height:r.height}};
+                    const copy=[...document.querySelectorAll('.xp-foot-copy,.footer-copy')].find(e=>e.innerText.includes('©'));
+                    const nav=rect('.bottomnav'), chat=rect('#chatToggle');
+                    let cr=null;if(copy){const r=copy.getBoundingClientRect();cr={top:r.top,bottom:r.bottom,left:r.left,right:r.right,width:r.width,height:r.height}}
+                    const overlap=(a,b)=>!!(a&&b&&a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top);
+                    return {copyrightRect:cr,bottomNavRect:nav,chatRect:chat,navOverCopyright:overlap(cr,nav),chatOverCopyright:overlap(cr,chat)};
+                  }""")
+                  if geometry["navOverCopyright"]: issues.append("bottom navigation overlaps copyright at page bottom")
+                  if geometry["chatOverCopyright"]: issues.append("floating XP AI button overlaps copyright at page bottom")
+
+                  page.screenshot(path=f"qa-bottom-{path.strip('/').replace('/','_') or 'home'}.png")
+                  page.evaluate("window.scrollTo(0,0)")
+                  page.screenshot(path=f"qa-top-{path.strip('/').replace('/','_') or 'home'}.png")
+                  report.append({"page":path,"http":status,**data,"footerGeometry":geometry,"issues":issues})
+                  print(json.dumps(report[-1],ensure_ascii=False))
                   failures.extend([f"{path}: {x}" for x in issues])
+
+                  # Verify the first game card routes to the matching top-up page without submitting anything.
                   if path == "/":
                       try:
-                          page.wait_for_function("""() => {
-                            const g=document.querySelector('#gameGrid');
-                            return g && !g.innerText.includes('Memuat katalog game') && g.children.length > 0
-                          }""", timeout=20000)
-                          page.locator('#gameGrid img').first.wait_for(state="visible", timeout=10000)
-                          print("CATALOG: rendered")
+                          page.locator("#gameGrid [data-game]").first.click(timeout=5000)
+                          page.wait_for_url("**/topup.html?game=**",timeout=10000)
+                          if "game=" not in page.url: failures.append("Game card did not open its top-up detail")
+                          page.go_back(wait_until="domcontentloaded")
                       except Exception as e:
-                          failures.append("Homepage catalog failed to render: " + str(e)[:250])
+                          failures.append("Game card navigation: " + str(e)[:200])
 
               browser.close()
-          with open("qa-report.json", "w") as f: json.dump({"pages": report, "failures": failures}, f, indent=2, ensure_ascii=False)
+
+          with open("qa-report.json","w") as f: json.dump({"pages":report,"failures":failures},f,indent=2,ensure_ascii=False)
           if failures:
-              print("QA FAILED:", json.dumps(failures, ensure_ascii=False))
+              print("QA FAILED:",json.dumps(failures,ensure_ascii=False))
               sys.exit(1)
           print("QA PASSED")
           PY
@@ -111,7 +148,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: xpaypoint-mobile-qa
+          name: xpaypoint-mobile-qa-deep
           path: |
             qa-*.png
             qa-report.json
