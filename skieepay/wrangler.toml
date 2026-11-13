@@ -1,0 +1,8 @@
+name = "skieepay-api"
+main = "worker.js"
+compatibility_date = "2026-11-13"
+
+[vars]
+# Set SUPABASE_URL as a non-secret variable.
+# Add secrets with: wrangler secret put SUPABASE_SERVICE_ROLE_KEY
+# wrangler secret put SKIEEPAY_API_KEY
