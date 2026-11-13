@@ -36,6 +36,42 @@ function authorized(request, env) {
   return !!env.SKIEEPAY_API_KEY && key.length === env.SKIEEPAY_API_KEY.length &&
     [...key].reduce((n, c, i) => n | (c.charCodeAt(0) ^ env.SKIEEPAY_API_KEY.charCodeAt(i)), 0) === 0;
 }
+async function vipaymentCallback(request, env) {
+  if (!env.VIPAYMENT_CALLBACK_SIGNATURE) return jsonError("VIPayment callback is not configured", 503);
+  const sourceIp = request.headers.get("CF-Connecting-IP") || "";
+  if (env.VIPAYMENT_ENFORCE_IP !== "false" && sourceIp !== "178.248.73.218") {
+    return jsonError("Callback source IP is not allowed", 403);
+  }
+  const supplied = (request.headers.get("X-Client-Signature") || "").trim().toLowerCase();
+  const expected = env.VIPAYMENT_CALLBACK_SIGNATURE.trim().toLowerCase();
+  if (!supplied || supplied.length !== expected.length ||
+      [...supplied].reduce((n, c, i) => n | (c.charCodeAt(0) ^ expected.charCodeAt(i)), 0) !== 0) {
+    return jsonError("Invalid VIPayment callback signature", 401);
+  }
+  const raw = await request.text();
+  let payload;
+  try { payload = JSON.parse(raw); } catch { return jsonError("Invalid JSON payload"); }
+  const item = payload?.data?.trxid ? payload.data : payload;
+  const trxid = String(item?.trxid || "").trim();
+  const status = String(item?.status || "").toLowerCase();
+  const note = item?.note == null ? null : String(item.note).slice(0, 1000);
+  const price = Number.isSafeInteger(Number(item?.price)) ? Number(item.price) : null;
+  if (!trxid || !["waiting", "processing", "success", "error"].includes(status)) {
+    return jsonError("Missing trxid or unsupported status");
+  }
+  const result = await db(env, "rpc/skieepay_apply_vipayment_callback", {
+    method: "POST",
+    body: JSON.stringify({
+      p_trxid: trxid,
+      p_status: status,
+      p_note: note,
+      p_price: price,
+      p_payload: payload
+    })
+  });
+  return reply({ ok: true, provider: "VIPayment", result });
+}
+
 export default {
   async fetch(request, env) {
     if (request.method === "OPTIONS") return new Response(null, { headers: cors });
