@@ -40,7 +40,7 @@ h1{font-size:24px;letter-spacing:-.6px;margin:0 0 6px}.muted{color:#737987;font-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (()=>{
- const URL="https://rjgeitbkpcyymgemcztx.supabase.co",KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJqZ2VpdGJrcGN5eW1nZW1jenR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM3MjkyNjAsImV4cCI6MjEwOTMwNTI2MH0.JvqOrcagsrSGjfMo2l1TvP39vmFTqsszKjF0fd5H5ts";
+ const URL="https://rjgeitbkpcyymgemcztx.supabase.co",KEY="sb_publishable_1b6C4q5vgbX0XfP_EV5yjQ_Qk9Cq4lR";
  const BUCKET="xpaypoint-payment-qr",EDGE=URL+"/functions/v1/gopay-manual";
  const $=id=>document.getElementById(id);
  const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -49,8 +49,10 @@ h1{font-size:24px;letter-spacing:-.6px;margin:0 0 6px}.muted{color:#737987;font-
  let currentUser=null;
  function status(id,msg,type=""){const el=$(id);el.textContent=msg;el.className="status "+type}
  async function checkAdmin(user){
+  if(user?.email?.toLowerCase()!=="xpaybantuan@gmail.com")throw Error("Akun ini bukan admin utama XPAYPOINT.");
   const {data,error}=await sb.from("xpaypoint_admins").select("user_id").eq("user_id",user.id).maybeSingle();
-  if(error||!data)throw Error("Akun ini belum memiliki akses admin XPAYPOINT.");
+  if(error)throw error;
+  if(!data)throw Error("Akun ini belum memiliki akses admin XPAYPOINT.");
  }
  async function showDashboard(user){
   await checkAdmin(user);currentUser=user;
