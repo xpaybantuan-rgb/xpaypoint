@@ -1,24 +1,49 @@
-# SkieePay — XPAYPOINT Payment Engine
+# SkieePay — standalone payment engine
 
-SkieePay is the private payment-engine project for XPAYPOINT. It is kept separate from the live checkout while the core is built and tested.
+SkieePay runs separately from the XPAYPOINT storefront.
 
-## Current scaffold
-- `index.html`: responsive operations dashboard shell.
-- Planned backend modules: invoice API, QR payload/rendering, payment event ingestion, ledger, signed webhook, reconciliation, and VIPayment fulfillment handoff.
+## Implemented foundation
+- Invoice creation and lookup through the Cloudflare Worker.
+- Supabase invoice, payment-event, and ledger tables with RLS enabled.
+- VIPayment callback receiver at `POST /webhooks/vipayment`.
+- VIPayment callback signature validation using the precomputed MD5 value supplied in `X-Client-Signature`.
+- VIPayment callback source IP allowlist (official VIPayment docs list `178.248.73.218`).
+- Idempotent callback event storage and invoice fulfillment status updates.
+- Link a VIPayment transaction to an invoice using `POST /v1/invoices/:id/vipayment`.
 
-## Non-negotiable payment safety
-- A generated QR image is not proof that funds were received.
-- Never mark an invoice paid from a browser request or a customer-supplied screenshot.
-- Only accept a payment event from a trusted, authenticated source and reconcile it against amount, destination, reference, and transaction identity.
-- Keep provider credentials and signing secrets in server-side environment variables only.
-- Use idempotency keys so retries cannot fulfill an order twice.
+## Worker URLs
+- Health: `https://skieepay-api.xpaybantuan.workers.dev/health`
+- VIPayment callback: `https://skieepay-api.xpaybantuan.workers.dev/webhooks/vipayment`
 
-## Next implementation stages
-1. Create Supabase schema for invoices, payment events, and immutable ledger entries.
-2. Implement Cloudflare Worker endpoints: `POST /v1/invoices`, `GET /v1/invoices/:id`, and authenticated `POST /v1/events/payment`.
-3. Add a verified funds-reconciliation adapter. QR payload generation can be implemented, but payment receipt must be connected to a real supported payment rail before live use.
-4. Connect successful verified invoices to the existing VIPayment fulfillment function.
-5. Run end-to-end tests with small test payments before production activation.
+Set this callback URL in VIPayment API settings.
 
-## Deployment
-Cloudflare Pages serves this folder at `/skieepay/` after the repository's Pages build deploys.
+## Cloudflare Worker variables and secrets
+Set these in Cloudflare → Workers & Pages → `skieepay-api` → Settings → Variables and Secrets:
+
+| Name | Type | Value |
+|---|---|---|
+| `SUPABASE_URL` | Variable | `https://rjgeitbkpcyymgemcztx.supabase.co` |
+| `SUPABASE_SERVICE_ROLE_KEY` | Secret | Supabase service-role key |
+| `SKIEEPAY_API_KEY` | Secret | A long random server API key |
+| `VIPAYMENT_CALLBACK_SIGNATURE` | Secret | MD5 of your VIPayment API ID immediately followed by API key |
+| `VIPAYMENT_ENFORCE_IP` | Variable (optional) | Keep unset or set `true` to enforce the documented source IP |
+
+Never put service-role keys, API keys, or callback secrets in frontend code or GitHub.
+
+## API
+- `GET /health`
+- `POST /v1/invoices` — requires `X-SkieePay-Key`
+- `GET /v1/invoices/:uuid` — requires `X-SkieePay-Key`
+- `POST /v1/invoices/:uuid/vipayment` — requires `X-SkieePay-Key`; stores the VIPayment `trxid` on the invoice
+- `POST /webhooks/vipayment` — validates VIPayment callback signature and source IP
+
+## Payment QR and proof of funds
+VIPayment is the game/top-up supplier, not the merchant payment-acquiring rail. Its callback reports the fulfillment status of a VIPayment order; it does not prove that the buyer paid SkieePay. The generic payment webhook intentionally remains disabled until a real payment provider/merchant QRIS source is connected.
+
+A QR code containing an invoice URL or reference is not a QRIS payment QR. Do not mark an invoice `paid` based on a QR scan, redirect, screenshot, or customer button. Only a trusted provider notification plus amount/reference reconciliation can confirm funds.
+
+## Security
+- Keep all provider credentials in Cloudflare secrets.
+- The browser must never mark invoices paid.
+- Use idempotency and reconcile amount, invoice reference, merchant destination, and provider transaction ID.
+- Do not trigger VIPayment fulfillment until the payment invoice has been independently confirmed as paid.
