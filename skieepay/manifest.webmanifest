@@ -1,0 +1,10 @@
+{
+  "name": "SkieePay",
+  "short_name": "SkieePay",
+  "description": "Payment control center by SkieePay",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#080d18",
+  "theme_color": "#080d18",
+  "lang": "id"
+}
