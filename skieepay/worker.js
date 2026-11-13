@@ -74,6 +74,18 @@ export default {
         });
         return reply({ ok: true, invoice: rows[0] }, 201);
       }
+      const vipMatch = url.pathname.match(/^\/v1\/invoices\/([0-9a-f-]{36})\/vipayment$/i);
+      if (vipMatch && request.method === "POST") {
+        const body = await request.json();
+        const trxid = String(body.trxid || "").trim();
+        if (!trxid || trxid.length > 120) return jsonError("A valid VIPayment trxid is required");
+        const rows = await db(env, "skieepay_invoices?id=eq." + encodeURIComponent(vipMatch[1]) + "&select=id,status", {
+          method: "PATCH",
+          body: JSON.stringify({ vipayment_trxid: trxid, fulfillment_status: "waiting", updated_at: new Date().toISOString() })
+        });
+        if (!rows || !rows.length) return jsonError("Invoice not found", 404);
+        return reply({ ok: true, invoice: rows[0] });
+      }
       const match = url.pathname.match(/^\/v1\/invoices\/([0-9a-f-]{36})$/i);
       if (match && request.method === "GET") {
         const rows = await db(env, "skieepay_invoices?id=eq." + encodeURIComponent(match[1]) + "&select=*");
