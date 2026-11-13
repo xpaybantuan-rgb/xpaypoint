@@ -41,7 +41,14 @@ export default {
     if (request.method === "OPTIONS") return new Response(null, { headers: cors });
     const url = new URL(request.url);
     if (url.pathname === "/health" && request.method === "GET") {
-      return reply({ ok: true, service: "SkieePay", mode: "foundation", live_payments: false });
+      return reply({ ok: true, service: "SkieePay", mode: "vipayment-webhook-ready", vipayment_webhook: !!env.VIPAYMENT_CALLBACK_SIGNATURE, live_payments: false });
+    }
+    if (url.pathname === "/webhooks/vipayment" && request.method === "POST") {
+      try { return await vipaymentCallback(request, env); }
+      catch (error) { return jsonError(error.message || "Callback processing failed", 500); }
+    }
+    if (url.pathname === "/webhooks/payment" && request.method === "POST") {
+      return jsonError("Payment rail webhook is not configured. No invoice was marked paid.", 501);
     }
     if (!authorized(request, env)) return jsonError("Unauthorized", 401);
     if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) return jsonError("Server is not configured", 503);
