@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SkieePay — Payment Console</title>
+<meta name="theme-color" content="#080d18">
+<style>
+:root{color-scheme:dark;--bg:#080d18;--panel:#101827;--line:#243248;--muted:#8fa0b8;--text:#edf4ff;--cyan:#61e5d2;--blue:#7aa7ff;--orange:#ffbd69}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(900px 450px at 80% -10%,#18334a 0%,transparent 60%),var(--bg);color:var(--text);font:15px Inter,system-ui,Arial,sans-serif}
+.wrap{max-width:1180px;margin:auto;padding:26px 22px 60px}.top{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:32px}.brand{display:flex;align-items:center;gap:12px;font-weight:800;font-size:20px;letter-spacing:.3px}.logo{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,#61e5d2,#4c83ff);display:grid;place-items:center;color:#07121e;font-weight:1000;font-size:21px;box-shadow:0 8px 30px #4c83ff35}.tag{font-size:11px;color:var(--cyan);border:1px solid #2d756f;padding:6px 10px;border-radius:99px;letter-spacing:1px}.user{color:var(--muted);font-size:13px}.hero{display:flex;justify-content:space-between;align-items:end;gap:20px;margin-bottom:24px}.eyebrow{color:var(--cyan);font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase}.hero h1{font-size:clamp(28px,5vw,42px);margin:8px 0 6px;letter-spacing:-1.5px}.hero p{color:var(--muted);margin:0;max-width:620px;line-height:1.6}.btn{border:1px solid var(--line);background:#162236;color:var(--text);border-radius:11px;padding:11px 15px;font-weight:700;cursor:pointer}.btn.primary{background:var(--cyan);color:#07151b;border:0}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:22px 0}.stat,.panel{background:linear-gradient(145deg,#121e30,#0d1523);border:1px solid var(--line);border-radius:17px}.stat{padding:18px}.stat small{color:var(--muted)}.stat strong{display:block;font-size:25px;margin-top:10px}.stat em{font-style:normal;color:var(--cyan);font-size:12px}.layout{display:grid;grid-template-columns:1.5fr 1fr;gap:16px}.panel{padding:20px}.panelhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.panel h2{font-size:16px;margin:0}.sub{color:var(--muted);font-size:12px}.rows{display:grid;gap:10px}.item{padding:14px;border:1px solid #223149;border-radius:12px;display:flex;align-items:center;justify-content:space-between;gap:12px}.item b{font-size:14px}.item small{display:block;color:var(--muted);margin-top:5px}.pill{font-size:10px;letter-spacing:.6px;border-radius:99px;padding:6px 9px;background:#392d1c;color:var(--orange);white-space:nowrap}.pill.ok{background:#12352f;color:var(--cyan)}.amount{font-weight:800}.quick{display:grid;grid-template-columns:1fr 1fr;gap:10px}.quick .item{display:block;min-height:95px}.quick strong{font-size:20px;display:block;margin-top:10px}.notice{margin-top:16px;padding:14px 16px;border-radius:12px;background:#172638;border:1px solid #30435a;color:#b7c8dd;font-size:12px;line-height:1.6}.notice b{color:var(--cyan)}footer{margin-top:24px;color:#63758e;font-size:11px;text-align:center}
+@media(max-width:800px){.grid{grid-template-columns:repeat(2,1fr)}.layout{grid-template-columns:1fr}.hero{align-items:start;flex-direction:column}.top{align-items:flex-start}.user{display:none}}
+</style></head>
+<body><main class="wrap">
+<header class="top"><div class="brand"><div class="logo">S</div><div>SkieePay <div class="sub">XPAYPOINT PAYMENT ENGINE</div></div></div><div class="tag">PRIVATE PAYMENT SYSTEM</div></header>
+<section class="hero"><div><div class="eyebrow">Payment control center</div><h1>Semua transaksi, satu kendali.</h1><p>Dashboard pusat SkieePay untuk mengelola invoice, memantau pembayaran, dan menghubungkan transaksi XPAYPOINT ke proses fulfillment.</p></div><div class="user">Workspace: <b>XPAYPOINT</b></div></section>
+<section class="grid">
+<div class="stat"><small>Total transaksi</small><strong>—</strong><em>Menunggu koneksi database</em></div>
+<div class="stat"><small>Berhasil</small><strong>—</strong><em>Data belum dihubungkan</em></div>
+<div class="stat"><small>Menunggu</small><strong>—</strong><em>Data belum dihubungkan</em></div>
+<div class="stat"><small>Total pembayaran</small><strong>Rp —</strong><em>Data belum dihubungkan</em></div>
+</section>
+<section class="layout">
+<div class="panel"><div class="panelhead"><h2>Transaksi terbaru</h2><span class="sub">Live data · belum tersambung</span></div><div class="rows">
+<div class="item"><div><b>Belum ada transaksi</b><small>Invoice SkieePay akan tampil di sini setelah API aktif.</small></div><span class="pill">MENUNGGU API</span></div>
+<div class="item"><div><b>Invoice engine</b><small>Pembuatan invoice unik dan masa berlaku.</small></div><span class="pill ok">DESAIN</span></div>
+<div class="item"><div><b>Payment callback</b><small>Validasi signature dan idempotensi webhook.</small></div><span class="pill">BELUM AKTIF</span></div>
+</div><div class="notice"><b>Keamanan:</b> status transaksi tidak boleh diubah hanya dari halaman browser. Pembayaran baru dinyatakan berhasil setelah sumber dana terverifikasi oleh backend.</div></div>
+<div class="panel"><div class="panelhead"><h2>Modul SkieePay</h2><span class="sub">Fondasi sistem</span></div><div class="quick">
+<div class="item"><span class="sub">01 · Invoice</span><strong>Generator</strong><small class="sub">Kode unik & nominal</small></div>
+<div class="item"><span class="sub">02 · QR</span><strong>QR Engine</strong><small class="sub">Payload & renderer</small></div>
+<div class="item"><span class="sub">03 · Webhook</span><strong>Callback</strong><small class="sub">Signature & retry</small></div>
+<div class="item"><span class="sub">04 · Ledger</span><strong>Mutasi</strong><small class="sub">Audit transaksi</small></div>
+</div><div class="notice">Mode saat ini: <b>fondasi dashboard</b>. Belum memproses uang sungguhan dan belum mengirim status lunas ke VIPayment.</div></div>
+</section>
+<footer>SkieePay · Built for XPAYPOINT · Private system</footer>
+</main></body></html>
