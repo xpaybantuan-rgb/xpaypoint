@@ -36,14 +36,20 @@ function authorized(request, env) {
   return !!env.SKIEEPAY_API_KEY && key.length === env.SKIEEPAY_API_KEY.length &&
     [...key].reduce((n, c, i) => n | (c.charCodeAt(0) ^ env.SKIEEPAY_API_KEY.charCodeAt(i)), 0) === 0;
 }
+async function vipaymentSignature(env) {
+  if (!env.VIPAYMENT_API_ID || !env.VIPAYMENT_API_KEY) return null;
+  const input = new TextEncoder().encode(env.VIPAYMENT_API_ID + env.VIPAYMENT_API_KEY);
+  const digest = await crypto.subtle.digest("MD5", input);
+  return [...new Uint8Array(digest)].map(byte => byte.toString(16).padStart(2, "0")).join("");
+}
 async function vipaymentCallback(request, env) {
-  if (!env.VIPAYMENT_CALLBACK_SIGNATURE) return jsonError("VIPayment callback is not configured", 503);
+  const expected = await vipaymentSignature(env);
+  if (!expected) return jsonError("VIPayment API credentials are not configured", 503);
   const sourceIp = request.headers.get("CF-Connecting-IP") || "";
   if (env.VIPAYMENT_ENFORCE_IP !== "false" && sourceIp !== "178.248.73.218") {
     return jsonError("Callback source IP is not allowed", 403);
   }
   const supplied = (request.headers.get("X-Client-Signature") || "").trim().toLowerCase();
-  const expected = env.VIPAYMENT_CALLBACK_SIGNATURE.trim().toLowerCase();
   if (!supplied || supplied.length !== expected.length ||
       [...supplied].reduce((n, c, i) => n | (c.charCodeAt(0) ^ expected.charCodeAt(i)), 0) !== 0) {
     return jsonError("Invalid VIPayment callback signature", 401);
@@ -77,7 +83,7 @@ export default {
     if (request.method === "OPTIONS") return new Response(null, { headers: cors });
     const url = new URL(request.url);
     if (url.pathname === "/health" && request.method === "GET") {
-      return reply({ ok: true, service: "SkieePay", mode: "vipayment-webhook-ready", vipayment_webhook: !!env.VIPAYMENT_CALLBACK_SIGNATURE, live_payments: false });
+      return reply({ ok: true, service: "SkieePay", mode: "vipayment-webhook-ready", vipayment_webhook: !!(env.VIPAYMENT_API_ID && env.VIPAYMENT_API_KEY), live_payments: false });
     }
     if (url.pathname === "/webhooks/vipayment" && request.method === "POST") {
       try { return await vipaymentCallback(request, env); }
