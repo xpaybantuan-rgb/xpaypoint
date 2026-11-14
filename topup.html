@@ -279,6 +279,26 @@ function closeGame(){selected=null;selectedProduct=null;$("gameDetailPage").clas
 document.querySelectorAll("input[name=paymentMethod]").forEach(input=>input.addEventListener("change",()=>{document.querySelectorAll(".payment-option-choice").forEach(card=>card.classList.toggle("selected",card.querySelector("input").checked));updateSummary()}));$("productSearch").oninput=renderProducts;$("playerId").oninput=updateSummary;$("serverId").oninput=updateSummary;$("receiptEmail").oninput=updateSummary;$("receiptWhatsapp").oninput=updateSummary;$("checkoutButton").onclick=async()=>{
  if(!selected||!selectedProduct)return;
  const button=$("checkoutButton"),status=$("checkoutStatus"),method=document.querySelector("input[name=paymentMethod]:checked")?.value||"qris";
+ // DEMO MODE: generate a clearly fake invoice locally. Never call payment/order APIs.
+ if(new URLSearchParams(location.search).get("demo")==="1"){
+  const demoCode="SS-DEMO-"+crypto.randomUUID().replace(/-/g,"").slice(0,8).toUpperCase();
+  const amount=money(selectedProduct.sell_price);
+  let modal=document.getElementById("demoInvoiceModal");
+  if(!modal){modal=document.createElement("div");modal.id="demoInvoiceModal";modal.style.cssText="position:fixed;inset:0;z-index:99999;background:#11182799;display:grid;place-items:center;padding:18px";
+   modal.innerHTML='<div style="width:min(100%,440px);background:#fff;color:#111;border-radius:20px;padding:22px;box-shadow:0 20px 70px #0004"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><strong style="font:800 18px Manrope,sans-serif">Invoice Simulasi</strong><button id="demoInvoiceClose" style="border:0;background:#f3f4f6;border-radius:10px;padding:8px 12px;font-size:18px">×</button></div><div style="margin:16px 0;padding:12px;border:1px dashed #e9364c;border-radius:12px;background:#fff7f8"><small style="color:#c92f49;font-weight:800">NOMOR INVOICE (DEMO)</small><div id="demoInvoiceCode" style="font:800 19px Space Grotesk,sans-serif;margin-top:6px;overflow-wrap:anywhere"></div></div><div style="display:flex;justify-content:space-between;padding:8px 0;font-size:12px"><span>Game</span><strong id="demoInvoiceGame"></strong></div><div style="display:flex;justify-content:space-between;padding:8px 0;font-size:12px"><span>Produk</span><strong id="demoInvoiceProduct"></strong></div><div style="display:flex;justify-content:space-between;padding:8px 0;font-size:12px"><span>Total</span><strong id="demoInvoiceAmount" style="color:#e9364c"></strong></div><div style="margin-top:14px;padding:15px;border-radius:12px;background:#f3f4f6;text-align:center"><div style="font-size:11px;font-weight:900">QRIS SIMULASI</div><div style="font-size:10px;color:#555;margin-top:5px">Ini hanya tampilan contoh. Tidak ada QR asli, pembayaran, atau pesanan yang dibuat.</div><div style="font:800 11px Manrope,sans-serif;color:#c92f49;margin-top:10px">JANGAN DIPINDAI · BUKAN QRIS AKTIF</div></div><button id="demoInvoiceDone" style="width:100%;margin-top:16px;border:0;border-radius:11px;padding:13px;background:#e9364c;color:#fff;font-weight:900">Tutup</button></div>';
+   document.body.appendChild(modal);
+   const close=()=>modal.remove();
+   modal.querySelector("#demoInvoiceClose").onclick=close;modal.querySelector("#demoInvoiceDone").onclick=close;
+  }
+  modal.querySelector("#demoInvoiceCode").textContent=demoCode;
+  modal.querySelector("#demoInvoiceGame").textContent=selected.name;
+  modal.querySelector("#demoInvoiceProduct").textContent=selectedProduct.name;
+  modal.querySelector("#demoInvoiceAmount").textContent=amount;
+  modal.style.display="grid";
+  status.textContent="Mode DEMO aktif — invoice contoh dibuat tanpa transaksi sungguhan.";
+  button.disabled=false;button.textContent="BUAT INVOICE DEMO";
+  return;
+ }
  button.disabled=true;button.textContent="MENYIAPKAN PEMBAYARAN…";
  try{
   if(method==="qris"){
