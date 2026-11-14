@@ -1,4 +1,4 @@
--- XPAYPOINT: unverified merchant notification inbox.
+-- SKIEESTORE: unverified merchant notification inbox.
 -- Apply in Supabase SQL Editor. This table is NOT a payment ledger.
 create table if not exists public.xpaypoint_payment_notification_candidates (
   id uuid primary key default gen_random_uuid(),
