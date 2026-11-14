@@ -94,6 +94,11 @@ class MainActivity : Activity() {
         })
         setContentView(layout)
         refreshStatus()
+        // Check GitHub Releases at most once every 24 hours; installation always requires Android user approval.
+        val lastCheck = prefs.getLong("last_update_check_at", 0L)
+        if (System.currentTimeMillis() - lastCheck >= 24L * 60L * 60L * 1000L) {
+            checkForUpdate()
+        }
     }
 
     override fun onResume() {
@@ -112,6 +117,7 @@ class MainActivity : Activity() {
 
     private fun checkForUpdate() {
         updateView.text = "Memeriksa versi terbaru..."
+        prefs.edit().putLong("last_update_check_at", System.currentTimeMillis()).apply()
         Thread {
             try {
                 val api = URL("https://api.github.com/repos/xpaybantuan-rgb/xpaypoint/releases/latest")
