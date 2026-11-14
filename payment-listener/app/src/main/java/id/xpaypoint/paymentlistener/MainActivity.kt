@@ -70,7 +70,7 @@ class MainActivity : Activity() {
         val endpoint = EditText(this).apply {
             hint = "URL endpoint HTTPS"
             setSingleLine(true)
-            setText(prefs.getString("endpoint", "https://xpayway-payment-engine.xpaybantuan.workers.dev/v1/payment/listener/notification"))
+            setText(prefs.getString("endpoint", "https://skieestore-payment-engine.xpaybantuan.workers.dev/v1/payment/listener/notification"))
         }
         val token = EditText(this).apply {
             hint = "Device token dari admin"
