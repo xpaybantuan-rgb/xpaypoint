@@ -86,6 +86,47 @@ html{scroll-behavior:smooth}body{background:radial-gradient(900px 440px at 90% -
 .bizchip{background:#fff0f2;border-color:#ffd5db;color:#c92f49}
 @media(max-width:650px){.side{box-shadow:0 5px 18px #20283b08}.brand{white-space:nowrap}.nav a{white-space:nowrap}}
 
+
+/* SkieePay admin — final professional polish */
+:root{--bg:#f5f6fa;--panel:#fff;--panel2:#fff7f8;--line:#e8eaf0;--text:#191b22;--muted:#747b89;--mint:#e9364c;--blue:#c92f49}
+body{background:radial-gradient(1050px 480px at 92% -14%,#ffe7eb 0,transparent 64%),#f5f6fa}
+.app{max-width:1600px;grid-template-columns:248px minmax(0,1fr)}
+.side{position:sticky;top:0;height:100vh;overflow:auto;padding:27px 16px;box-shadow:8px 0 30px #20283b06}
+.brand{padding-bottom:32px}.brand .logo{border-radius:13px}
+.nav{gap:7px}.nav a{display:flex;align-items:center;gap:9px;padding:13px 14px;border:1px solid transparent;font-weight:700;transition:background .16s,border-color .16s}
+.main{padding:30px clamp(18px,3vw,46px) 52px}
+.top{padding:13px 16px;margin-bottom:28px;border:1px solid #e9eaf0;border-radius:15px;background:#ffffffd9;box-shadow:0 7px 24px #20283b06}
+.hero{align-items:center;margin-bottom:20px}.hero h1{font-size:clamp(28px,3.6vw,40px);font-weight:850;letter-spacing:-1.4px}
+.hero p{font-size:13px}.stats{gap:14px;margin:23px 0}
+.stat{border-radius:17px;padding:19px 20px;box-shadow:0 9px 28px #20283b07;transition:transform .16s,box-shadow .16s}
+.stat:hover{transform:translateY(-2px);box-shadow:0 14px 32px #20283b0c}
+.panel{border-radius:18px;box-shadow:0 10px 30px #20283b07}
+.panelhead{align-items:flex-start}.panel h2{font-size:15px;font-weight:850}
+.bizbar select,.bizform input{border-radius:11px;padding:12px 13px}
+.bizchip{padding:8px 12px}
+table{min-width:580px}th{font-size:10px;letter-spacing:.075em}td{padding:14px 11px}
+tbody tr:hover{background:#fff7f8}
+.modules .module{box-shadow:0 5px 16px #20283b04}
+.btn{border-radius:11px;transition:transform .15s,box-shadow .15s}.btn:not(:disabled):hover{transform:translateY(-1px);box-shadow:0 7px 18px #e9364c20}
+@media(max-width:950px){.app{grid-template-columns:210px minmax(0,1fr)}.side{padding:22px 12px}}
+@media(max-width:650px){
+ .app{display:flex;flex-direction:column}
+ .side{position:relative;height:auto;overflow:visible;border-right:0;border-bottom:1px solid #ececf1;padding:12px 14px;display:flex;align-items:center;gap:12px}
+ .brand{padding:0;flex:0 0 auto}.brand .logo{height:34px;width:34px;font-size:17px}.brand small{font-size:8px}
+ .navtitle,.sideinfo{display:none}.nav{display:flex;overflow-x:auto;gap:5px;flex:1;min-width:0;padding-bottom:2px}
+ .nav a{white-space:nowrap;padding:9px 11px;font-size:10px}
+ .main{padding:16px 12px 32px}.top{margin-bottom:20px;padding:11px 12px}
+ .hero{align-items:flex-start;flex-direction:column;gap:12px}.hero h1{font-size:28px}
+ .stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:17px 0}
+ .stat{padding:14px 12px}.stat strong{font-size:20px}
+ .layout{grid-template-columns:minmax(0,1fr);gap:11px}.panel{padding:15px}
+ .modules{grid-template-columns:1fr 1fr}
+ .bizbar select,.bizform input{min-width:0;width:100%}
+ .bizform{display:grid;grid-template-columns:1fr}.bizform button{width:100%}
+ .topright{gap:6px}.tag{font-size:8px}
+}
+@media(max-width:390px){.brand{font-size:15px}.brand small{letter-spacing:1px}.nav a{font-size:9px;padding:8px}.modules{grid-template-columns:1fr}}
+
 </style></head><body>
 <div id="loginView" class="loginwrap"><form class="login" id="loginForm"><div class="logo">S</div><h1>SkieePay Admin</h1><p class="sub">Masuk menggunakan akun admin yang telah terdaftar. Kelola bisnis milikmu dan pantau transaksi dari satu dashboard privat.</p><div class="field"><label for="email">EMAIL ADMIN</label><input id="email" type="email" autocomplete="username" required value="xpaybantuan@gmail.com"></div><div class="field"><label for="password">PASSWORD</label><input id="password" type="password" autocomplete="current-password" required placeholder="Masukkan password"></div><button class="btn full" id="loginBtn">Masuk ke dashboard</button><div id="loginMsg" class="msg" role="status"></div></form></div>
 <div id="appView" class="app hidden"><aside class="side"><div class="brand"><div class="logo">S</div><div>SkieePay<small>ADMIN CONSOLE</small></div></div><nav class="nav"><a class="active" href="#overview">◫ Overview</a><a href="#businesses">▣ Bisnis</a><a href="#transactions">↔ Transaksi</a><a href="#events">⌘ Callback</a></nav><div class="sideinfo"><b>Mode aman aktif</b><br>Dashboard hanya membaca data. Tidak tersedia tombol untuk memalsukan pembayaran sukses.</div></aside>
