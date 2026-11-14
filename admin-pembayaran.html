@@ -17,6 +17,41 @@ h1{font-size:24px;letter-spacing:-.6px;margin:0 0 6px}.muted{color:#737987;font-
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.preview{max-width:150px;max-height:150px;object-fit:contain;border:1px solid #e8eaf0;border-radius:10px;padding:4px;margin-top:8px}.empty{padding:28px;text-align:center;color:#777;font-size:12px;border:1px dashed #ddd;border-radius:14px}
 @media(max-width:640px){.wrap{margin-top:16px}.panel{padding:16px}.grid{grid-template-columns:1fr}.meta{grid-template-columns:1fr 1fr}.top{align-items:flex-start}}
 [hidden]{display:none!important}
+
+/* XPAYPOINT ADMIN — professional dashboard refresh */
+:root{--brand:#e9364c;--ink:#171923;--muted:#747b89;--line:#e9eaf0;--surface:#fff;--canvas:#f5f6fa}
+body{background:radial-gradient(1000px 420px at 90% -15%,#ffe6ea 0,transparent 62%),var(--canvas);color:var(--ink)}
+.wrap{width:min(100% - 36px,1240px);margin:24px auto 64px}
+.top{padding:17px 20px;border:1px solid var(--line);border-radius:18px;background:#ffffffed;box-shadow:0 10px 32px #1b24350a;position:sticky;top:10px;z-index:5;backdrop-filter:blur(12px)}
+.brand{font-size:20px;letter-spacing:-.7px}.top small{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#8a909c}
+.panel{border-radius:20px;padding:22px;box-shadow:0 12px 36px #1b243508;border-color:var(--line)}
+.login{max-width:440px;margin:10vh auto;padding:30px}
+.login h1{font-size:27px;letter-spacing:-1px}
+.field{gap:8px;margin-top:16px}.field label{font-size:11px;letter-spacing:.025em}
+.field input,.field textarea{padding:13px 14px;border-radius:12px;font-size:13px}
+.btn{border-radius:11px;padding:12px 16px;font-size:11px;letter-spacing:.01em;transition:transform .15s,box-shadow .15s}
+.btn:not(:disabled):hover{transform:translateY(-1px);box-shadow:0 7px 18px #e9364c25}
+.btn.secondary{background:#fff;border-color:#e4e6ec}
+#dashboard .toolbar{align-items:flex-end;padding:24px;margin:20px 0 14px;background:linear-gradient(115deg,#fff 0%,#fff8f9 100%)}
+#dashboard .toolbar h1{font-size:clamp(23px,3vw,31px);letter-spacing:-1px}
+#dashboard .toolbar .muted{max-width:720px;font-size:12px}
+.kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin:0 0 18px}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:17px;padding:18px 20px;box-shadow:0 8px 24px #1b243506}
+.kpi-label{font-size:11px;font-weight:750;color:#777f8d}.kpi-value{font-size:26px;font-weight:900;letter-spacing:-1px;margin-top:10px}.kpi-note{font-size:10px;color:#969ba5;margin-top:4px}
+#payments{gap:13px}
+.payment{padding:20px;border-radius:17px;border-color:#e8eaf0;box-shadow:0 8px 26px #1b243506;transition:box-shadow .18s,border-color .18s}
+.payment:hover{border-color:#f2b8c0;box-shadow:0 12px 30px #1b24350d}
+.payment-code{font-size:14px;letter-spacing:-.2px}
+.badge{padding:6px 10px;font-size:9px;letter-spacing:.04em}
+.meta{background:#f8f9fb;border:1px solid #eff0f4;border-radius:13px;padding:14px}
+.meta small{font-size:10px}.meta strong{font-size:12px}
+.payment .grid{gap:12px}
+.payment .actions{align-items:center}
+.empty{background:#fff;border-color:#e2e5ec;border-radius:16px;padding:36px 20px}
+.status{font-size:11px}
+@media(max-width:700px){.wrap{width:min(100% - 22px,1240px);margin:12px auto 40px}.top{padding:14px;border-radius:15px;position:static}.panel{padding:16px;border-radius:16px}.login{margin:8vh auto;padding:23px}.kpis{grid-template-columns:1fr 1fr;gap:9px}.kpi{padding:14px}.kpi-value{font-size:22px}#dashboard .toolbar{align-items:flex-start;gap:12px;padding:18px}.payment{padding:15px}.meta{gap:8px;padding:11px}}
+@media(max-width:420px){.kpis{grid-template-columns:1fr 1fr}.kpi-value{font-size:20px}.top{gap:8px}.brand{font-size:17px}}
+
 </style>
 </head>
 <body>
@@ -32,7 +67,12 @@ h1{font-size:24px;letter-spacing:-.6px;margin:0 0 6px}.muted{color:#737987;font-
 </form>
 </section>
 <section id="dashboard" hidden>
-<div class="panel toolbar"><div><h1>Pesanan menunggu pembayaran</h1><p class="muted">Di GoPay Merchant buka Kode QR → Tambah nominal, masukkan jumlah persis seperti total pesanan, lalu unggah gambar QR atau tempel link invoice.</p></div><span class="badge">Verifikasi manual aktif</span></div>
+<div class="panel toolbar"><div><div class="muted" style="font-weight:850;letter-spacing:.12em;text-transform:uppercase;color:#e9364c;margin-bottom:8px">PAYMENT OPERATIONS</div><h1>Dashboard pembayaran</h1><p class="muted">Pantau pesanan GoPay Merchant, kelola QR pembayaran, dan verifikasi transaksi sebelum pesanan diteruskan ke VIPayment.</p></div><span class="badge">Verifikasi manual aktif</span></div>
+<div class="kpis" aria-label="Ringkasan pembayaran">
+ <div class="kpi"><div class="kpi-label">Total pesanan tampil</div><div class="kpi-value" id="kpiTotal">—</div><div class="kpi-note">Maksimal 50 transaksi terbaru</div></div>
+ <div class="kpi"><div class="kpi-label">Menunggu pembayaran</div><div class="kpi-value" id="kpiPending">—</div><div class="kpi-note">Perlu pemeriksaan admin</div></div>
+ <div class="kpi"><div class="kpi-label">Sudah lunas</div><div class="kpi-value" id="kpiPaid">—</div><div class="kpi-note">Status pembayaran tercatat</div></div>
+</div>
 <div class="cards" id="payments"><div class="empty">Memuat pembayaran…</div></div>
 <div class="status" id="dashboardStatus" role="status"></div>
 </section>
@@ -75,6 +115,10 @@ h1{font-size:24px;letter-spacing:-.6px;margin:0 0 6px}.muted{color:#737987;font-
   $("payments").innerHTML='<div class="empty">Memuat pembayaran…</div>';status("dashboardStatus","");
   const {data:payments,error}=await sb.from("xpaypoint_payments").select("id,order_id,amount,status,created_at,expires_at,gateway_reference,manual_transaction_reference").eq("gateway","gopay_manual").in("status",["pending","paid"]).order("created_at",{ascending:false}).limit(50);
   if(error){$("payments").innerHTML='<div class="empty">'+esc(error.message)+'</div>';return}
+  const visible=payments||[];
+  $("kpiTotal").textContent=visible.length;
+  $("kpiPending").textContent=visible.filter(p=>p.status==="pending").length;
+  $("kpiPaid").textContent=visible.filter(p=>p.status==="paid").length;
   if(!payments?.length){$("payments").innerHTML='<div class="empty">Belum ada invoice GoPay. Pesanan QRIS baru akan muncul di sini.</div>';return}
   const ids=[...new Set(payments.map(p=>p.order_id).filter(Boolean))];
   const {data:orders}=await sb.from("xpaypoint_orders").select("id,order_code,game_name_snapshot,product_name_snapshot,target_id,zone_id,payable_amount,status,created_at").in("id",ids);
