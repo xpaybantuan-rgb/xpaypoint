@@ -65,7 +65,7 @@
 .chat-compose.expanded{position:relative;z-index:100001}
 @media(max-width:620px){.chat-fab{right:14px;bottom:78px;padding:11px 13px}.chat-panel{inset:0;width:100%;height:100vh;height:100dvh;border-radius:0}}
 
-/* Shared footer/chat across every XPAYPOINT customer page */
+/* Shared footer/chat across every SKIEESTORE customer page */
 .xp-footer{display:block}
 .xp-footer .xp-foot-copy{display:flex;align-items:center;justify-content:space-between;gap:14px}
 .xp-footer .xp-foot-copy>span{min-width:0}
@@ -78,7 +78,7 @@
 }
 
 
-/* XPAYPOINT responsive hardening — layout-only, all customer pages */
+/* SKIEESTORE responsive hardening — layout-only, all customer pages */
 html{width:100%;max-width:100%;overflow-x:clip}
 body{width:100%;max-width:100%;overflow-x:clip}
 img,svg,video,canvas,iframe{max-width:100%}
