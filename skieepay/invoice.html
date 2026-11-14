@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#080d18">
+<meta name="description" content="Lihat detail dan status invoice SkieePay.">
+<title>Invoice — SkieePay</title>
+<style>
+:root{color-scheme:dark;--bg:#080d18;--panel:#111d2e;--line:#2a3b52;--text:#f1f6ff;--muted:#9aabc1;--mint:#6ce8cc;--amber:#ffd18a;--red:#ff9da5}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(850px 480px at 50% -12%,#21475a 0,transparent 65%),var(--bg);color:var(--text);font:15px Inter,system-ui,-apple-system,"Segoe UI",sans-serif;display:grid;place-items:center;padding:22px}
+.wrap{width:min(100%,560px)}.brand{display:flex;align-items:center;justify-content:center;gap:10px;margin:0 0 22px;font-weight:850;font-size:19px;letter-spacing:-.4px}.logo{width:38px;height:38px;border-radius:13px;background:linear-gradient(135deg,#72efd0,#8eb2ff);display:grid;place-items:center;color:#07131c;font-size:20px;font-weight:950}
+.card{background:linear-gradient(150deg,#15243a,#0e1828);border:1px solid var(--line);border-radius:24px;padding:clamp(22px,5vw,34px);box-shadow:0 28px 80px #0006}
+.kicker{text-align:center;color:var(--mint);font-size:10px;font-weight:900;letter-spacing:2px}.heading{text-align:center;margin:10px 0 5px;font-size:25px;letter-spacing:-.8px}.desc{text-align:center;color:var(--muted);font-size:12px;line-height:1.6;margin:0 0 24px}
+.status{display:flex;align-items:center;justify-content:center;gap:8px;margin:0 auto 22px;width:max-content;max-width:100%;border:1px solid #5b4828;background:#332817;color:var(--amber);padding:9px 14px;border-radius:99px;font-size:11px;font-weight:850}.status.paid{border-color:#28594d;background:#12352e;color:var(--mint)}.status.failed,.status.cancelled,.status.expired{border-color:#633b42;background:#3a2028;color:var(--red)}
+.amount{text-align:center;font-size:clamp(32px,8vw,42px);font-weight:900;letter-spacing:-1.5px;margin:8px 0 25px}.amount small{display:block;font-size:10px;letter-spacing:1.6px;color:var(--muted);margin-bottom:7px}
+.details{border:1px solid var(--line);border-radius:15px;overflow:hidden}.item{display:flex;justify-content:space-between;gap:14px;padding:14px 15px;border-bottom:1px solid #26364b;font-size:12px}.item:last-child{border:0}.item span:first-child{color:var(--muted)}.item strong{text-align:right;overflow-wrap:anywhere}
+.notice{margin-top:17px;padding:14px;border-radius:13px;background:#14283b;border:1px solid #29445d;color:#b7c9dd;font-size:11px;line-height:1.65}.notice b{color:var(--mint)}.notice.warn{background:#332817;border-color:#5b4828;color:#f0d8ae}.notice.error{background:#351f27;border-color:#633b42;color:#ffc2c7}
+.actions{display:flex;gap:9px;margin-top:18px}.btn{flex:1;border:1px solid #38516a;border-radius:12px;background:#1a2b41;color:#eaf2ff;padding:12px;font:inherit;font-size:12px;font-weight:800;text-align:center;text-decoration:none;cursor:pointer}.btn.primary{background:var(--mint);border-color:var(--mint);color:#071a1b}
+.message{text-align:center;padding:26px 12px;color:var(--muted);font-size:13px;line-height:1.7}.foot{text-align:center;color:#71839b;font-size:10px;margin:18px 0 0}
+@media(max-width:420px){body{padding:14px}.card{border-radius:19px}.item{padding:13px 11px}.actions{flex-direction:column}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="brand"><div class="logo">S</div>SkieePay</div>
+  <section class="card">
+    <div class="kicker">SECURE INVOICE</div>
+    <h1 class="heading">Detail pembayaran</h1>
+    <p class="desc">Periksa nominal dan status invoice kamu di halaman ini.</p>
+    <div id="content" class="message" role="status">Memuat invoice…</div>
+  </section>
+  <div class="foot">SkieePay · Halaman status invoice resmi</div>
+</main>
+<script>
+const API='https://skieepay-api.xpaybantuan.workers.dev';
+const root=document.getElementById('content');
+const params=new URLSearchParams(location.search);
+const code=(params.get('code')||'').trim().toUpperCase();
+const money=v=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(v||0));
+const esc=v=>String(v??'—').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const date=v=>{if(!v)return '—';const d=new Date(v);return Number.isNaN(d.getTime())?'—':d.toLocaleString('id-ID',{dateStyle:'medium',timeStyle:'short'})};
+const statusText={pending:'Menunggu pembayaran',paid:'Pembayaran terverifikasi',expired:'Invoice kedaluwarsa',cancelled:'Invoice dibatalkan',failed:'Pembayaran gagal'};
+function showError(message){root.innerHTML='<div class="message">'+esc(message)+'</div>'}
+async function refresh(){
+ if(!/^SKP[0-9A-F]{16}(?:[0-9A-F]{16})?$/.test(code)){showError('Kode invoice tidak valid. Periksa kembali tautan yang kamu terima.');return}
+ try{
+  const r=await fetch(API+'/public/invoices/'+encodeURIComponent(code),{cache:'no-store'});
+  const data=await r.json().catch(()=>({}));
+  if(!r.ok||!data.ok)throw new Error(data.error||'Invoice tidak ditemukan.');
+  const x=data.invoice||{};
+  const status=String(x.status||'pending').toLowerCase();
+  const known=['pending','paid','expired','cancelled','failed'].includes(status);
+  const statusLabel=statusText[status]||status;
+  const payload=String(x.payment_payload||'').trim();
+  const paymentInfo=payload
+    ? (/^https:\/\//i.test(payload)?'<a href="'+esc(payload)+'" target="_blank" rel="noopener noreferrer">Buka instruksi pembayaran</a>':'<span>'+esc(payload)+'</span>')
+    : '<span>Belum tersedia</span>';
+  const notice=status==='paid'
+    ? '<div class="notice"><b>Pembayaran terverifikasi.</b><br>Invoice ini telah dinyatakan lunas oleh sistem pembayaran.</div>'
+    : status==='pending'
+      ? '<div class="notice warn"><b>Menunggu konfirmasi pembayaran.</b><br>Metode pembayaran otomatis belum terhubung pada sistem ini. Jangan mengirim dana ke rekening atau QR yang tidak tercantum pada instruksi resmi.</div>'
+      : '<div class="notice"><b>Informasi status.</b><br>Jika kamu merasa sudah membayar, hubungi tim bantuan dan sertakan kode invoice ini. Jangan mengirim bukti pembayaran ke pihak yang tidak dikenal.</div>';
+  root.innerHTML='<div class="status '+(known?esc(status):'')+'">● '+esc(statusLabel)+'</div>'+
+   '<div class="amount"><small>TOTAL TAGIHAN</small>'+money(x.amount)+'</div>'+
+   '<div class="details">'+
+    '<div class="item"><span>Kode invoice</span><strong>'+esc(x.invoice_code)+'</strong></div>'+
+    '<div class="item"><span>Metode pembayaran</span><strong>'+esc(x.payment_method||'Belum dipilih')+'</strong></div>'+
+    '<div class="item"><span>Instruksi pembayaran</span><strong>'+paymentInfo+'</strong></div>'+
+    '<div class="item"><span>Dibuat</span><strong>'+esc(date(x.created_at))+'</strong></div>'+
+    '<div class="item"><span>Batas waktu</span><strong>'+esc(date(x.expires_at))+'</strong></div>'+
+    (x.paid_at?'<div class="item"><span>Dibayar pada</span><strong>'+esc(date(x.paid_at))+'</strong></div>':'')+
+   '</div>'+notice+
+   '<div class="actions"><button class="btn primary" id="refresh">Perbarui status</button><a class="btn" href="/">Kembali</a></div>';
+  document.getElementById('refresh').addEventListener('click',refresh);
+ }catch(e){showError(e.message||'Gagal memuat invoice. Coba lagi beberapa saat.')}
+}
+refresh();
+setInterval(refresh,20000);
+</script>
+</body>
+</html>
