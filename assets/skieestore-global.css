@@ -123,3 +123,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
 @media(hover:none){
   :where(.gamecard:hover,.game:hover,.product:hover,.nav a:hover){transform:none;box-shadow:none}
 }
+
+/* Consistent SKIEESTORE footer brand mark */
+.xp-footer .xp-foot-brand{width:max-content;max-width:100%;min-height:44px}
+.xp-footer .xp-foot-logo{display:block;width:min(220px,100%);height:auto;max-height:54px;object-fit:contain;object-position:left center}
