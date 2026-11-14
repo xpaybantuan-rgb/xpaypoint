@@ -11,6 +11,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Switch
 import androidx.core.content.FileProvider
 import org.json.JSONObject
 import java.io.File
@@ -75,6 +76,23 @@ class MainActivity : Activity() {
         layout.addView(Button(this).apply {
             text = "Aktifkan akses notifikasi"
             setOnClickListener { startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)) }
+        })
+        layout.addView(TextView(this).apply {
+            text = "Privasi: isi notifikasi merchant tidak dikirim ke server sebelum lu mengaktifkan pilihan berikut."
+            textSize = 13f
+            setPadding(0, 16, 0, 4)
+        })
+        layout.addView(Switch(this).apply {
+            text = "Izinkan kirim detail notifikasi merchant"
+            isChecked = prefs.getBoolean("forward_notifications_enabled", false)
+            setOnCheckedChangeListener { _, checked ->
+                prefs.edit().putBoolean("forward_notifications_enabled", checked).apply()
+                statusView.text = if (checked) {
+                    "Pengiriman detail notifikasi merchant AKTIF. Data tetap hanya kandidat dan belum membuktikan pembayaran."
+                } else {
+                    "Pengiriman detail notifikasi merchant NONAKTIF. Tidak ada isi notifikasi yang diteruskan."
+                }
+            }
         })
 
         updateView = TextView(this).apply {
