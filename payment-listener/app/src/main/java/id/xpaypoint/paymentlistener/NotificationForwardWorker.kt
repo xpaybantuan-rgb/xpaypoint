@@ -20,6 +20,8 @@ class NotificationForwardWorker(
 
     override fun doWork(): Result {
         val prefs = applicationContext.getSharedPreferences("listener_config", Context.MODE_PRIVATE)
+        // Re-check consent when queued work actually runs. If forwarding was disabled after enqueue, discard locally.
+        if (!prefs.getBoolean("forward_notifications_enabled", false)) return Result.success()
         val endpoint = prefs.getString("endpoint", "").orEmpty()
         val token = prefs.getString("token", "").orEmpty()
         if (!endpoint.startsWith("https://") || token.isBlank()) return Result.failure()
