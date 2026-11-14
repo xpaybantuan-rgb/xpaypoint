@@ -248,8 +248,10 @@ body{background:radial-gradient(1000px 420px at 90% -15%,#ffe6ea 0,transparent 6
  }
  async function loadVipCatalog(){
   $("vipCatalogList").innerHTML='<div class="empty">Memuat katalog…</div>';vipStatus("");
-  let query=sb.from("xpaypoint_vipayment_catalog").select("sku_key,code,game,name,server,status,base_price,selected_tier",{count:"exact"}).order("game").order("name").range(vipPage*vipPageSize,(vipPage+1)*vipPageSize-1);
+  let query=sb.from("xpaypoint_vipayment_catalog").select("sku_key,code,game,name,server,status,base_price,selected_tier",{count:"exact"}).order("game").order("name");
+  const selectedGame=$("vipGameSelect").value;if(selectedGame)query=query.eq("game",selectedGame);
   const term=$("vipSearch").value.trim().replace(/[(),]/g," ");if(term)query=query.or("name.ilike.%"+term+"%,game.ilike.%"+term+"%,code.ilike.%"+term+"%");
+  query=query.range(vipPage*vipPageSize,(vipPage+1)*vipPageSize-1);
   const {data,error,count}=await query;
   if(error){$("vipCatalogList").innerHTML='<div class="empty">'+esc(error.message)+'</div>';vipStatus("Gagal membaca katalog supplier.","error");return}
   vipRows=data||[];const total=count||0;const keys=vipRows.map(x=>x.sku_key);
