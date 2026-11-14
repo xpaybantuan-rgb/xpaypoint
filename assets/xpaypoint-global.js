@@ -3,7 +3,7 @@ const $=id=>document.getElementById(id), URL="https://rjgeitbkpcyymgemcztx.supab
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 let device=localStorage.getItem("xp-chat-device");if(!device){device=crypto.randomUUID();localStorage.setItem("xp-chat-device",device)}
 let conversation=localStorage.getItem("xp-chat-conversation")||"",messages=[],loaded=false,busy=false,overflow="";
-const greeting="Halo! Aku XPAYPOINT AI. Mau tanya harga game, cara top up, XPAYCOIN, atau bantuan pesanan? 😊";
+const greeting="Halo! Aku SKIEESTORE AI. Mau tanya harga game, cara top up, XPAYCOIN, atau bantuan pesanan? 😊";
 const call=async payload=>{const r=await fetch(ENDPOINT,{method:"POST",headers:{apikey:KEY,Authorization:"Bearer "+KEY,"Content-Type":"application/json"},body:JSON.stringify({...payload,deviceId:device})});const d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.error||"Chat sedang tidak tersedia.");return d};
 const setConversation=id=>{conversation=id||"";if(conversation)localStorage.setItem("xp-chat-conversation",conversation);else localStorage.removeItem("xp-chat-conversation")};
 function render(){ $("chatMessages").innerHTML=messages.map(m=>'<div class="chat-bubble '+(m.role==="user"?"user":"bot")+'">'+esc(m.content)+'</div>').join("");$("chatMessages").scrollTop=$("chatMessages").scrollHeight}
