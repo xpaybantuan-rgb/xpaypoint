@@ -1,6 +1,6 @@
 # SkieePay — standalone payment engine
 
-SkieePay runs separately from the XPAYPOINT storefront.
+SkieePay runs separately from the XPAYPOINT storefront. The public landing page is `index.html`; the owner dashboard is `admin.html`; customer invoice lookup is `invoice.html?code=SKP...`.
 
 ## Implemented foundation
 - Invoice creation and lookup through the Cloudflare Worker.
@@ -40,7 +40,9 @@ Never put service-role keys, API keys, or callback secrets in frontend code or G
 - `POST /webhooks/vipayment` — validates VIPayment callback signature and source IP
 
 ## Customer invoice page
-- Static page: `invoice.html?code=SKP...`.
+- Public landing page: `index.html`.
+- Owner dashboard: `admin.html`.
+- Customer invoice page: `invoice.html?code=SKP...`.
 - The page reads only a small allowlist of public invoice fields and refreshes status automatically.
 - New invoice codes use 128-bit random values. Existing 64-bit invoice codes remain supported.
 
