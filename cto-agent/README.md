@@ -1,4 +1,4 @@
-# XPAYPOINT Autonomous CTO Agent — Free-first Level 2
+# SKIEESTORE Autonomous CTO Agent — Free-first Level 2
 
 Separate Cloudflare Worker; it does not replace storefront Workers or deploy to the storefront.
 
