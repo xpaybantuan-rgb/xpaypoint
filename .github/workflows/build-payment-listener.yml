@@ -32,31 +32,49 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: 8.9
-      - name: Restore permanent signing key
+      - name: Check release signing configuration
+        id: signing
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         run: |
-          if [ -z "$KEYSTORE_BASE64" ] || [ -z "$XPAYPOINT_KEYSTORE_PASSWORD" ] || [ -z "$XPAYPOINT_KEY_ALIAS" ] || [ -z "$XPAYPOINT_KEY_PASSWORD" ]; then
-            echo "::error::Missing Android signing secrets. Configure KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEY_ALIAS and KEY_PASSWORD in repository Actions secrets."
-            exit 1
+          if [ -n "$KEYSTORE_BASE64" ] && [ -n "$XPAYPOINT_KEYSTORE_PASSWORD" ] && [ -n "$XPAYPOINT_KEY_ALIAS" ] && [ -n "$XPAYPOINT_KEY_PASSWORD" ]; then
+            echo "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/xpaypoint-release.jks"
+            echo "XPAYPOINT_KEYSTORE_FILE=$RUNNER_TEMP/xpaypoint-release.jks" >> "$GITHUB_ENV"
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "Release signing secrets are not configured; building a debug APK for device testing."
           fi
-          echo "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/xpaypoint-release.jks"
-          echo "XPAYPOINT_KEYSTORE_FILE=$RUNNER_TEMP/xpaypoint-release.jks" >> "$GITHUB_ENV"
       - name: Build signed release APK
+        if: steps.signing.outputs.ready == 'true'
         run: gradle --no-daemon assembleRelease
-      - name: Prepare update APK
-        run: cp app/build/outputs/apk/release/app-release.apk app/build/outputs/apk/release/xpaypoint-payment-listener.apk
-      - name: Upload signed APK artifact
+      - name: Build debug APK
+        if: steps.signing.outputs.ready != 'true'
+        run: gradle --no-daemon assembleDebug
+      - name: Prepare APK artifact
+        run: |
+          if [ "${{ steps.signing.outputs.ready }}" = "true" ]; then
+            cp app/build/outputs/apk/release/app-release.apk app/build/outputs/apk/release/xpaypoint-payment-listener.apk
+            echo "APK_PATH=payment-listener/app/build/outputs/apk/release/xpaypoint-payment-listener.apk" >> "$GITHUB_ENV"
+            echo "APK_KIND=release" >> "$GITHUB_ENV"
+          else
+            mkdir -p app/build/outputs/apk/debug
+            cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/xpaypoint-payment-listener-debug.apk
+            echo "APK_PATH=payment-listener/app/build/outputs/apk/debug/xpaypoint-payment-listener-debug.apk" >> "$GITHUB_ENV"
+            echo "APK_KIND=debug" >> "$GITHUB_ENV"
+          fi
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: xpaypoint-payment-listener-release
-          path: payment-listener/app/build/outputs/apk/release/xpaypoint-payment-listener.apk
+          name: xpaypoint-payment-listener-${{ steps.signing.outputs.ready == 'true' && 'release' || 'debug' }}
+          path: ${{ env.APK_PATH }}
           if-no-files-found: error
-      - name: Publish in-app update release
+      - name: Publish signed release
+        if: steps.signing.outputs.ready == 'true'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: listener-v${{ github.run_number }}
           name: XPAYPOINT Listener v0.2.${{ github.run_number }}
-          body: "Rilis otomatis XPAYPOINT Payment Listener. APK ditandatangani dengan kunci permanen XPAYPOINT."
-          files: payment-listener/app/build/outputs/apk/release/xpaypoint-payment-listener.apk
+          body: "Rilis otomatis XPAYPOINT Payment Listener."
+          files: ${{ env.APK_PATH }}
           make_latest: true
