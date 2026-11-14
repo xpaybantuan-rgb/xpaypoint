@@ -218,25 +218,35 @@ body{background:radial-gradient(1000px 420px at 90% -15%,#ffe6ea 0,transparent 6
 
 
 
- let vipPage=0,vipRows=[],vipSelectionMap=new Map(),vipStageTotal=0,vipGames=[];
+ let vipPage=0,vipRows=[],vipSelectionMap=new Map(),vipStageTotal=0,vipGames=[],vipWebsiteGames=[],vipSourceGamesByWebsite=new Map();
  const vipPageSize=50;
  function vipMargin(cost){if(cost<5000)return 200;if(cost<20000)return 500;if(cost<50000)return 1000;if(cost<100000)return 2000;return Math.max(3000,Math.round(cost*.05/100)*100)}
  function vipStatus(msg,type=""){status("vipStatus",msg,type)}
  async function loadVipGames(){
   const select=$("vipGameSelect");select.disabled=true;
   try{
-   const names=new Set();
-   for(let start=0;start<10000;start+=1000){
-    const {data,error}=await sb.from("xpaypoint_vipayment_catalog").select("game").order("game").range(start,start+999);
-    if(error)throw error;
-    (data||[]).forEach(row=>{const name=String(row.game||"").trim();if(name)names.add(name)});
-    if(!data||data.length<1000)break;
-   }
-   vipGames=[...names].sort((a,b)=>a.localeCompare(b,"id"));
+   const [{data:websiteGames,error:gameError},{data:catalogRows,error:catalogError}]=await Promise.all([
+    sb.from("xpaypoint_games").select("name,is_active").eq("is_active",true).order("name"),
+    sb.from("xpaypoint_vipayment_catalog").select("game").order("game").limit(10000)
+   ]);
+   if(gameError)throw gameError;if(catalogError)throw catalogError;
+   vipWebsiteGames=(websiteGames||[]).filter(g=>g.name).sort((a,b)=>a.name.localeCompare(b.name,"id"));
+   vipGames=[...new Set((catalogRows||[]).map(r=>String(r.game||"").trim()).filter(Boolean))];
+   const normGame=v=>String(v||"").trim().toLowerCase().replace(/[().:,]/g," ").replace(/\\s+/g," ");
+   const resolveToWebsiteName=source=>{
+    const exact=vipWebsiteGames.filter(g=>normGame(g.name)===normGame(source));
+    if(exact.length===1)return exact[0].name;
+    if(exact.length>1)return null;
+    const base=String(source||"").replace(/\\s*\\((?:id|indo(?:nesia)?|global|malaysia|philippines|singapore|brazil|russia|turkey)\\)\\s*$/i,"").replace(/\\s+global\\s*$/i,"").trim();
+    const fallback=vipWebsiteGames.filter(g=>normGame(g.name)===normGame(base));
+    return fallback.length===1?fallback[0].name:null;
+   };
+   vipSourceGamesByWebsite=new Map(vipWebsiteGames.map(g=>[g.name,[]]));
+   for(const sourceName of vipGames){const target=resolveToWebsiteName(sourceName);if(target)vipSourceGamesByWebsite.get(target).push(sourceName)}
    const previous=select.value;
-   select.innerHTML='<option value="">Semua game ('+vipGames.length+')</option>'+vipGames.map(name=>'<option value="'+esc(name)+'">'+esc(name)+'</option>').join("");
-   if(vipGames.includes(previous))select.value=previous;
-  }catch(e){vipStatus("Daftar game gagal dimuat: "+(e.message||"periksa akses katalog."),"error")}
+   select.innerHTML='<option value="">Semua game di website ('+vipWebsiteGames.length+')</option>'+vipWebsiteGames.map(g=>'<option value="'+esc(g.name)+'">'+esc(g.name)+'</option>').join("");
+   if(vipWebsiteGames.some(g=>g.name===previous))select.value=previous;
+  }catch(e){vipStatus("Daftar game website gagal dimuat: "+(e.message||"periksa akses admin."),"error")}
   finally{select.disabled=false}
  }
  async function loadVipStats(){
@@ -249,7 +259,7 @@ body{background:radial-gradient(1000px 420px at 90% -15%,#ffe6ea 0,transparent 6
  async function loadVipCatalog(){
   $("vipCatalogList").innerHTML='<div class="empty">Memuat katalog…</div>';vipStatus("");
   let query=sb.from("xpaypoint_vipayment_catalog").select("sku_key,code,game,name,server,status,base_price,selected_tier",{count:"exact"}).order("game").order("name");
-  const selectedGame=$("vipGameSelect").value;if(selectedGame)query=query.eq("game",selectedGame);
+  const selectedGame=$("vipGameSelect").value;if(selectedGame){const sourceNames=vipSourceGamesByWebsite.get(selectedGame)||[];if(!sourceNames.length){$("vipCatalogList").innerHTML='<div class="empty">Belum ada produk VIPayment yang cocok untuk game website ini.</div>'; $("vipPageLabel").textContent=selectedGame+" · 0 produk"; $("vipPrev").disabled=true;$("vipNext").disabled=true;return;}query=query.in("game",sourceNames);}
   const term=$("vipSearch").value.trim().replace(/[(),]/g," ");if(term)query=query.or("name.ilike.%"+term+"%,game.ilike.%"+term+"%,code.ilike.%"+term+"%");
   query=query.range(vipPage*vipPageSize,(vipPage+1)*vipPageSize-1);
   const {data,error,count}=await query;
