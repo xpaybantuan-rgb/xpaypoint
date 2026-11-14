@@ -28,6 +28,11 @@ class MerchantNotificationListener : NotificationListenerService() {
             return
         }
 
+        // Keep notification details on-device unless the user explicitly opts in.
+        val forwardingEnabled = getSharedPreferences("listener_config", MODE_PRIVATE)
+            .getBoolean("forward_notifications_enabled", false)
+        if (!forwardingEnabled) return
+
         val extras = sbn.notification.extras
         val title = extras.getCharSequence("android.title")?.toString().orEmpty()
         val text = extras.getCharSequence("android.text")?.toString().orEmpty()
