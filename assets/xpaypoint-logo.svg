@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="360" height="76" viewBox="0 0 360 76" role="img" aria-labelledby="title">
-<title id="title">XPAYPOINT</title>
+<title id="title">SKIEESTORE</title>
 <defs><linearGradient id="red" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f04b63"/><stop offset="1" stop-color="#d92f49"/></linearGradient></defs>
 <rect x="2" y="6" width="64" height="64" rx="20" fill="url(#red)"/>
 <path d="M17 24h12l8 10 8-10h12L43 42l14 17H45L37 48l-8 11H17l14-17z" fill="#111318"/>
