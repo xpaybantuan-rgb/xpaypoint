@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#080d18">
+<meta name="theme-color" content="#f7f8fc">
 <meta name="description" content="SkieePay — infrastruktur invoice, pemantauan transaksi, dan integrasi pembayaran untuk bisnis digital.">
 <title>SkieePay — Payment Infrastructure</title>
 <style>
@@ -15,6 +15,21 @@ a{color:inherit;text-decoration:none}.wrap{width:min(1160px,calc(100% - 42px));m
 .developer{display:grid;grid-template-columns:.9fr 1.1fr;gap:30px;align-items:center;border:1px solid #2d435b;border-radius:22px;padding:clamp(22px,4vw,38px);background:linear-gradient(130deg,#13283a,#101b2d)}.developer h2{font-size:clamp(25px,3.5vw,36px);letter-spacing:-1px;margin:12px 0}.developer p{font-size:12px;line-height:1.8;color:#a1b2c7}.code{border:1px solid #344960;border-radius:14px;background:#08111e;padding:18px;overflow:auto;color:#c2d4e8;font:11px/1.9 ui-monospace,SFMono-Regular,Consolas,monospace}.code .green{color:#78e9cb}.statusline{display:flex;align-items:center;gap:10px;font-size:11px;color:#9eb0c5;margin-top:18px}.statusline strong{color:var(--amber)}.lookup{display:flex;gap:9px;margin-top:20px}.lookup input{flex:1;min-width:0;background:#081321;border:1px solid #30445c;border-radius:12px;padding:13px 14px;color:white;font:inherit;font-size:12px;outline:none}.lookup input:focus{border-color:var(--mint)}.footer{border-top:1px solid #ffffff14;padding:28px 0 36px;color:#7589a3;font-size:10px}.footerinner{display:flex;justify-content:space-between;gap:15px;flex-wrap:wrap}.footer a{color:#a9bdd2}
 @media(max-width:850px){.hero{grid-template-columns:1fr;gap:36px;padding:65px 0}.visual{max-width:560px;width:100%;margin:auto}.features{grid-template-columns:1fr 1fr}.developer{grid-template-columns:1fr}.links{gap:15px}}
 @media(max-width:560px){.wrap{width:min(100% - 28px,1160px)}.nav{height:68px}.links{display:none}.navright .btn{padding:10px 12px;font-size:10px}.brand{font-size:17px}.logo{width:35px;height:35px}.hero{padding:55px 0 52px;gap:28px}h1{font-size:43px;letter-spacing:-2.3px}.lead{font-size:13px}.actions .btn{flex:1}.mock{padding:16px}.mockamount{font-size:27px}.section{padding:60px 0}.features{grid-template-columns:1fr}.developer{padding:21px}.lookup{flex-direction:column}.lookup .btn{width:100%}}
+/* SkieePay unified XPAYPOINT visual system */
+:root{color-scheme:light;--bg:#f7f8fc;--panel:#fff;--line:#e9eaf0;--text:#191b22;--muted:#707887;--mint:#e9364c;--blue:#c92f49;--amber:#a66b12}
+body{background:radial-gradient(900px 480px at 88% -12%,#ffe7eb 0,transparent 64%),#f7f8fc;color:var(--text)}
+.nav{border-color:#e9eaf0}.brand{color:#191b22}.logo{background:linear-gradient(135deg,#f04459,#c92f49);color:#fff;box-shadow:0 8px 24px #e9364c2b}
+.links{color:#687080}.links a:hover{color:#d52d43}
+.btn{background:#fff;border-color:#e5e6ec;color:#343946;box-shadow:0 5px 16px #20283b08}.btn:hover{box-shadow:0 9px 24px #e9364c14}.btn.primary{background:#e9364c;border-color:#e9364c;color:#fff;box-shadow:0 10px 26px #e9364c24}
+.eyebrow,.check{color:#e9364c}.dot{background:#e9364c;box-shadow:0 0 14px #e9364c55}
+h1{color:#191b22}.gradient{background:linear-gradient(100deg,#191b22 0%,#e9364c 78%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{color:#646c7a}.subnote{color:#858b98}
+.mock{background:linear-gradient(150deg,#fff,#fff7f8);border-color:#f0d9dd;box-shadow:0 30px 85px #272c4018}.mocktop{border-color:#f0e5e7}.live{color:#d52d43;border-color:#ffd2d9;background:#fff0f2}.mocklabel,.mockitem small,.mockfoot{color:#7a8290}.mockamount,.mockbrand,.mockitem b{color:#20232b}.mockitem{background:#fff;border-color:#ececf1}.mockbar{background:#f1e6e8}.mockbar i{background:linear-gradient(90deg,#e9364c,#f58b99)}
+.strip{background:#fff;border-color:#ececf1}.stripinner{color:#687080}
+.sectionhead p{color:#707887}.feature{background:#fff;border-color:#e9eaf0;box-shadow:0 9px 28px #20283b08}.ico{background:#fff0f2;color:#e9364c}.feature p{color:#707887}
+.developer{background:linear-gradient(130deg,#fff,#fff6f7);border-color:#f0dce0;box-shadow:0 12px 34px #20283b08}.developer p{color:#687080}.code{background:#20232b;border-color:#303541;color:#e7eaf0}.statusline{color:#707887}.statusline strong{color:#a66b12}.lookup input{background:#fff;border-color:#e1e3e9;color:#191b22}.lookup input:focus{border-color:#e9364c}
+.footer{border-color:#e9eaf0;color:#858b98}.footer a{color:#d52d43}
+
 </style>
 </head>
 <body>
