@@ -12,7 +12,7 @@ function reply(data, status = 200) {
 }
 function jsonError(message, status = 400) { return reply({ ok: false, error: message }, status); }
 function randomCode() {
-  const bytes = crypto.getRandomValues(new Uint8Array(8));
+  const bytes = crypto.getRandomValues(new Uint8Array(16));
   return "SKP" + [...bytes].map(x => x.toString(16).padStart(2, "0")).join("").toUpperCase();
 }
 async function db(env, path, init = {}) {
@@ -125,6 +125,21 @@ export default {
     const url = new URL(request.url);
     if (url.pathname === "/health" && request.method === "GET") {
       return reply({ ok: true, service: "SkieePay", mode: "vipayment-webhook-ready", vipayment_webhook: !!(env.VIPAYMENT_API_ID && env.VIPAYMENT_API_KEY), live_payments: false });
+    }
+    const publicInvoiceMatch = url.pathname.match(/^\\/public\\/invoices\\/(SKP[0-9A-F]{16}|SKP[0-9A-F]{32})$/i);
+    if (publicInvoiceMatch && request.method === "GET") {
+      try {
+        if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) return jsonError("Server is not configured", 503);
+        const code = publicInvoiceMatch[1].toUpperCase();
+        const rows = await db(env, "skieepay_invoices?invoice_code=eq." + encodeURIComponent(code) +
+          "&select=invoice_code,amount,currency,status,payment_method,payment_payload,expires_at,created_at,paid_at&limit=1");
+        if (!rows.length) return jsonError("Invoice not found", 404);
+        return new Response(JSON.stringify({ ok: true, invoice: rows[0] }), {
+          headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store", ...cors }
+        });
+      } catch (error) {
+        return jsonError(error.message || "Invoice lookup failed", 500);
+      }
     }
     if (url.pathname === "/webhooks/vipayment" && request.method === "POST") {
       try { return await vipaymentCallback(request, env); }
