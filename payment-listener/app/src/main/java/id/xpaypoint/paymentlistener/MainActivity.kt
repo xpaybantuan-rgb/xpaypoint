@@ -41,7 +41,7 @@ class MainActivity : Activity() {
         val scroll = ScrollView(this).apply { isFillViewport = true; addView(page) }
 
         page.addView(TextView(this).apply {
-            text = "XPAYPOINT"
+            text = "SKIEESTORE"
             textSize = 13f
             setTextColor(Color.rgb(28, 91, 190))
             letterSpacing = 0.16f
@@ -108,7 +108,7 @@ class MainActivity : Activity() {
 
         page.addView(sectionHeading("Privasi dan pengiriman"))
         page.addView(TextView(this).apply {
-            text = "Secara default, isi notifikasi tetap di perangkat. Aktifkan izin di bawah hanya jika lu setuju detail notifikasi merchant dikirim ke server XPAYPOINT."
+            text = "Secara default, isi notifikasi tetap di perangkat. Aktifkan izin di bawah hanya jika lu setuju detail notifikasi merchant dikirim ke server SKIEESTORE."
             textSize = 13f
             setTextColor(Color.rgb(91, 103, 122))
             setPadding(0, 0, 0, 10)
@@ -176,7 +176,7 @@ class MainActivity : Activity() {
                     connectTimeout = 12000
                     readTimeout = 12000
                     setRequestProperty("Accept", "application/vnd.github+json")
-                    setRequestProperty("User-Agent", "XPAYPOINT-Payment-Listener")
+                    setRequestProperty("User-Agent", "SKIEESTORE-Payment-Listener")
                 }
                 releaseConnection = connection
                 val responseCode = connection.responseCode
@@ -206,7 +206,7 @@ class MainActivity : Activity() {
                 var expectedDigest: String? = null
                 for (i in 0 until assets.length()) {
                     val asset = assets.getJSONObject(i)
-                    if (asset.optString("name") == "xpaypoint-payment-listener.apk") {
+                    if (asset.optString("name") == "skieestore-payment-listener.apk") {
                         downloadUrl = asset.optString("browser_download_url")
                         expectedDigest = asset.optString("digest").takeIf { it.isNotBlank() && it != "null" }
                         break
@@ -222,9 +222,9 @@ class MainActivity : Activity() {
                     connectTimeout = 15000
                     readTimeout = 30000
                     instanceFollowRedirects = true
-                    setRequestProperty("User-Agent", "XPAYPOINT-Payment-Listener")
+                    setRequestProperty("User-Agent", "SKIEESTORE-Payment-Listener")
                 }
-                val apk = File(cacheDir, "xpaypoint-payment-listener-update.apk")
+                val apk = File(cacheDir, "skieestore-payment-listener-update.apk")
                 try {
                     apkConnection.inputStream.use { input -> apk.outputStream().use { output -> input.copyTo(output) } }
                 } finally {
@@ -265,7 +265,7 @@ class MainActivity : Activity() {
             return
         }
         if (android.os.Build.VERSION.SDK_INT >= 26 && !packageManager.canRequestPackageInstalls()) {
-            updateView.text = "Izinkan pemasangan aplikasi dari sumber ini, lalu kembali ke XPAYPOINT Listener."
+            updateView.text = "Izinkan pemasangan aplikasi dari sumber ini, lalu kembali ke SKIEESTORE Listener."
             if (!openedInstallSettings) {
                 openedInstallSettings = true
                 startActivity(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:$packageName")))
