@@ -4,10 +4,10 @@ plugins {
 }
 
 val buildNumber = System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull() ?: 1
-val releaseStoreFile = System.getenv("XPAYPOINT_KEYSTORE_FILE")
-val releaseStorePassword = System.getenv("XPAYPOINT_KEYSTORE_PASSWORD")
-val releaseKeyAlias = System.getenv("XPAYPOINT_KEY_ALIAS")
-val releaseKeyPassword = System.getenv("XPAYPOINT_KEY_PASSWORD")
+val releaseStoreFile = System.getenv("SKIEESTORE_KEYSTORE_FILE")
+val releaseStorePassword = System.getenv("SKIEESTORE_KEYSTORE_PASSWORD")
+val releaseKeyAlias = System.getenv("SKIEESTORE_KEY_ALIAS")
+val releaseKeyPassword = System.getenv("SKIEESTORE_KEY_PASSWORD")
 
 android {
     namespace = "id.xpaypoint.paymentlistener"
