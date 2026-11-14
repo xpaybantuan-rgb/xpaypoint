@@ -152,12 +152,22 @@ export default {
     if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) return jsonError("Server is not configured", 503);
 
     try {
+      if (url.pathname === "/v1/businesses" && request.method === "GET") {
+        const businesses = await db(env, "skieepay_businesses?select=id,code,name,status,created_at&order=created_at.asc");
+        return reply({ ok: true, businesses });
+      }
       if (url.pathname === "/v1/invoices" && request.method === "POST") {
         const body = await request.json();
         const amount = Number(body.amount);
         if (!Number.isSafeInteger(amount) || amount < 1) return jsonError("amount must be a positive integer in IDR");
+        const businessCode = String(body.business_code || "xpaypoint").trim().toLowerCase();
+        if (!/^[a-z0-9][a-z0-9_-]{1,39}$/.test(businessCode)) return jsonError("business_code is invalid");
+        const businessRows = await db(env, "skieepay_businesses?code=eq." + encodeURIComponent(businessCode) + "&status=eq.active&select=id,code,name&limit=1");
+        if (!businessRows.length) return jsonError("Business not found or inactive", 404);
+        const business = businessRows[0];
         const expiresMinutes = Math.min(1440, Math.max(5, Number(body.expires_minutes) || 30));
         const invoice = {
+          business_id: business.id,
           invoice_code: randomCode(),
           order_id: body.order_id || null,
           customer_ref: body.customer_ref ? String(body.customer_ref).slice(0, 120) : null,
