@@ -1,8 +1,8 @@
-# SkieePay — standalone payment engine
+# SkieePay — private payment engine
 
-SkieePay runs separately from the XPAYPOINT storefront. The public landing page is `index.html`; the owner dashboard is `admin.html`; customer invoice lookup is `invoice.html?code=SKP...`.
+SkieePay runs separately from the XPAYPOINT storefront and is reserved for businesses owned by the same owner. It is a private multi-business payment engine, not a public merchant gateway. The public landing page is `index.html`; the owner dashboard is `admin.html`; customer invoice lookup is `invoice.html?code=SKP...`.
 
-## Implemented foundation
+## Private multi-business foundation\n- Private business registry: `skieepay_businesses`. The first active business is `xpaypoint` (XPAYPOINT).\n- Every invoice now has a required `business_id`; existing invoices are backfilled to XPAYPOINT.\n- Create invoices with optional `business_code` (defaults to `xpaypoint` for compatibility).\n- Authenticated private API route `GET /v1/businesses` lists the owner's registered businesses.\n- New owned businesses can be added by the owner through a controlled admin workflow; public merchant registration is intentionally not provided.\n\n## Implemented foundation
 - Invoice creation and lookup through the Cloudflare Worker.
 - Supabase invoice, payment-event, and ledger tables with RLS enabled.
 - VIPayment callback receiver at `POST /webhooks/vipayment`.
@@ -34,7 +34,7 @@ Never put service-role keys, API keys, or callback secrets in frontend code or G
 ## API
 - `GET /health`
 - `GET /public/invoices/:invoice_code` — public, read-only invoice status; invoice code is an unguessable public reference
-- `POST /v1/invoices` — requires `X-SkieePay-Key`
+- `GET /v1/businesses` — requires `X-SkieePay-Key`; lists private businesses\n- `POST /v1/invoices` — requires `X-SkieePay-Key`; accepts optional `business_code`
 - `GET /v1/invoices/:uuid` — requires `X-SkieePay-Key`
 - `POST /v1/invoices/:uuid/vipayment` — requires `X-SkieePay-Key`; stores the VIPayment `trxid` on the invoice
 - `POST /webhooks/vipayment` — validates VIPayment callback signature and source IP
