@@ -75,6 +75,7 @@ class MainActivity : Activity() {
         val token = EditText(this).apply {
             hint = "Device token dari admin"
             setSingleLine(true)
+            inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
             setText(prefs.getString("token", ""))
         }
         val configPanel = LinearLayout(this).apply {
