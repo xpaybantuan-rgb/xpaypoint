@@ -16,17 +16,17 @@ class MerchantNotificationListener : NotificationListenerService() {
     override fun onNotificationPosted(sbn: StatusBarNotification) {
         val packageName = sbn.packageName
         val label = appLabel(packageName)
-        // Store source metadata only (package + app label); never store other apps' notification text.
+        if (packageName !in merchantPackages) {
+            rememberPossibleMerchantApp(packageName, label)
+            return
+        }
+
+        // Store only merchant notification metadata; ignore unrelated app notifications.
         getSharedPreferences("listener_config", MODE_PRIVATE).edit()
             .putString("last_notification_package", packageName)
             .putString("last_notification_label", label)
             .putLong("last_notification_time", sbn.postTime)
             .apply()
-
-        if (packageName !in merchantPackages) {
-            rememberPossibleMerchantApp(packageName, label)
-            return
-        }
 
         // Keep notification details on-device unless the user explicitly opts in.
         val forwardingEnabled = getSharedPreferences("listener_config", MODE_PRIVATE)
