@@ -6,8 +6,8 @@
   "compatibility_flags": ["nodejs_compat"],
   "workers_dev": true,
   "preview_urls": false,
-  "durable_objects": {"bindings":[{"name":"XPayPointCTOAgent","class_name":"XPayPointCTOAgent"}]},
-  "migrations":[{"tag":"v1","new_sqlite_classes":["XPayPointCTOAgent"]}],
-  "vars":{"REPO_OWNER":"xpaybantuan-rgb","REPO_NAME":"xpaypoint","SITE_URL":"https://xpaypoint.pages.dev","AUTOPILOT_ENABLED":"false","GEMINI_MODEL":"gemini-2.5-flash"},
+  "durable_objects": {"bindings":[{"name":"SkieeStoreCTOAgent","class_name":"SkieeStoreCTOAgent"}]},
+  "migrations":[{"tag":"v1","new_sqlite_classes":["SkieeStoreCTOAgent"]}],
+  "vars":{"REPO_OWNER":"xpaybantuan-rgb","REPO_NAME":"xpaypoint","SITE_URL":"https://skieestore.pages.dev","AUTOPILOT_ENABLED":"false","GEMINI_MODEL":"gemini-2.5-flash"},
   "observability":{"enabled":true,"logs":{"enabled":true,"invocation_logs":true,"persist":true}}
 }
