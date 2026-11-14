@@ -232,31 +232,65 @@ function productGroup(p){const n=(p.name+" "+(p.description||"")).toLowerCase();
 function renderProducts(){if(!selected)return;const q=$("productSearch").value.trim().toLowerCase(),list=products.filter(p=>p.game_id===selected.id&&(!q||(p.name+" "+(p.description||"")).toLowerCase().includes(q)));const groups={};list.forEach(p=>{const k=productGroup(p);(groups[k]??=[]).push(p)});const order=["Top Up / Mata Uang","Pass & Membership","Voucher & Gift Card"];const icons={"Top Up / Mata Uang":"💎","Pass & Membership":"🎟️","Voucher & Gift Card":"🎁"};$("productGroups").innerHTML=list.length?order.filter(k=>groups[k]?.length).map(k=>'<section class="product-group '+(openProductGroup===k?"open":"")+'"><button type="button" class="product-group-head" data-group="'+safe(k)+'"><span class="product-group-icon">'+icons[k]+'</span><span class="product-group-copy"><strong>'+k+'</strong><small>Pilih untuk melihat daftar produk</small></span><span class="product-group-count">'+groups[k].length+' produk</span><span class="product-group-chevron">⌄</span></button><div class="product-group-body"><div class="products">'+groups[k].map(p=>'<button type="button" class="product-choice '+(selectedProduct?.id===p.id?"selected":"")+'" data-product="'+p.id+'"><span class="tag">'+(p.region==="GLOBAL"?"GLOBAL":"INDONESIA")+'</span><strong>'+safe(p.name)+'</strong><div class="price">'+money(p.sell_price)+'</div></button>').join("")+'</div></div></section>').join(""):'<div class="empty">Produk tidak ditemukan.</div>';$("productGroups").querySelectorAll("[data-group]").forEach(b=>b.onclick=()=>{const k=b.dataset.group;openProductGroup=openProductGroup===k?null:k;renderProducts()});$("productGroups").querySelectorAll("[data-product]").forEach(b=>b.onclick=()=>{selectedProduct=list.find(p=>p.id===b.dataset.product)||null;applyFormConfig();renderProducts();updateSummary()})}
 function getFormConfig(product,game){
  const raw=String(product?.metadata?.supplier_description||product?.description||"").trim();
-  const autoAccount=/private akun|akun cek riwayat pesanan|cara login .*riwayat pesanan/i.test(String(product?.name||"")+" "+String(product?.description||""));
- const plain=raw.replace(/<br\s*\/?\s*>/gi," ").replace(/<\/(li|p|div|h[1-6])\s*>/gi," ").replace(/<[^>]*>/g," ").replace(/&nbsp;|&#160;/gi," ").replace(/&amp;/gi,"&").replace(/&quot;/gi,'"').replace(/&#39;|&apos;/gi,"'").replace(/\s+/g," ").trim();
+ const category=String(game?.category||"").toLowerCase();
+ const itemName=String(game?.name||"");
+ const plain=raw.replace(/<br\\s*\\/?\\s*>/gi," ").replace(/<\\/(li|p|div|h[1-6])\\s*>/gi," ").replace(/<[^>]*>/g," ").replace(/&nbsp;|&#160;/gi," ").replace(/&amp;/gi,"&").replace(/&quot;/gi,'"').replace(/&#39;|&apos;/gi,"'").replace(/\\s+/g," ").trim();
  const lower=plain.toLowerCase();
- const isMLBB=/mobile legends|mobilelegend|mlbb/i.test(String(game?.name||""));
- const cfg={playerLabel:isMLBB?"User ID":"ID Akun",playerPlaceholder:isMLBB?"Masukkan User ID Mobile Legends":"Masukkan ID akun game",serverLabel:"Zone ID",serverPlaceholder:"Masukkan Zone ID Mobile Legends",showServer:isMLBB,playerRequired:true,serverRequired:isMLBB,requiresTarget:true,requiresManual:true,help:isMLBB?"Masukkan User ID dan Zone ID Mobile Legends. Keduanya bisa diisi sebelum memilih nominal.":"Masukkan ID akun game terlebih dahulu, lalu pilih nominal produk."};
-  if(autoAccount){cfg.requiresTarget=false;cfg.playerRequired=false;cfg.showServer=false;cfg.serverRequired=false;cfg.requiresManual=false;cfg.help="Akun Alight Motion diproses otomatis. Tidak perlu mengisi ID akun. Detail akun dan cara login tersedia di riwayat pesanan setelah transaksi berhasil.";return cfg;}
- if(!raw||raw==="-"||lower==="null"){cfg.help="SKU ini belum memiliki instruksi data tujuan dari VIPayment. Pembayaran belum dapat dilanjutkan sampai data tujuan SKU diverifikasi.";return cfg;}
- if(/password|\botp\b|kode keamanan|security code|two.?factor|2 langkah/.test(lower)){cfg.help="SKU ini meminta password atau kode keamanan. SKIEESTORE tidak mengumpulkan password, OTP, atau kode keamanan. Produk tidak dapat dibayar melalui formulir ini.";return cfg;}
- const email=/((masuk(?:kan|an)?|input|isi|via|tujuan)[^.!]{0,60}(email|gmail))|((email|gmail)[^.!]{0,40}(penerima|tujuan|terdaftar))/.test(lower);
- const phone=/((masuk(?:kan|an)?|input|isi|via|tujuan)[^.!]{0,60}(nomor hp|no hp|nomor telepon|phone number|nomor tujuan))/.test(lower);
- const player=/((masuk(?:kan|an)?|input|isi|via|tujuan)[^.!]{0,60}(user id|userid|player id|uid|username|riot id|character id))|(user id and server)|(user id dan server)/.test(lower);
- if(!email&&!phone&&!player){cfg.help="Deskripsi supplier belum menjelaskan jenis data tujuan yang harus diisi. Produk ini belum bisa menerima pembayaran sampai instruksi SKU dikonfirmasi.";return cfg;}
- cfg.requiresManual=false;
- cfg.help=plain+" Jangan masukkan password atau OTP.";
- if(email){cfg.playerLabel="Email Tujuan";cfg.playerPlaceholder="Masukkan email tujuan yang diminta supplier";}
- else if(phone){cfg.playerLabel="Nomor HP";cfg.playerPlaceholder="Masukkan nomor HP tujuan";}
- else if(/player id/.test(lower)){cfg.playerLabel="Player ID";cfg.playerPlaceholder="Masukkan Player ID";}
- else if(/riot id/.test(lower)){cfg.playerLabel="Riot ID";cfg.playerPlaceholder="Masukkan Riot ID";}
- else if(/character id/.test(lower)){cfg.playerLabel="Character ID";cfg.playerPlaceholder="Masukkan Character ID";}
- else if(/username/.test(lower)){cfg.playerLabel="Username";cfg.playerPlaceholder="Masukkan Username";}
- else if(/\buid\b/.test(lower)){cfg.playerLabel="UID";cfg.playerPlaceholder="Masukkan UID";}
- else {cfg.playerLabel="User ID";cfg.playerPlaceholder="Masukkan User ID";}
- const zone=/(server|zone id|data_zone)/.test(lower);
- if(zone){cfg.showServer=true;cfg.serverRequired=!/(jika dibutuhkan|if needed|optional|opsional)/.test(lower);}
- if(isMLBB){cfg.playerLabel="User ID";cfg.playerPlaceholder="Masukkan User ID Mobile Legends";cfg.serverLabel="Zone ID";cfg.serverPlaceholder="Masukkan Zone ID Mobile Legends";cfg.showServer=true;cfg.serverRequired=true;}
+ const cfg={playerLabel:"ID Akun",playerPlaceholder:"Masukkan ID akun sesuai instruksi produk",serverLabel:"Server / Zone ID",serverPlaceholder:"Masukkan Server atau Zone ID",showServer:false,playerRequired:true,serverRequired:false,requiresTarget:true,requiresManual:true,help:"Instruksi data tujuan produk belum terverifikasi. Pesanan belum bisa dilanjutkan agar tidak salah kirim."};
+ if(/password|\\botp\\b|kode keamanan|security code|two.?factor|2 langkah/.test(lower)){
+  cfg.requiresTarget=false;cfg.playerRequired=false;cfg.requiresManual=true;cfg.help="Supplier meminta password atau kode keamanan. SKIEESTORE tidak mengumpulkan password, OTP, atau kode keamanan. Hubungi admin untuk produk ini.";return cfg;
+ }
+ const emailInput=/(masuk(?:kan|an)?|input|isi|gunakan|pakai|daftarkan)[^.!]{0,90}(email|gmail)|((email|gmail)[^.!]{0,70}(yang terdaftar|tujuan|penerima|akun kalian|akun anda))/.test(lower);
+ const phoneInput=/(masuk(?:kan|an)?|input|isi|gunakan|pakai)[^.!]{0,90}(nomor hp|no hp|nomor telepon|phone number|nomor tujuan)/.test(lower);
+ const hasPlayer=/(masuk(?:kan|an)?|input|isi|gunakan)[^.!]{0,90}(user id|userid|player id|uid|username|riot id|character id|account id|id akun)|(user id and server)|(user id dan server)/.test(lower);
+ const autoDelivery=/(proses otomatis[^.!]{0,100}(akun )?cek riwayat pesanan|akun cek (di )?riwayat pesanan|cara login[^.!]{0,80}riwayat pesanan|akun terima jadi|link invite cek riwayat pesanan)/.test(lower);
+ const manualDelivery=/(proses.{0,20}manual|manual.{0,30}(whatsapp|via wa|admin)|via whatsapp admin|konfirmasi ke whatsapp admin|hubungi whatsapp admin)/.test(lower);
+ if(emailInput){
+  cfg.playerLabel="Email Tujuan";cfg.playerPlaceholder="Masukkan email yang diminta supplier";cfg.playerRequired=true;cfg.requiresManual=false;cfg.help=plain+" Pastikan email benar dan aktif. Jangan masukkan password atau OTP.";return cfg;
+ }
+ if(phoneInput){
+  cfg.playerLabel="Nomor HP";cfg.playerPlaceholder="Masukkan nomor HP tujuan";cfg.playerRequired=true;cfg.requiresManual=false;cfg.help=plain+" Pastikan nomor aktif.";return cfg;
+ }
+ if(hasPlayer){
+  if(/riot id/.test(lower)){cfg.playerLabel="Riot ID";cfg.playerPlaceholder="Masukkan Riot ID sesuai format game";}
+  else if(/character id/.test(lower)){cfg.playerLabel="Character ID";cfg.playerPlaceholder="Masukkan Character ID";}
+  else if(/username/.test(lower)){cfg.playerLabel="Username";cfg.playerPlaceholder="Masukkan Username";}
+  else if(/account id/.test(lower)){cfg.playerLabel="Account ID";cfg.playerPlaceholder="Masukkan Account ID";}
+  else if(/\\buid\\b/.test(lower)){cfg.playerLabel="UID";cfg.playerPlaceholder="Masukkan UID";}
+  else if(/player id/.test(lower)){cfg.playerLabel="Player ID";cfg.playerPlaceholder="Masukkan Player ID";}
+  else {cfg.playerLabel="User ID";cfg.playerPlaceholder="Masukkan User ID";}
+  cfg.requiresManual=false;cfg.help=plain+" Periksa kembali ID sebelum melanjutkan. Jangan masukkan password atau OTP.";
+  if(/(server|zone id|data_zone)/.test(lower)){
+   cfg.showServer=true;
+   cfg.serverRequired=!/(jika dibutuhkan|if needed|optional|opsional)/.test(lower);
+   cfg.serverLabel=/zone id/.test(lower)?"Zone ID":"Server";
+   cfg.serverPlaceholder=cfg.serverLabel==="Zone ID"?"Masukkan Zone ID":"Masukkan Server";
+  }
+  if(/mobile legends|mobilelegend|mlbb/i.test(itemName)){
+   cfg.playerLabel="User ID";cfg.playerPlaceholder="Masukkan User ID Mobile Legends";cfg.serverLabel="Zone ID";cfg.serverPlaceholder="Masukkan Zone ID Mobile Legends";cfg.showServer=true;cfg.serverRequired=true;
+  }
+  return cfg;
+ }
+ if(category==="voucher"){
+  cfg.requiresTarget=false;cfg.playerRequired=false;cfg.showServer=false;cfg.serverRequired=false;cfg.requiresManual=false;
+  cfg.help=plain&&plain!=="-"?plain+" Kode atau detail voucher akan mengikuti metode pengiriman supplier. Tidak perlu memasukkan ID akun kecuali instruksi produk menyebutkannya.":"Voucher ini tidak meminta ID akun. Pastikan region/denominasi voucher sesuai sebelum membayar; kode atau detail produk mengikuti pengiriman supplier.";
+  return cfg;
+ }
+ if(category==="apps streaming"&&autoDelivery){
+  cfg.requiresTarget=false;cfg.playerRequired=false;cfg.showServer=false;cfg.serverRequired=false;cfg.requiresManual=false;
+  cfg.help=plain+" Produk diproses otomatis; cek detail akun atau petunjuk login di riwayat pesanan. Jangan pernah membagikan password atau OTP pribadi.";
+  return cfg;
+ }
+ if(manualDelivery){
+  cfg.requiresTarget=false;cfg.playerRequired=false;cfg.showServer=false;cfg.serverRequired=false;cfg.requiresManual=true;
+  cfg.help=plain+" Produk memerlukan proses admin/manual. Hubungi admin sesuai petunjuk sebelum memesan; jangan kirim password atau OTP.";
+  return cfg;
+ }
+ if(!raw||raw==="-"||lower==="null"){
+  cfg.help=category==="pc"?"Data tujuan untuk produk PC ini belum dijelaskan oleh supplier. Kami sengaja menahan checkout sampai format Riot ID / User ID / data akun dipastikan.":"Supplier belum memberikan instruksi data tujuan untuk produk ini. Checkout ditahan agar produk tidak salah dikirim.";
+  return cfg;
+ }
+ cfg.help=plain+" Jenis data tujuan belum dapat dipastikan dari instruksi supplier. Hubungi admin sebelum memesan.";
  return cfg;
 }
 function applyFormConfig(){
