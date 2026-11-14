@@ -77,6 +77,7 @@ body{background:radial-gradient(1000px 420px at 90% -15%,#ffe6ea 0,transparent 6
 
 <section class="panel admin-extra" id="adminOrders"><div class="toolbar"><div><h2>Semua pesanan</h2><p class="muted">Riwayat pesanan terbaru dari database XPAYPOINT.</p></div><button class="btn secondary" id="loadAdminOrders">Muat ulang</button></div><div class="filterbar"><input id="adminOrderSearch" placeholder="Cari kode, game, produk, atau ID tujuan"><select id="adminOrderStatus"><option value="">Semua status</option><option value="pending_payment">Menunggu pembayaran</option><option value="paid">Lunas</option><option value="processing">Diproses</option><option value="success">Berhasil</option><option value="failed">Gagal</option><option value="cancelled">Dibatalkan</option></select></div><div class="table-scroll"><table class="admin-table"><thead><tr><th>Kode</th><th>Game / Produk</th><th>Tujuan</th><th>Tagihan</th><th>Status</th><th>Dibuat</th></tr></thead><tbody id="adminOrderRows"><tr><td colspan="6">Belum dimuat</td></tr></tbody></table></div></section>
 <section class="panel admin-extra" id="adminCatalog"><div class="toolbar"><div><h2>Katalog produk VIPayment</h2><p class="muted">Daftar produk aktif yang tersedia untuk dibaca melalui akses saat ini.</p></div><button class="btn secondary" id="loadAdminCatalog">Muat ulang</button></div><div class="filterbar"><input id="adminCatalogSearch" placeholder="Cari produk atau SKU"></div><div class="catalog-grid" id="adminCatalogRows"><div class="empty">Tekan muat ulang untuk melihat katalog.</div></div></section>
+<section class="panel admin-extra" id="adminWallet"><div class="toolbar"><div><h2>XPAYCOIN · Dompet member</h2><p class="muted">Ringkasan saldo deposit, rewards, dan aktivitas top-up. Saldo tidak diedit langsung.</p></div><button class="btn secondary" id="loadAdminWallet">Muat ulang</button></div><div class="kpis kpis-four"><div class="kpi"><div class="kpi-label">Dompet member</div><div class="kpi-value" id="adminWalletCount">—</div></div><div class="kpi"><div class="kpi-label">Total Deposit</div><div class="kpi-value" id="adminDepositTotal">—</div></div><div class="kpi"><div class="kpi-label">Total Rewards</div><div class="kpi-value" id="adminRewardsTotal">—</div></div><div class="kpi"><div class="kpi-label">Mutasi ledger</div><div class="kpi-value" id="adminLedgerCount">—</div></div></div><h3 style="font-size:14px;margin:22px 0 10px">Permintaan top-up terbaru</h3><div class="table-scroll"><table class="admin-table"><thead><tr><th>Member ID</th><th>Nominal</th><th>Metode</th><th>Status</th><th>Dibuat</th></tr></thead><tbody id="adminTopupRows"><tr><td colspan="5">Belum dimuat</td></tr></tbody></table></div><p class="notice">Penambahan atau pengurangan saldo harus melalui transaksi ledger yang tercatat. Panel ini hanya menampilkan data dan tidak mengubah saldo member.</p></section>
 <div class="status" id="dashboardStatus" role="status"></div>
 </section>
 </main>
@@ -210,6 +211,16 @@ body{background:radial-gradient(1000px 420px at 90% -15%,#ffe6ea 0,transparent 6
  }
  $("loadAdminOrders").onclick=loadAdminOrders;$("loadAdminCatalog").onclick=loadAdminCatalog;
  $("adminOrderSearch").addEventListener("input",renderAdminOrders);$("adminOrderStatus").addEventListener("change",renderAdminOrders);$("adminCatalogSearch").addEventListener("input",renderAdminCatalog);
+
+
+ async function loadAdminWallet(){
+  $("adminTopupRows").innerHTML='<tr><td colspan="5">Memuat…</td></tr>';
+  const [w,l,t]=await Promise.all([sb.from("xpaypoint_wallets").select("deposit_balance,rewards_balance").limit(2000),sb.from("xpaypoint_wallet_ledger").select("id",{count:"exact",head:true}),sb.from("xpaypoint_topups").select("user_id,amount,pay_method,status,created_at").order("created_at",{ascending:false}).limit(30)]);
+  const err=w.error||l.error||t.error;if(err){$("adminTopupRows").innerHTML='<tr><td colspan="5">'+esc(err.message)+'</td></tr>';return}
+  const rows=w.data||[];$("adminWalletCount").textContent=rows.length;$("adminDepositTotal").textContent=money(rows.reduce((n,x)=>n+Number(x.deposit_balance||0),0));$("adminRewardsTotal").textContent=money(rows.reduce((n,x)=>n+Number(x.rewards_balance||0),0));$("adminLedgerCount").textContent=l.count??"—";
+  const topups=t.data||[];$("adminTopupRows").innerHTML=topups.length?topups.map(x=>'<tr><td>'+esc(String(x.user_id).slice(0,8))+'…</td><td>'+money(x.amount)+'</td><td>'+esc(x.pay_method)+'</td><td>'+esc(x.status)+'</td><td>'+adminDate(x.created_at)+'</td></tr>').join(""):'<tr><td colspan="5">Belum ada permintaan top-up.</td></tr>';
+ }
+ $("loadAdminWallet").onclick=loadAdminWallet;
 
  boot();
 })();
