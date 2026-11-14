@@ -7,6 +7,9 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import android.view.ViewGroup
+import android.widget.ScrollView
+import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
@@ -29,26 +32,42 @@ class MainActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val layout = LinearLayout(this).apply {
+        val page = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(36, 36, 36, 36)
+            setPadding(22, 26, 22, 28)
+            setBackgroundColor(Color.rgb(245, 247, 251))
         }
-        layout.addView(TextView(this).apply {
-            text = "XPAYPOINT Payment Listener"
-            textSize = 22f
+        val scroll = ScrollView(this).apply { isFillViewport = true; addView(page) }
+
+        page.addView(TextView(this).apply {
+            text = "XPAYPOINT"
+            textSize = 13f
+            setTextColor(Color.rgb(28, 91, 190))
+            letterSpacing = 0.16f
         })
-        layout.addView(TextView(this).apply {
-            text = "Meneruskan notifikasi merchant ke server sebagai kandidat transaksi yang BELUM TERVERIFIKASI."
+        page.addView(TextView(this).apply {
+            text = "Payment Listener"
+            textSize = 27f
+            setTextColor(Color.rgb(20, 29, 48))
+            setPadding(0, 3, 0, 5)
+        })
+        page.addView(TextView(this).apply {
+            text = "Pemantau notifikasi merchant untuk membantu pemeriksaan transaksi."
             textSize = 14f
+            setTextColor(Color.rgb(91, 103, 122))
         })
+
         statusView = TextView(this).apply {
             textSize = 14f
-            setPadding(0, 28, 0, 20)
+            setTextColor(Color.rgb(35, 48, 68))
+            setPadding(16, 16, 16, 16)
+            background = panelBackground()
         }
-        layout.addView(statusView)
+        page.addView(statusView, sectionParams())
 
+        page.addView(sectionHeading("Koneksi server"))
         val endpoint = EditText(this).apply {
-            hint = "URL endpoint listener"
+            hint = "URL endpoint HTTPS"
             setSingleLine(true)
             setText(prefs.getString("endpoint", "https://xpayway-payment-engine.xpaybantuan.workers.dev/v1/payment/listener/notification"))
         }
@@ -57,66 +76,76 @@ class MainActivity : Activity() {
             setSingleLine(true)
             setText(prefs.getString("token", ""))
         }
-        layout.addView(endpoint, fieldParams())
-        layout.addView(token, fieldParams())
-
-        layout.addView(Button(this).apply {
-            text = "Simpan konfigurasi"
-            setOnClickListener {
-                val url = endpoint.text.toString().trim()
-                val secret = token.text.toString().trim()
-                if (!url.startsWith("https://") || secret.isBlank()) {
-                    statusView.text = "Isi endpoint HTTPS dan device token terlebih dahulu."
-                } else {
-                    prefs.edit().putString("endpoint", url).putString("token", secret).apply()
-                    statusView.text = "Konfigurasi tersimpan."
+        val configPanel = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(14, 8, 14, 14)
+            background = panelBackground()
+            addView(endpoint, fieldParams())
+            addView(token, fieldParams())
+            addView(Button(this@MainActivity).apply {
+                text = "Simpan konfigurasi"
+                setOnClickListener {
+                    val url = endpoint.text.toString().trim()
+                    val secret = token.text.toString().trim()
+                    if (!url.startsWith("https://") || secret.isBlank()) {
+                        statusView.text = "Konfigurasi belum lengkap. Gunakan URL HTTPS dan device token."
+                    } else {
+                        prefs.edit().putString("endpoint", url).putString("token", secret).apply()
+                        statusView.text = statusSummary()
+                    }
                 }
-            }
-        })
-        layout.addView(Button(this).apply {
-            text = "Aktifkan akses notifikasi"
+            })
+        }
+        page.addView(configPanel, sectionParams())
+
+        page.addView(sectionHeading("Akses notifikasi"))
+        page.addView(Button(this).apply {
+            text = "Buka pengaturan akses notifikasi"
             setOnClickListener { startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)) }
-        })
-        layout.addView(TextView(this).apply {
-            text = "Privasi: isi notifikasi merchant tidak dikirim ke server sebelum lu mengaktifkan pilihan berikut."
+        }, sectionParams())
+
+        page.addView(sectionHeading("Privasi dan pengiriman"))
+        page.addView(TextView(this).apply {
+            text = "Secara default, isi notifikasi tetap di perangkat. Aktifkan izin di bawah hanya jika lu setuju detail notifikasi merchant dikirim ke server XPAYPOINT."
             textSize = 13f
-            setPadding(0, 16, 0, 4)
+            setTextColor(Color.rgb(91, 103, 122))
+            setPadding(0, 0, 0, 10)
         })
-        layout.addView(Switch(this).apply {
+        page.addView(Switch(this).apply {
             text = "Izinkan kirim detail notifikasi merchant"
+            textSize = 14f
+            setTextColor(Color.rgb(35, 48, 68))
             isChecked = prefs.getBoolean("forward_notifications_enabled", false)
             setOnCheckedChangeListener { _, checked ->
                 prefs.edit().putBoolean("forward_notifications_enabled", checked).apply()
-                statusView.text = if (checked) {
-                    "Pengiriman detail notifikasi merchant AKTIF. Data tetap hanya kandidat dan belum membuktikan pembayaran."
-                } else {
-                    "Pengiriman detail notifikasi merchant NONAKTIF. Tidak ada isi notifikasi yang diteruskan."
-                }
+                refreshStatus()
             }
-        })
+        }, sectionParams())
 
+        page.addView(sectionHeading("Pembaruan aplikasi"))
         updateView = TextView(this).apply {
-            text = "Pembaruan aplikasi"
-            textSize = 14f
-            setPadding(0, 24, 0, 8)
-        }
-        layout.addView(updateView)
-        layout.addView(Button(this).apply {
-            text = "Periksa Update"
-            setOnClickListener { checkForUpdate() }
-        })
-
-        layout.addView(TextView(this).apply {
-            text = "\nCatatan keamanan: notifikasi hanya bahan pemeriksaan. Sistem tidak boleh menandai pesanan lunas atau mengirim top-up otomatis dari notifikasi Android."
+            text = "Pengecekan versi melalui GitHub Releases."
             textSize = 13f
-        })
-        setContentView(layout)
-        refreshStatus()
-        // Check GitHub Releases at most once every 24 hours; installation always requires Android user approval.
-        val lastCheck = prefs.getLong("last_update_check_at", 0L)
-        if (System.currentTimeMillis() - lastCheck >= 24L * 60L * 60L * 1000L) {
-            checkForUpdate()
+            setTextColor(Color.rgb(91, 103, 122))
+            setPadding(0, 0, 0, 8)
         }
+        page.addView(updateView)
+        page.addView(Button(this).apply {
+            text = "Periksa update sekarang"
+            setOnClickListener { checkForUpdate() }
+        }, sectionParams())
+
+        page.addView(TextView(this).apply {
+            text = "PENTING\\nNotifikasi Android hanya kandidat informasi. Aplikasi ini tidak memverifikasi pembayaran, tidak menandai pesanan lunas, dan tidak memicu top-up otomatis."
+            textSize = 12f
+            setTextColor(Color.rgb(135, 77, 20))
+            setPadding(14, 14, 14, 14)
+            background = warningBackground()
+        })
+        setContentView(scroll)
+        refreshStatus()
+        val lastCheck = prefs.getLong("last_update_check_at", 0L)
+        if (System.currentTimeMillis() - lastCheck >= 24L * 60L * 60L * 1000L) checkForUpdate()
     }
 
     override fun onResume() {
@@ -236,24 +265,47 @@ class MainActivity : Activity() {
     }
 
     private fun refreshStatus() {
+        statusView.text = statusSummary()
+    }
+
+    private fun statusSummary(): String {
         val access = if (hasNotificationAccess(this)) "AKTIF" else "BELUM AKTIF"
+        val forwarding = if (prefs.getBoolean("forward_notifications_enabled", false)) "DIIZINKAN" else "NONAKTIF"
         val pkg = prefs.getString("last_detected_package", null)
         val label = prefs.getString("last_detected_label", null)
-        val detection = if (pkg.isNullOrBlank()) {
-            "Belum ada notifikasi DANA/GoPay yang terdeteksi."
-        } else {
-            "Aplikasi merchant terdeteksi: $label\nPackage: $pkg"
-        }
+        val detection = if (pkg.isNullOrBlank()) "Belum ada aplikasi merchant yang terdeteksi." else "$label\\n$pkg"
         val sourcePackage = prefs.getString("last_notification_package", null)
         val sourceLabel = prefs.getString("last_notification_label", null)
         val sourceTime = prefs.getLong("last_notification_time", 0L)
-        val source = if (sourcePackage.isNullOrBlank()) {
-            "Sumber notifikasi terakhir: belum ada notifikasi yang diterima Android."
-        } else {
+        val source = if (sourcePackage.isNullOrBlank()) "Belum ada notifikasi yang diterima Android." else {
             val time = SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault()).format(Date(sourceTime))
-            "Sumber notifikasi terakhir: $sourceLabel\nPackage: $sourcePackage\nWaktu: $time"
+            "$sourceLabel\\n$time"
         }
-        statusView.text = "Akses notifikasi: $access\n$detection\n\n$source"
+        return "AKSES NOTIFIKASI: $access\\nPENGIRIMAN DETAIL: $forwarding\\n\\nAPLIKASI MERCHANT TERDETEKSI\\n$detection\\n\\nNOTIFIKASI TERAKHIR\\n$source"
+    }
+
+    private fun sectionHeading(value: String) = TextView(this).apply {
+        text = value
+        textSize = 17f
+        setTextColor(Color.rgb(20, 29, 48))
+        setPadding(0, 10, 0, 9)
+    }
+
+    private fun sectionParams() = LinearLayout.LayoutParams(
+        ViewGroup.LayoutParams.MATCH_PARENT,
+        ViewGroup.LayoutParams.WRAP_CONTENT
+    ).apply { bottomMargin = 16 }
+
+    private fun panelBackground() = GradientDrawable().apply {
+        setColor(Color.WHITE)
+        cornerRadius = 18f
+        setStroke(1, Color.rgb(229, 233, 240))
+    }
+
+    private fun warningBackground() = GradientDrawable().apply {
+        setColor(Color.rgb(255, 246, 229))
+        cornerRadius = 14f
+        setStroke(1, Color.rgb(245, 221, 180))
     }
 
     private fun fieldParams() = LinearLayout.LayoutParams(
