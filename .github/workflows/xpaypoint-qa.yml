@@ -1,4 +1,4 @@
-name: XPAYPOINT Browser QA
+name: SKIEESTORE Browser QA
 
 on:
   push:
@@ -32,11 +32,11 @@ jobs:
 
       - name: Run deeper mobile browser QA against production
         run: |
-          cat > qa_xpaypoint.py <<'PY'
+          cat > qa_skieestore.py <<'PY'
           from playwright.sync_api import sync_playwright
           import json, sys, re
 
-          BASE = "https://xpaypoint.pages.dev"
+          BASE = "https://skieestore.pages.dev"
           PAGES = [
               "/", "/topup.html", "/cek-pesanan.html", "/profil.html",
               "/cara-top-up.html", "/pusat-bantuan.html", "/tentang-xpaypoint.html",
@@ -72,7 +72,7 @@ jobs:
                     width: innerWidth,
                     scrollWidth: document.documentElement.scrollWidth,
                     footer: !!document.querySelector('footer'),
-                    copyright: document.body.innerText.includes('© 2026 XPAYPOINT. All Rights Reserved.'),
+                    copyright: document.body.innerText.includes('© 2026 SKIEESTORE. All Rights Reserved.'),
                     chatToggle: !!document.querySelector('#chatToggle'),
                     chatPanel: !!document.querySelector('#chatPanel'),
                     bottomNav: !!document.querySelector('.bottomnav'),
@@ -151,13 +151,13 @@ jobs:
               sys.exit(1)
           print("QA PASSED")
           PY
-          python qa_xpaypoint.py
+          python qa_skieestore.py
 
       - name: Upload QA screenshots and report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: xpaypoint-mobile-qa-deep
+          name: skieestore-mobile-qa-deep
           path: |
             qa-*.png
             qa-report.json
