@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#080d18">
+<meta name="theme-color" content="#f7f8fc">
 <meta name="description" content="Lihat detail dan status invoice SkieePay.">
 <title>Invoice — SkieePay</title>
 <style>
@@ -19,6 +19,20 @@
 .actions{display:flex;gap:9px;margin-top:18px}.btn{flex:1;border:1px solid #38516a;border-radius:12px;background:#1a2b41;color:#eaf2ff;padding:12px;font:inherit;font-size:12px;font-weight:800;text-align:center;text-decoration:none;cursor:pointer}.btn.primary{background:var(--mint);border-color:var(--mint);color:#071a1b}
 .message{text-align:center;padding:26px 12px;color:var(--muted);font-size:13px;line-height:1.7}.foot{text-align:center;color:#71839b;font-size:10px;margin:18px 0 0}
 @media(max-width:420px){body{padding:14px}.card{border-radius:19px}.item{padding:13px 11px}.actions{flex-direction:column}}
+/* SkieePay invoice — XPAYPOINT brand */
+:root{color-scheme:light;--bg:#f7f8fc;--panel:#fff;--line:#e9eaf0;--text:#191b22;--muted:#707887;--mint:#e9364c;--amber:#a66b12;--red:#d52d43}
+body{background:radial-gradient(850px 480px at 50% -12%,#ffe7eb 0,transparent 65%),#f7f8fc;color:var(--text)}
+.logo{background:linear-gradient(135deg,#f04459,#c92f49);color:#fff;box-shadow:0 8px 24px #e9364c2b}
+.card{background:#fff;border-color:#e9eaf0;box-shadow:0 25px 75px #252b4214}
+.kicker{color:#e9364c}.desc{color:#707887}
+.status{border-color:#f1dcae;background:#fff7e7;color:#986600}
+.status.paid{border-color:#ccebd9;background:#eaf8ef;color:#18794e}
+.status.failed,.status.cancelled,.status.expired{border-color:#f5cbd0;background:#fff0f1;color:#c52b37}
+.amount small{color:#858b98}.details{border-color:#e9eaf0}.item{border-color:#f0f1f4}.item span:first-child{color:#707887}
+.notice{background:#fff5f6;border-color:#ffd9de;color:#6f5360}.notice b{color:#d52d43}.notice.warn{background:#fff7e7;border-color:#f2dfb6;color:#806022}.notice.error{background:#fff0f1;border-color:#f3cbd0;color:#8b343c}
+.btn{border-color:#e4e5eb;background:#fff;color:#343946}.btn.primary{background:#e9364c;border-color:#e9364c;color:#fff}
+.foot{color:#858b98}
+
 </style>
 </head>
 <body>
