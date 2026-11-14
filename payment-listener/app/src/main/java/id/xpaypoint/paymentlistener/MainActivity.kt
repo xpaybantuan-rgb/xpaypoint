@@ -135,8 +135,8 @@ class MainActivity : Activity() {
 
     private fun checkForUpdate() {
         updateView.text = "Memeriksa versi terbaru..."
-        prefs.edit().putLong("last_update_check_at", System.currentTimeMillis()).apply()
         Thread {
+            var releaseConnection: HttpURLConnection? = null
             try {
                 val api = URL("https://api.github.com/repos/xpaybantuan-rgb/xpaypoint/releases/latest")
                 val connection = (api.openConnection() as HttpURLConnection).apply {
@@ -145,8 +145,14 @@ class MainActivity : Activity() {
                     setRequestProperty("Accept", "application/vnd.github+json")
                     setRequestProperty("User-Agent", "XPAYPOINT-Payment-Listener")
                 }
+                releaseConnection = connection
+                val responseCode = connection.responseCode
+                if (responseCode !in 200..299) {
+                    throw IllegalStateException("GitHub merespons HTTP $responseCode.")
+                }
                 val releaseText = connection.inputStream.bufferedReader().use { it.readText() }
                 connection.disconnect()
+                releaseConnection = null
                 val release = JSONObject(releaseText)
                 val tag = release.optString("tag_name")
                 val latestCode = tag.substringAfterLast("-v").toIntOrNull()
@@ -158,6 +164,7 @@ class MainActivity : Activity() {
                     packageManager.getPackageInfo(packageName, 0).versionCode
                 }
                 if (latestCode <= currentCode) {
+                    prefs.edit().putLong("last_update_check_at", System.currentTimeMillis()).apply()
                     runOnUiThread { updateView.text = "Aplikasi sudah versi terbaru (versi $currentCode)." }
                     return@Thread
                 }
@@ -184,13 +191,18 @@ class MainActivity : Activity() {
                 if (!apk.exists() || apk.length() < 500_000) {
                     throw IllegalStateException("Unduhan APK tidak lengkap.")
                 }
-                prefs.edit().putString("pending_update_apk", apk.absolutePath).apply()
+                prefs.edit()
+                    .putString("pending_update_apk", apk.absolutePath)
+                    .putLong("last_update_check_at", System.currentTimeMillis())
+                    .apply()
                 runOnUiThread {
                     updateView.text = "Update selesai diunduh. Menyiapkan instalasi..."
                     installPendingApkIfAllowed()
                 }
             } catch (e: Exception) {
                 runOnUiThread { updateView.text = "Gagal memeriksa update: ${e.message ?: "koneksi bermasalah"}" }
+            } finally {
+                releaseConnection?.disconnect()
             }
         }.start()
     }
