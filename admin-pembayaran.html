@@ -232,12 +232,12 @@ body{background:radial-gradient(1000px 420px at 90% -15%,#ffe6ea 0,transparent 6
    if(gameError)throw gameError;if(catalogError)throw catalogError;
    vipWebsiteGames=(websiteGames||[]).filter(g=>g.name).sort((a,b)=>a.name.localeCompare(b.name,"id"));
    vipGames=[...new Set((catalogRows||[]).map(r=>String(r.game||"").trim()).filter(Boolean))];
-   const normGame=v=>String(v||"").trim().toLowerCase().replace(/[().:,]/g," ").replace(/\\s+/g," ");
+   const normGame=v=>String(v||"").trim().toLowerCase().replace(/[().:,]/g," ").replace(/\s+/g," ");
    const resolveToWebsiteName=source=>{
     const exact=vipWebsiteGames.filter(g=>normGame(g.name)===normGame(source));
     if(exact.length===1)return exact[0].name;
     if(exact.length>1)return null;
-    const base=String(source||"").replace(/\\s*\\((?:id|indo(?:nesia)?|global|malaysia|philippines|singapore|brazil|russia|turkey)\\)\\s*$/i,"").replace(/\\s+global\\s*$/i,"").trim();
+    const base=String(source||"").replace(/\s*\((?:id|indo(?:nesia)?|global|malaysia|philippines|singapore|brazil|russia|turkey)\)\s*$/i,"").replace(/\s+global\s*$/i,"").trim();
     const fallback=vipWebsiteGames.filter(g=>normGame(g.name)===normGame(base));
     return fallback.length===1?fallback[0].name:null;
    };
