@@ -1,8 +1,8 @@
 # SkieePay — private payment engine
 
-SkieePay runs separately from the XPAYPOINT storefront and is reserved for businesses owned by the same owner. It is a private multi-business payment engine, not a public merchant gateway. The public landing page is `index.html`; the owner dashboard is `admin.html`; customer invoice lookup is `invoice.html?code=SKP...`.
+SkieePay runs separately from the SKIEESTORE storefront and is reserved for businesses owned by the same owner. It is a private multi-business payment engine, not a public merchant gateway. The public landing page is `index.html`; the owner dashboard is `admin.html`; customer invoice lookup is `invoice.html?code=SKP...`.
 
-## Private multi-business foundation\n- Private business registry: `skieepay_businesses`. The first active business is `xpaypoint` (XPAYPOINT).\n- Every invoice now has a required `business_id`; existing invoices are backfilled to XPAYPOINT.\n- Create invoices with optional `business_code` (defaults to `xpaypoint` for compatibility).\n- Authenticated private API route `GET /v1/businesses` lists the owner's registered businesses.\n- New owned businesses can be added by the owner through a controlled admin workflow; public merchant registration is intentionally not provided.\n\n## Implemented foundation
+## Private multi-business foundation\n- Private business registry: `skieepay_businesses`. The first active business is `xpaypoint` (SKIEESTORE).\n- Every invoice now has a required `business_id`; existing invoices are backfilled to SKIEESTORE.\n- Create invoices with optional `business_code` (defaults to the internal legacy code `xpaypoint` for compatibility).\n- Authenticated private API route `GET /v1/businesses` lists the owner's registered businesses.\n- New owned businesses can be added by the owner through a controlled admin workflow; public merchant registration is intentionally not provided.\n\n## Implemented foundation
 - Invoice creation and lookup through the Cloudflare Worker.
 - Supabase invoice, payment-event, and ledger tables with RLS enabled.
 - VIPayment callback receiver at `POST /webhooks/vipayment`.
