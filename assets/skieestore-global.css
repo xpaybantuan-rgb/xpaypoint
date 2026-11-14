@@ -127,3 +127,8 @@ button,input,select,textarea{max-width:100%;min-width:0}
 /* Consistent SKIEESTORE footer brand mark */
 .xp-footer .xp-foot-brand{width:max-content;max-width:100%;min-height:44px}
 .xp-footer .xp-foot-logo{display:block;width:min(220px,100%);height:auto;max-height:54px;object-fit:contain;object-position:left center}
+
+/* FINAL FOOTER LOGO SIZE — identical on every page */
+.xp-footer a.xp-foot-brand{display:inline-flex!important;align-items:center!important;justify-content:flex-start!important;width:180px!important;max-width:180px!important;height:38px!important;min-height:38px!important;max-height:38px!important;overflow:hidden!important;flex:0 0 180px!important;}
+.xp-footer a.xp-foot-brand img.xp-foot-logo{display:block!important;width:180px!important;min-width:180px!important;max-width:180px!important;height:38px!important;min-height:38px!important;max-height:38px!important;object-fit:contain!important;object-position:left center!important;margin:0!important;padding:0!important;}
+@media(max-width:760px){.xp-footer a.xp-foot-brand{width:180px!important;max-width:180px!important;height:38px!important;min-height:38px!important;max-height:38px!important;flex-basis:180px!important}.xp-footer a.xp-foot-brand img.xp-foot-logo{width:180px!important;min-width:180px!important;max-width:180px!important;height:38px!important;min-height:38px!important;max-height:38px!important}}
