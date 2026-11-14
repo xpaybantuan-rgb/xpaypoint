@@ -203,9 +203,9 @@ input::placeholder,textarea::placeholder{opacity:1!important;color:#333333!impor
 </div></footer>
 <script>
 document.querySelectorAll(".footer-year").forEach(e=>e.textContent=new Date().getFullYear());
-const URL="https://rjgeitbkpcyymgemcztx.supabase.co",KEY="sb_publishable_1b6C4q5vgbX0XfP_EV5yjQ_Qk9Cq4lR", $=id=>document.getElementById(id), safe=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])),money=n=>new Intl.NumberFormat("id-ID",{style:"currency",currency:"IDR",maximumFractionDigits:0}).format(Number(n||0));
+const SUPABASE_URL="https://rjgeitbkpcyymgemcztx.supabase.co",KEY="sb_publishable_1b6C4q5vgbX0XfP_EV5yjQ_Qk9Cq4lR", $=id=>document.getElementById(id), safe=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])),money=n=>new Intl.NumberFormat("id-ID",{style:"currency",currency:"IDR",maximumFractionDigits:0}).format(Number(n||0));
 let games=[],products=[],filter="Mobile",selected=null,selectedProduct=null,openProductGroup=null,activeForm={playerLabel:"ID / Data Tujuan",playerPlaceholder:"Masukkan data tujuan sesuai produk",serverLabel:"Server / Region",serverPlaceholder:"Isi jika diminta produk",showServer:false,playerRequired:true,serverRequired:false,help:"Isi data tujuan sesuai instruksi produk. Jangan pernah memasukkan password atau kode OTP."},globalQuery=new URLSearchParams(location.search).get("q")?.trim().toLowerCase()||"";
-async function api(path){let all=[],offset=0;while(true){const r=await fetch(URL+"/rest/v1/"+path+"&limit=1000&offset="+offset,{headers:{apikey:KEY,Authorization:"Bearer "+KEY},signal:AbortSignal.timeout(15000)});if(!r.ok)throw Error("Katalog gagal dimuat ("+r.status+")");const batch=await r.json();all.push(...batch);if(batch.length<1000)break;offset+=1000;if(offset>=10000)break}return all}
+async function api(path){let all=[],offset=0;while(true){const r=await fetch(SUPABASE_URL+"/rest/v1/"+path+"&limit=1000&offset="+offset,{headers:{apikey:KEY,Authorization:"Bearer "+KEY},signal:AbortSignal.timeout(15000)});if(!r.ok)throw Error("Katalog gagal dimuat ("+r.status+")");const batch=await r.json();all.push(...batch);if(batch.length<1000)break;offset+=1000;if(offset>=10000)break}return all}
 function initials(n){return String(n||"XP").split(/\s+/).slice(0,2).map(x=>x[0]||"").join("").toUpperCase()}
 function gameArtwork(g){
  const slug=String(g.slug||g.name||"game").toLowerCase();
@@ -313,6 +313,7 @@ function closeGame(){selected=null;selectedProduct=null;$("gameDetailPage").clas
 document.querySelectorAll("input[name=paymentMethod]").forEach(input=>input.addEventListener("change",()=>{document.querySelectorAll(".payment-option-choice").forEach(card=>card.classList.toggle("selected",card.querySelector("input").checked));updateSummary()}));$("productSearch").oninput=renderProducts;$("playerId").oninput=updateSummary;$("serverId").oninput=updateSummary;$("receiptEmail").oninput=updateSummary;$("receiptWhatsapp").oninput=updateSummary;$("checkoutButton").onclick=async()=>{
  if(!selected||!selectedProduct)return;
  const button=$("checkoutButton"),status=$("checkoutStatus"),method=document.querySelector("input[name=paymentMethod]:checked")?.value||"qris";
+  try{
   if(method==="qris"){
    status.textContent="Membuat pesanan SKIEESTORE…";
    const orderKey=crypto.randomUUID()+crypto.randomUUID().slice(0,8);
@@ -323,7 +324,7 @@ document.querySelectorAll("input[name=paymentMethod]").forEach(input=>input.addE
    const orderData=await orderResponse.json().catch(()=>({}));
    if(!orderResponse.ok||!orderData.order?.id)throw Error(orderData.message||orderData.code||"Gagal membuat pesanan SKIEESTORE.");
    status.textContent="Menyiapkan invoice GoPay Merchant…";
-   const paymentResponse=await fetch(URL+"/functions/v1/gopay-manual",{
+   const paymentResponse=await fetch(SUPABASE_URL+"/functions/v1/gopay-manual",{
     method:"POST",headers:{apikey:KEY,Authorization:"Bearer "+KEY,"content-type":"application/json"},
     body:JSON.stringify({action:"create",order_id:orderData.order.id,guest_token:orderData.guest_token})
    });
