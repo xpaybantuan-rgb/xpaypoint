@@ -2,27 +2,90 @@
 <html lang="id">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0b1020">
-<title>Admin Portal — XPAYPOINT Group</title>
+<meta name="theme-color" content="#f5f7fa">
+<meta name="description" content="Portal administrasi XPAYPOINT Group untuk mengakses dan mengelola XPAYPOINT serta SkieePay.">
+<title>Control Center — XPAYPOINT Group</title>
 <style>
-:root{color-scheme:dark;--bg:#080d19;--panel:#111a2b;--line:#27344a;--text:#f4f6fb;--muted:#9ba8bc;--red:#f04459;--mint:#66e5c8}
-*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(800px 450px at 8% -12%,#3a2034 0,transparent 65%),radial-gradient(850px 500px at 100% 10%,#123a43 0,transparent 65%),var(--bg);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text);display:grid;place-items:center;padding:24px}
-.shell{width:min(100%,940px)}.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:50px}.brand{display:flex;align-items:center;gap:12px;font-weight:900;letter-spacing:-.4px}.mark{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,var(--red),#ff9b8c);display:grid;place-items:center;color:white;font-weight:950;font-size:17px;box-shadow:0 8px 30px #f0445930}.top small{color:var(--muted);font-size:10px;letter-spacing:1.6px;text-transform:uppercase}
-.eyebrow{font-size:10px;font-weight:900;letter-spacing:2.4px;color:var(--mint);text-transform:uppercase}.hero h1{font-size:clamp(32px,6vw,54px);letter-spacing:-2px;line-height:1.04;margin:13px 0}.hero p{color:var(--muted);font-size:14px;line-height:1.7;max-width:580px;margin:0}
-.choices{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:36px}.choice{position:relative;display:flex;flex-direction:column;min-height:235px;padding:25px;border:1px solid var(--line);border-radius:22px;background:linear-gradient(145deg,#162237dd,#0e1726f2);text-decoration:none;color:var(--text);transition:.2s;overflow:hidden}.choice:hover{transform:translateY(-4px);border-color:#61728c;box-shadow:0 18px 45px #0004}.choice:focus-visible{outline:3px solid var(--mint);outline-offset:3px}.choice.xpay{--accent:var(--red)}.choice.skiee{--accent:var(--mint)}.choice:before{content:"";position:absolute;width:170px;height:170px;border-radius:50%;right:-55px;top:-70px;background:var(--accent);opacity:.1;filter:blur(3px)}
-.iconbox{width:48px;height:48px;border-radius:15px;display:grid;place-items:center;background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent);font-size:23px}.choice h2{font-size:23px;letter-spacing:-.7px;margin:22px 0 7px}.choice p{font-size:12px;line-height:1.6;color:var(--muted);margin:0;max-width:310px}.enter{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:25px;color:var(--accent);font-size:11px;font-weight:900;letter-spacing:.3px}.arrow{font-size:20px}
-.footer{display:flex;justify-content:space-between;gap:12px;margin-top:34px;padding-top:18px;border-top:1px solid #ffffff14;color:#728198;font-size:10px}.secure{display:flex;align-items:center;gap:7px}
-@media(max-width:620px){body{padding:18px}.top{margin-bottom:40px}.choices{grid-template-columns:1fr;margin-top:28px}.choice{min-height:205px;padding:21px}.hero h1{letter-spacing:-1.4px}.footer{flex-direction:column}}
+:root{color-scheme:light;--bg:#f5f7fa;--surface:#fff;--surface2:#f8fafc;--ink:#172033;--muted:#778196;--line:#e7ebf1;--nav:#172235;--navmuted:#aab5c5;--accent:#246b63;--accent-soft:#e8f3f0;--blue:#3867b4;--blue-soft:#edf3fc;--shadow:0 12px 36px rgba(26,39,59,.055);--radius:18px}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;font-size:14px;line-height:1.5}a{color:inherit;text-decoration:none}button{font:inherit}
+.layout{min-height:100vh}.sidebar{position:fixed;inset:0 auto 0 0;width:248px;background:var(--nav);color:#fff;padding:26px 18px 20px;display:flex;flex-direction:column;z-index:5}.brand{display:flex;align-items:center;gap:12px;padding:2px 8px 30px}.brand-mark{width:39px;height:39px;border-radius:12px;background:linear-gradient(145deg,#d9eee8,#77b6a6);color:#153b38;display:grid;place-items:center;font-size:14px;font-weight:900;letter-spacing:-1px}.brand-name{font-size:13px;font-weight:800;letter-spacing:.7px}.brand-sub{font-size:9px;color:#9eacbe;letter-spacing:1.8px;margin-top:3px}.nav-label{font-size:9px;font-weight:800;letter-spacing:1.8px;color:#78869b;padding:0 12px;margin:10px 0 9px}.nav{display:grid;gap:5px}.nav a{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:11px;color:var(--navmuted);font-size:12px;font-weight:600;transition:.18s}.nav a:hover,.nav a.active{background:#26364c;color:#fff}.nav a.active{box-shadow:inset 2px 0 #82c7b6}.nav-ico{width:19px;text-align:center;font-size:15px}.sidebar-bottom{margin-top:auto;border-top:1px solid #ffffff16;padding:17px 9px 2px;color:#8f9caf;font-size:10px;line-height:1.7}.secure-dot{display:inline-block;width:7px;height:7px;background:#78bca8;border-radius:50%;margin-right:7px}
+.main{margin-left:248px;min-height:100vh}.topbar{height:72px;background:#ffffffd9;backdrop-filter:blur(14px);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 42px;position:sticky;top:0;z-index:4}.crumb{font-size:11px;color:var(--muted)}.crumb strong{color:var(--ink);font-weight:700}.profile{display:flex;align-items:center;gap:10px}.avatar{width:32px;height:32px;border-radius:50%;background:#e5eee9;color:#315e53;display:grid;place-items:center;font-size:11px;font-weight:800}.profile-meta{font-size:11px;font-weight:700}.profile-meta small{display:block;color:var(--muted);font-size:9px;font-weight:500;margin-top:1px}
+.content{max-width:1250px;margin:0 auto;padding:38px 42px 50px}.welcome{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;margin-bottom:27px}.eyebrow{font-size:9px;letter-spacing:1.9px;text-transform:uppercase;color:var(--accent);font-weight:900}.welcome h1{font-size:clamp(27px,3vw,36px);letter-spacing:-1.4px;line-height:1.15;margin:9px 0 8px}.welcome p{margin:0;color:var(--muted);font-size:12px;max-width:580px}.date-chip{border:1px solid var(--line);background:var(--surface);padding:9px 13px;border-radius:10px;color:#697589;font-size:10px;white-space:nowrap}
+.section-head{display:flex;align-items:center;justify-content:space-between;margin:34px 0 14px}.section-head h2{font-size:14px;letter-spacing:-.2px;margin:0}.section-head span{font-size:10px;color:var(--muted)}
+.system-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.system-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow);transition:transform .18s,border-color .18s}.system-card:hover{transform:translateY(-2px);border-color:#cbd6d5}.card-top{display:flex;justify-content:space-between;align-items:flex-start}.system-logo{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font-size:19px;font-weight:900}.xpay-logo{background:#f9ecec;color:#b74d55}.skiee-logo{background:var(--accent-soft);color:var(--accent)}.tag{font-size:9px;font-weight:800;letter-spacing:.6px;padding:6px 9px;border-radius:20px;background:#f1f4f7;color:#667286}.system-card h3{font-size:19px;letter-spacing:-.5px;margin:18px 0 5px}.system-card p{font-size:11px;color:var(--muted);line-height:1.65;min-height:38px;margin:0;max-width:430px}.features{display:flex;flex-wrap:wrap;gap:7px;margin:16px 0 19px}.features span{font-size:9px;color:#687488;background:var(--surface2);border:1px solid #edf0f4;padding:5px 8px;border-radius:7px}.actions{display:flex;gap:9px;flex-wrap:wrap}.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:9px;padding:10px 13px;font-size:10px;font-weight:800;transition:.18s}.btn-primary{background:#1e3447;color:#fff}.btn-primary:hover{background:#294a60}.btn-light{background:#f3f6f8;color:#455166}.btn-light:hover{background:#e9eef2}
+.quick-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.quick{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;align-items:center;gap:12px;transition:.18s}.quick:hover{border-color:#cbd6d5;box-shadow:var(--shadow)}.quick-icon{width:35px;height:35px;display:grid;place-items:center;border-radius:10px;background:#f0f3f7;color:#506079;font-size:15px}.quick strong{display:block;font-size:11px}.quick small{display:block;font-size:9px;color:var(--muted);margin-top:3px}
+.notice{margin-top:22px;padding:16px 18px;border:1px solid #e3ebe8;background:#f1f7f5;border-radius:13px;display:flex;gap:12px;align-items:flex-start}.notice-icon{font-size:15px;color:var(--accent)}.notice strong{display:block;font-size:10px;color:#28574e;margin-bottom:3px}.notice p{font-size:10px;color:#627b75;line-height:1.6;margin:0}
+.footer{border-top:1px solid var(--line);margin-top:35px;padding-top:17px;display:flex;justify-content:space-between;gap:12px;color:#929bad;font-size:9px}
+.mobile-head{display:none}
+@media(max-width:900px){.sidebar{width:215px}.main{margin-left:215px}.topbar{padding:0 26px}.content{padding:30px 26px 40px}.quick-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.sidebar{position:static;width:auto;height:auto;padding:12px 16px;display:block}.brand{padding:0}.brand-mark{width:34px;height:34px}.brand-sub{font-size:8px}.nav-label,.nav,.sidebar-bottom{display:none}.main{margin:0}.topbar{height:54px;padding:0 17px}.profile-meta{display:none}.content{padding:25px 16px 32px}.welcome{display:block}.date-chip{display:inline-block;margin-top:15px}.system-grid{grid-template-columns:1fr}.system-card{padding:19px}.system-card p{min-height:0}.quick-grid{grid-template-columns:1fr 1fr;gap:9px}.quick{padding:12px;gap:9px}.quick-icon{width:31px;height:31px}.footer{flex-direction:column}.section-head{margin-top:28px}}
+@media(max-width:380px){.quick-grid{grid-template-columns:1fr}.actions .btn{flex:1}}
 </style>
 </head>
 <body>
-<main class="shell">
-<header class="top"><div class="brand"><div class="mark">XP</div><div>XPAYPOINT GROUP<small style="display:block;margin-top:4px;font-weight:600;letter-spacing:1.3px">ADMIN PORTAL</small></div></div><small>Secure workspace</small></header>
-<section class="hero"><div class="eyebrow">Central administration</div><h1>Satu portal.<br>Dua sistem.</h1><p>Pilih dashboard yang ingin kamu kelola. Setiap sistem memiliki ruang admin dan akses operasional masing-masing.</p></section>
-<section class="choices" aria-label="Pilih dashboard admin">
-<a class="choice xpay" href="https://xpaypoint.pages.dev/admin-pembayaran.html"><div class="iconbox">🎮</div><h2>XPAYPOINT</h2><p>Kelola toko top-up game, pesanan, katalog VIPayment, pembayaran, member, dan XPAYCOIN.</p><div class="enter"><span>MASUK KE ADMIN XPAYPOINT</span><span class="arrow">↗</span></div></a>
-<a class="choice skiee" href="https://skieepay.pages.dev/admin.html"><div class="iconbox">◈</div><h2>SkieePay</h2><p>Kelola invoice, bisnis, payment events, callback, ledger, dan operasional payment engine.</p><div class="enter"><span>MASUK KE ADMIN SKIEEPAY</span><span class="arrow">↗</span></div></a>
-</section>
-<footer class="footer"><span>© 2026 XPAYPOINT GROUP · ADMIN PORTAL</span><span class="secure">● Akses admin dilindungi autentikasi masing-masing sistem</span></footer>
+<div class="layout">
+<aside class="sidebar">
+  <a class="brand" href="#overview" aria-label="XPAYPOINT Group Control Center">
+    <div class="brand-mark">XP</div><div><div class="brand-name">XPAYPOINT GROUP</div><div class="brand-sub">CONTROL CENTER</div></div>
+  </a>
+  <div class="nav-label">WORKSPACE</div>
+  <nav class="nav" aria-label="Navigasi utama">
+    <a class="active" href="#overview"><span class="nav-ico">⌂</span>Ringkasan</a>
+    <a href="#systems"><span class="nav-ico">▦</span>Sistem & layanan</a>
+    <a href="#shortcuts"><span class="nav-ico">↗</span>Akses cepat</a>
+    <a href="#security"><span class="nav-ico">◇</span>Keamanan</a>
+  </nav>
+  <div class="sidebar-bottom"><span class="secure-dot"></span>Portal akses administrasi<br>XPAYPOINT Group · 2026</div>
+</aside>
+<main class="main" id="overview">
+  <header class="topbar">
+    <div class="crumb">Workspace <span style="padding:0 7px;color:#c0c7d1">/</span> <strong>Ringkasan</strong></div>
+    <div class="profile"><div class="avatar">XP</div><div class="profile-meta">Administrator<small>Control Center</small></div></div>
+  </header>
+  <div class="content">
+    <section class="welcome">
+      <div><div class="eyebrow">Central administration</div><h1>Selamat datang kembali.</h1><p>Kelola layanan XPAYPOINT Group dari satu tempat. Pilih sistem untuk membuka ruang administrasi dan operasionalnya.</p></div>
+      <div class="date-chip">● &nbsp; ADMIN WORKSPACE</div>
+    </section>
+
+    <section id="systems">
+      <div class="section-head"><h2>Sistem yang terhubung</h2><span>2 layanan</span></div>
+      <div class="system-grid">
+        <article class="system-card">
+          <div class="card-top"><div class="system-logo xpay-logo">XP</div><span class="tag">GAME TOP-UP STORE</span></div>
+          <h3>XPAYPOINT</h3>
+          <p>Kelola toko top-up game, katalog produk, pesanan pelanggan, pembayaran, member, serta sistem saldo dan reward.</p>
+          <div class="features"><span>Katalog VIPayment</span><span>Pesanan</span><span>XPAYCOIN</span><span>Pembayaran</span></div>
+          <div class="actions"><a class="btn btn-primary" href="https://xpaypoint.pages.dev/admin-pembayaran.html">Buka Admin XPAYPOINT <span>↗</span></a><a class="btn btn-light" href="https://xpaypoint.pages.dev/">Lihat Toko</a></div>
+        </article>
+        <article class="system-card">
+          <div class="card-top"><div class="system-logo skiee-logo">S</div><span class="tag">PAYMENT ENGINE</span></div>
+          <h3>SkieePay</h3>
+          <p>Kelola invoice, merchant, payment events, callback, pencatatan ledger, dan aktivitas mesin pembayaran.</p>
+          <div class="features"><span>Invoice</span><span>Merchant</span><span>Payment Events</span><span>Ledger</span></div>
+          <div class="actions"><a class="btn btn-primary" href="https://skieepay.pages.dev/admin.html">Buka Admin SkieePay <span>↗</span></a><a class="btn btn-light" href="https://skieepay.pages.dev/">Lihat Website</a></div>
+        </article>
+      </div>
+    </section>
+
+    <section id="shortcuts">
+      <div class="section-head"><h2>Akses cepat</h2><span>Shortcut operasional</span></div>
+      <div class="quick-grid">
+        <a class="quick" href="https://xpaypoint.pages.dev/admin-pembayaran.html"><span class="quick-icon">▤</span><span><strong>Admin XPAYPOINT</strong><small>Kelola toko & produk</small></span></a>
+        <a class="quick" href="https://skieepay.pages.dev/admin.html"><span class="quick-icon">◈</span><span><strong>Admin SkieePay</strong><small>Kelola payment engine</small></span></a>
+        <a class="quick" href="https://xpaypoint.pages.dev/"><span class="quick-icon">⌕</span><span><strong>Website XPAYPOINT</strong><small>Buka halaman pelanggan</small></span></a>
+        <a class="quick" href="https://skieepay.pages.dev/"><span class="quick-icon">↗</span><span><strong>Website SkieePay</strong><small>Buka halaman layanan</small></span></a>
+        <a class="quick" href="https://github.com/xpaybantuan-rgb/xpaypoint"><span class="quick-icon">⌘</span><span><strong>GitHub Repository</strong><small>Lihat source code</small></span></a>
+        <a class="quick" href="https://dash.cloudflare.com/"><span class="quick-icon">☁</span><span><strong>Cloudflare</strong><small>Kelola deployment & Workers</small></span></a>
+      </div>
+    </section>
+
+    <section class="notice" id="security">
+      <div class="notice-icon">◇</div><div><strong>Keamanan akses</strong><p>Portal ini adalah pusat navigasi, bukan login tunggal. Untuk menjaga akses, autentikasi admin tetap dilakukan di masing-masing sistem. Jangan bagikan password, API key, atau secret melalui halaman publik.</p></div>
+    </section>
+    <footer class="footer"><span>© 2026 XPAYPOINT GROUP</span><span>CONTROL CENTER · ADMIN ACCESS</span></footer>
+  </div>
 </main>
-</body></html>
+</div>
+</body>
+</html>
