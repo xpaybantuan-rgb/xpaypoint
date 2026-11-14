@@ -15,7 +15,7 @@ a{color:inherit;text-decoration:none}.wrap{width:min(1160px,calc(100% - 42px));m
 .developer{display:grid;grid-template-columns:.9fr 1.1fr;gap:30px;align-items:center;border:1px solid #2d435b;border-radius:22px;padding:clamp(22px,4vw,38px);background:linear-gradient(130deg,#13283a,#101b2d)}.developer h2{font-size:clamp(25px,3.5vw,36px);letter-spacing:-1px;margin:12px 0}.developer p{font-size:12px;line-height:1.8;color:#a1b2c7}.code{border:1px solid #344960;border-radius:14px;background:#08111e;padding:18px;overflow:auto;color:#c2d4e8;font:11px/1.9 ui-monospace,SFMono-Regular,Consolas,monospace}.code .green{color:#78e9cb}.statusline{display:flex;align-items:center;gap:10px;font-size:11px;color:#9eb0c5;margin-top:18px}.statusline strong{color:var(--amber)}.lookup{display:flex;gap:9px;margin-top:20px}.lookup input{flex:1;min-width:0;background:#081321;border:1px solid #30445c;border-radius:12px;padding:13px 14px;color:white;font:inherit;font-size:12px;outline:none}.lookup input:focus{border-color:var(--mint)}.footer{border-top:1px solid #ffffff14;padding:28px 0 36px;color:#7589a3;font-size:10px}.footerinner{display:flex;justify-content:space-between;gap:15px;flex-wrap:wrap}.footer a{color:#a9bdd2}
 @media(max-width:850px){.hero{grid-template-columns:1fr;gap:36px;padding:65px 0}.visual{max-width:560px;width:100%;margin:auto}.features{grid-template-columns:1fr 1fr}.developer{grid-template-columns:1fr}.links{gap:15px}}
 @media(max-width:560px){.wrap{width:min(100% - 28px,1160px)}.nav{height:68px}.links{display:none}.navright .btn{padding:10px 12px;font-size:10px}.brand{font-size:17px}.logo{width:35px;height:35px}.hero{padding:55px 0 52px;gap:28px}h1{font-size:43px;letter-spacing:-2.3px}.lead{font-size:13px}.actions .btn{flex:1}.mock{padding:16px}.mockamount{font-size:27px}.section{padding:60px 0}.features{grid-template-columns:1fr}.developer{padding:21px}.lookup{flex-direction:column}.lookup .btn{width:100%}}
-/* SkieePay unified XPAYPOINT visual system */
+/* SkieePay unified SKIEESTORE visual system */
 :root{color-scheme:light;--bg:#f7f8fc;--panel:#fff;--line:#e9eaf0;--text:#191b22;--muted:#707887;--mint:#e9364c;--blue:#c92f49;--amber:#a66b12}
 body{background:radial-gradient(900px 480px at 88% -12%,#ffe7eb 0,transparent 64%),#f7f8fc;color:var(--text)}
 .nav{border-color:#e9eaf0}.brand{color:#191b22}.logo{background:linear-gradient(135deg,#f04459,#c92f49);color:#fff;box-shadow:0 8px 24px #e9364c2b}
@@ -45,7 +45,7 @@ h1{color:#191b22}.gradient{background:linear-gradient(100deg,#191b22 0%,#e9364c 
   <h1>Kelola transaksi.<br><span class="gradient">Tetap terkendali.</span></h1>
   <p class="lead">SkieePay menyiapkan fondasi pembayaran digital untuk bisnis: pengelolaan invoice, pemantauan status transaksi, dan integrasi webhook dalam satu alur yang rapi.</p>
   <div class="actions"><a class="btn primary" href="admin.html">Buka dashboard admin <span>→</span></a><a class="btn" href="#developer">Lihat integrasi API</a></div>
-  <p class="subnote">Dibangun untuk kebutuhan operasional XPAYPOINT. Kanal penerimaan dana QRIS/e-wallet pelanggan akan diaktifkan setelah provider merchant resmi terhubung.</p>
+  <p class="subnote">Dibangun untuk kebutuhan operasional SKIEESTORE. Kanal penerimaan dana QRIS/e-wallet pelanggan akan diaktifkan setelah provider merchant resmi terhubung.</p>
  </div>
  <div class="visual"><div class="glow"></div><div class="mock">
   <div class="mocktop"><div class="mockbrand">S / SkieePay Console</div><span class="live">● CORE ONLINE</span></div>
@@ -86,7 +86,7 @@ X-SkieePay-Key: YOUR_SERVER_KEY
  </div>
 </section>
 </main>
-<footer class="footer"><div class="wrap footerinner"><span>© 2026 SkieePay · Payment infrastructure by XPAYPOINT</span><span><a href="admin.html">Admin</a> · <a href="invoice.html">Invoice</a></span></div></footer>
+<footer class="footer"><div class="wrap footerinner"><span>© 2026 SkieePay · Payment infrastructure by SKIEESTORE</span><span><a href="admin.html">Admin</a> · <a href="invoice.html">Invoice</a></span></div></footer>
 <script>
 const API='https://skieepay-api.xpaybantuan.workers.dev';
 fetch(API+'/health',{cache:'no-store'}).then(r=>r.json()).then(d=>{
