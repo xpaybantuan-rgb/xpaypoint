@@ -12,5 +12,5 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "XPayPointPaymentListener"
+rootProject.name = "SkieeStorePaymentListener"
 include(":app")
