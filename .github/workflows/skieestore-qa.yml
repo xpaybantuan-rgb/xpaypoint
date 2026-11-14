@@ -1,0 +1,165 @@
+name: SKIEESTORE Browser QA
+
+on:
+  push:
+    paths:
+      - ".github/workflows/skieestore-qa.yml"
+  workflow_dispatch:
+  schedule:
+    - cron: "23 2 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  mobile-browser-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Playwright
+        run: |
+          python -m pip install --upgrade pip
+          pip install playwright
+          python -m playwright install --with-deps chromium
+
+      - name: Run deeper mobile browser QA against production
+        run: |
+          cat > qa_skieestore.py <<'PY'
+          from playwright.sync_api import sync_playwright
+          import json, sys, re
+
+          BASE = "https://skieestore.pages.dev"
+          PAGES = [
+              "/", "/topup.html", "/cek-pesanan.html", "/profil.html",
+              "/cara-top-up.html", "/pusat-bantuan.html", "/tentang-skieestore.html",
+              "/kebijakan-privasi.html", "/syarat-ketentuan.html"
+          ]
+          failures, report = [], []
+
+          with sync_playwright() as p:
+              browser = p.chromium.launch()
+              page = browser.new_page(viewport={"width": 390, "height": 844},
+                                      device_scale_factor=1, is_mobile=True, has_touch=True)
+              page.on("pageerror", lambda e: failures.append("JS runtime: " + str(e)))
+              page.on("console", lambda m: failures.append("console error: " + m.text[:300])
+                      if m.type == "error" else None)
+
+              for path in PAGES:
+                  errors_before = len(failures)
+                  response = page.goto(BASE + path, wait_until="domcontentloaded", timeout=45000)
+                  page.wait_for_timeout(1200)
+                  status = response.status if response else 0
+
+                  if path == "/":
+                      try:
+                          page.wait_for_function("""() => {
+                            const cards=[...document.querySelectorAll('#gameGrid .gameinfo small')];
+                            return cards.length && cards.some(x => /[1-9][0-9]* produk aktif/.test(x.innerText));
+                          }""", timeout=30000)
+                      except Exception:
+                          failures.append("Homepage product counts stayed at zero/loading after 30 seconds")
+
+                  data = page.evaluate("""() => ({
+                    title: document.title,
+                    width: innerWidth,
+                    scrollWidth: document.documentElement.scrollWidth,
+                    footer: !!document.querySelector('footer'),
+                    copyright: document.body.innerText.includes('© 2026 SKIEESTORE. All Rights Reserved.'),
+                    chatToggle: !!document.querySelector('#chatToggle'),
+                    chatPanel: !!document.querySelector('#chatPanel'),
+                    bottomNav: !!document.querySelector('.bottomnav'),
+                    productCountText: [...document.querySelectorAll('#gameGrid .gameinfo small')].slice(0,9).map(x=>x.innerText),
+                    brokenImages: [...document.images].filter(i => i.complete && i.naturalWidth === 0).map(i => i.currentSrc || i.src).slice(0,10)
+                  })""")
+
+                  issues = []
+                  if status != 200: issues.append(f"HTTP {status}")
+                  if data["scrollWidth"] > data["width"] + 2: issues.append("horizontal overflow")
+                  if not data["copyright"]: issues.append("copyright missing")
+                  if not data["chatToggle"] or not data["chatPanel"]: issues.append("XP AI widget missing")
+                  if data["brokenImages"]: issues.append("broken images: " + ", ".join(data["brokenImages"]))
+                  if len(failures) > errors_before: issues.append("browser JS/console errors")
+                  if path == "/" and data["productCountText"] and all(x.startswith("0 ") for x in data["productCountText"]):
+                      issues.append("visible game cards show zero active products")
+
+                  # Open and close XP AI, and verify its floating button is not over the copyright at page bottom.
+                  if data["chatToggle"] and data["chatPanel"]:
+                      try:
+                          page.locator("#chatToggle").click(timeout=4000)
+                          page.wait_for_timeout(300)
+                          if not page.locator("#chatPanel").is_visible():
+                              issues.append("chat did not open")
+                          else:
+                              page.locator("#chatClose").click(timeout=3000)
+                              if page.locator("#chatPanel").is_visible(): issues.append("chat did not close")
+                      except Exception as e:
+                          issues.append("chat interaction: " + str(e)[:180])
+
+                  # Scroll to the actual bottom and detect footer/copyright overlap with fixed navigation/chat.
+                  page.evaluate("window.scrollTo(0, document.documentElement.scrollHeight)")
+                  page.wait_for_timeout(400)
+                  geometry = page.evaluate("""() => {
+                    const rect = s => {const e=document.querySelector(s); if(!e)return null; const r=e.getBoundingClientRect(); return {top:r.top,bottom:r.bottom,left:r.left,right:r.right,width:r.width,height:r.height}};
+                    const copy=[...document.querySelectorAll('.xp-foot-copy,.footer-copy')].find(e=>e.innerText.includes('©'));
+                    const nav=rect('.bottomnav'), chat=rect('#chatToggle');
+                    let cr=null;if(copy){const target=copy.querySelector('span')||copy;const range=document.createRange();range.selectNodeContents(target);const r=range.getBoundingClientRect();cr={top:r.top,bottom:r.bottom,left:r.left,right:r.right,width:r.width,height:r.height}}
+                    const overlap=(a,b)=>!!(a&&b&&a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top);
+                    return {copyrightRect:cr,bottomNavRect:nav,chatRect:chat,navOverCopyright:overlap(cr,nav),chatOverCopyright:overlap(cr,chat)};
+                  }""")
+                  if geometry["navOverCopyright"]: issues.append("bottom navigation overlaps copyright at page bottom")
+                  if geometry["chatOverCopyright"]: issues.append("floating XP AI button overlaps copyright at page bottom")
+
+                  page.screenshot(path=f"qa-bottom-{path.strip('/').replace('/','_') or 'home'}.png")
+                  page.evaluate("window.scrollTo(0,0)")
+                  page.screenshot(path=f"qa-top-{path.strip('/').replace('/','_') or 'home'}.png")
+                  report.append({"page":path,"http":status,**data,"footerGeometry":geometry,"issues":issues})
+                  print(json.dumps(report[-1],ensure_ascii=False))
+                  failures.extend([f"{path}: {x}" for x in issues])
+
+                  # Verify the first game card routes to the matching top-up page without submitting anything.
+                  if path == "/":
+                      try:
+                          card=page.locator("#gameGrid [data-game]").first
+                          game_id=card.get_attribute("data-game")
+                          print("QA GAME CARD:", game_id, card.get_attribute("class"))
+                          card.click(timeout=5000)
+                          page.wait_for_timeout(1200)
+                          print("QA GAME CARD URL AFTER CLICK:", page.url)
+                          if "/topup" not in page.url or "game=" not in page.url:
+                              failures.append("Game card click did not navigate; card id=" + str(game_id) + "; url=" + page.url)
+                          else:
+                              page.wait_for_load_state("domcontentloaded",timeout=15000)
+                              if "Top Up Game" not in page.title():
+                                  failures.append("Game card reached top-up route but page title is unexpected: " + page.title())
+                              page.go_back(wait_until="domcontentloaded",timeout=15000)
+                      except Exception as e:
+                          failures.append("Game card navigation: " + str(e)[:200])
+
+              browser.close()
+
+          with open("qa-report.json","w") as f: json.dump({"pages":report,"failures":failures},f,indent=2,ensure_ascii=False)
+          if failures:
+              print("QA FAILED:",json.dumps(failures,ensure_ascii=False))
+              sys.exit(1)
+          print("QA PASSED")
+          PY
+          python qa_skieestore.py
+
+      - name: Upload QA screenshots and report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: skieestore-mobile-qa-deep
+          path: |
+            qa-*.png
+            qa-report.json
+          if-no-files-found: ignore
+          retention-days: 7
