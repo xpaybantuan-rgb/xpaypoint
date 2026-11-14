@@ -52,7 +52,7 @@ body{background:radial-gradient(1000px 420px at 90% -15%,#ffe6ea 0,transparent 6
 @media(max-width:700px){.wrap{width:min(100% - 22px,1240px);margin:12px auto 40px}.top{padding:14px;border-radius:15px;position:static}.panel{padding:16px;border-radius:16px}.login{margin:8vh auto;padding:23px}.kpis{grid-template-columns:1fr 1fr;gap:9px}.kpi{padding:14px}.kpi-value{font-size:22px}#dashboard .toolbar{align-items:flex-start;gap:12px;padding:18px}.payment{padding:15px}.meta{gap:8px;padding:11px}}
 @media(max-width:420px){.kpis{grid-template-columns:1fr 1fr}.kpi-value{font-size:20px}.top{gap:8px}.brand{font-size:17px}}
 
-</style>
+.admin-extra{margin-top:14px}.admin-extra h2{font-size:18px;margin:0 0 5px}.filterbar{display:flex;gap:9px;margin:12px 0;flex-wrap:wrap}.filterbar input,.filterbar select{border:1px solid #e2e5eb;border-radius:10px;padding:11px 12px;background:#fff;font:inherit;font-size:12px;min-width:180px}.filterbar input{flex:1}.table-scroll{overflow:auto}.admin-table{width:100%;border-collapse:collapse;min-width:680px}.admin-table th,.admin-table td{text-align:left;padding:12px 10px;border-bottom:1px solid #eef0f4;font-size:11px}.admin-table th{color:#777f8d;font-size:10px}.catalog-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.catalog-item{border:1px solid #e9eaf0;border-radius:13px;padding:13px;background:#fff}.catalog-item strong{display:block;font-size:12px;margin:6px 0}.catalog-item small{color:#818896;font-size:10px}.catalog-price{font-weight:900;color:#d52d43;font-size:13px;margin-top:8px}@media(max-width:650px){.catalog-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:430px){.catalog-grid{grid-template-columns:1fr}.filterbar>*{width:100%}}</style>
 </head>
 <body>
 <main class="wrap">
@@ -74,6 +74,9 @@ body{background:radial-gradient(1000px 420px at 90% -15%,#ffe6ea 0,transparent 6
  <div class="kpi"><div class="kpi-label">Sudah lunas</div><div class="kpi-value" id="kpiPaid">—</div><div class="kpi-note">Status pembayaran tercatat</div></div>
 </div>
 <div class="cards" id="payments"><div class="empty">Memuat pembayaran…</div></div>
+
+<section class="panel admin-extra" id="adminOrders"><div class="toolbar"><div><h2>Semua pesanan</h2><p class="muted">Riwayat pesanan terbaru dari database XPAYPOINT.</p></div><button class="btn secondary" id="loadAdminOrders">Muat ulang</button></div><div class="filterbar"><input id="adminOrderSearch" placeholder="Cari kode, game, produk, atau ID tujuan"><select id="adminOrderStatus"><option value="">Semua status</option><option value="pending_payment">Menunggu pembayaran</option><option value="paid">Lunas</option><option value="processing">Diproses</option><option value="success">Berhasil</option><option value="failed">Gagal</option><option value="cancelled">Dibatalkan</option></select></div><div class="table-scroll"><table class="admin-table"><thead><tr><th>Kode</th><th>Game / Produk</th><th>Tujuan</th><th>Tagihan</th><th>Status</th><th>Dibuat</th></tr></thead><tbody id="adminOrderRows"><tr><td colspan="6">Belum dimuat</td></tr></tbody></table></div></section>
+<section class="panel admin-extra" id="adminCatalog"><div class="toolbar"><div><h2>Katalog produk VIPayment</h2><p class="muted">Daftar produk aktif yang tersedia untuk dibaca melalui akses saat ini.</p></div><button class="btn secondary" id="loadAdminCatalog">Muat ulang</button></div><div class="filterbar"><input id="adminCatalogSearch" placeholder="Cari produk atau SKU"></div><div class="catalog-grid" id="adminCatalogRows"><div class="empty">Tekan muat ulang untuk melihat katalog.</div></div></section>
 <div class="status" id="dashboardStatus" role="status"></div>
 </section>
 </main>
@@ -180,6 +183,34 @@ body{background:radial-gradient(1000px 420px at 90% -15%,#ffe6ea 0,transparent 6
    await loadPayments();
   }catch(e){statusCard(card,e.message||"Konfirmasi gagal.","error");btn.disabled=false}
  }
+
+ let adminOrders=[],adminProducts=[];
+ function adminDate(v){return v?new Date(v).toLocaleString("id-ID"):"—"}
+ function renderAdminOrders(){
+  const q=$("adminOrderSearch").value.toLowerCase(),st=$("adminOrderStatus").value;
+  const rows=adminOrders.filter(o=>(!st||o.status===st)&&[o.order_code,o.game_name_snapshot,o.product_name_snapshot,o.target_id,o.zone_id].join(" ").toLowerCase().includes(q));
+  $("adminOrderRows").innerHTML=rows.length?rows.map(o=>'<tr><td><b>'+esc(o.order_code)+'</b></td><td>'+esc(o.game_name_snapshot)+'<br><small>'+esc(o.product_name_snapshot)+'</small></td><td>'+esc(o.target_id)+(o.zone_id?' / '+esc(o.zone_id):'')+'</td><td>'+money(o.payable_amount)+'</td><td>'+esc(o.status)+'</td><td>'+adminDate(o.created_at)+'</td></tr>').join(""):'<tr><td colspan="6">Tidak ada pesanan yang cocok.</td></tr>';
+ }
+ async function loadAdminOrders(){
+  $("adminOrderRows").innerHTML='<tr><td colspan="6">Memuat…</td></tr>';
+  const {data,error}=await sb.from("xpaypoint_orders").select("order_code,game_name_snapshot,product_name_snapshot,target_id,zone_id,payable_amount,status,created_at").order("created_at",{ascending:false}).limit(150);
+  if(error){$("adminOrderRows").innerHTML='<tr><td colspan="6">'+esc(error.message)+'</td></tr>';return}
+  adminOrders=data||[];renderAdminOrders();
+ }
+ async function loadAdminCatalog(){
+  $("adminCatalogRows").innerHTML='<div class="empty">Memuat…</div>';
+  const {data,error}=await sb.from("xpaypoint_products").select("name,provider_sku,sell_price,base_price,is_active,region").order("name").limit(120);
+  if(error){$("adminCatalogRows").innerHTML='<div class="empty">'+esc(error.message)+'</div>';return}
+  adminProducts=data||[];renderAdminCatalog();
+ }
+ function renderAdminCatalog(){
+  const q=$("adminCatalogSearch").value.toLowerCase();
+  const rows=adminProducts.filter(p=>[p.name,p.provider_sku].join(" ").toLowerCase().includes(q));
+  $("adminCatalogRows").innerHTML=rows.length?rows.map(p=>'<article class="catalog-item"><small>'+esc(p.region||"ID")+' · '+(p.is_active?"Aktif":"Nonaktif")+'</small><strong>'+esc(p.name)+'</strong><small>SKU: '+esc(p.provider_sku||"—")+'</small><div class="catalog-price">'+money(p.sell_price)+'</div><small>Modal: '+(p.base_price==null?"Belum ada":money(p.base_price))+'</small></article>').join(""):'<div class="empty">Produk tidak ditemukan.</div>';
+ }
+ $("loadAdminOrders").onclick=loadAdminOrders;$("loadAdminCatalog").onclick=loadAdminCatalog;
+ $("adminOrderSearch").addEventListener("input",renderAdminOrders);$("adminOrderStatus").addEventListener("change",renderAdminOrders);$("adminCatalogSearch").addEventListener("input",renderAdminCatalog);
+
  boot();
 })();
 </script>
