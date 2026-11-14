@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#ffffff"><title>Admin Pembayaran · XPAYPOINT</title>
+<meta name="theme-color" content="#ffffff"><title>Admin Pembayaran · SKIEESTORE</title>
 <link rel="icon" href="assets/xpaypoint-logo.svg">
 <style>
 :root{color-scheme:light;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;color:#171923;background:#f6f7f9}
@@ -18,7 +18,7 @@ h1{font-size:24px;letter-spacing:-.6px;margin:0 0 6px}.muted{color:#737987;font-
 @media(max-width:640px){.wrap{margin-top:16px}.panel{padding:16px}.grid{grid-template-columns:1fr}.meta{grid-template-columns:1fr 1fr}.top{align-items:flex-start}}
 [hidden]{display:none!important}
 
-/* XPAYPOINT ADMIN — professional dashboard refresh */
+/* SKIEESTORE ADMIN — professional dashboard refresh */
 :root{--brand:#e9364c;--ink:#171923;--muted:#747b89;--line:#e9eaf0;--surface:#fff;--canvas:#f5f6fa}
 body{background:radial-gradient(1000px 420px at 90% -15%,#ffe6ea 0,transparent 62%),var(--canvas);color:var(--ink)}
 .wrap{width:min(100% - 36px,1240px);margin:24px auto 64px}
@@ -60,7 +60,7 @@ body{background:radial-gradient(1000px 420px at 90% -15%,#ffe6ea 0,transparent 6
 <main class="wrap">
 <header class="top"><div><div class="brand">XPAY<em>POINT</em> · ADMIN</div><small>Verifikasi pembayaran GoPay Merchant</small></div><div id="topActions" hidden><button class="btn secondary" id="refresh">Muat ulang</button> <button class="btn secondary" id="logout">Keluar</button></div></header>
 <section class="panel login" id="loginPanel">
-<h1>Admin XPAYPOINT</h1><p class="muted">Masuk menggunakan akun admin Supabase yang sudah terdaftar.</p>
+<h1>Admin SKIEESTORE</h1><p class="muted">Masuk menggunakan akun admin Supabase yang sudah terdaftar.</p>
 <form id="loginForm">
 <div class="field"><label for="email">Email admin</label><input id="email" type="email" autocomplete="username" required value="xpaybantuan@gmail.com"></div>
 <div class="field"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" required></div>
@@ -77,10 +77,10 @@ body{background:radial-gradient(1000px 420px at 90% -15%,#ffe6ea 0,transparent 6
 </div>
 <div class="cards" id="payments"><div class="empty">Memuat pembayaran…</div></div>
 
-<section class="panel admin-extra" id="adminOrders"><div class="toolbar"><div><h2>Semua pesanan</h2><p class="muted">Riwayat pesanan terbaru dari database XPAYPOINT.</p></div><button class="btn secondary" id="loadAdminOrders">Muat ulang</button></div><div class="filterbar"><input id="adminOrderSearch" placeholder="Cari kode, game, produk, atau ID tujuan"><select id="adminOrderStatus"><option value="">Semua status</option><option value="pending_payment">Menunggu pembayaran</option><option value="paid">Lunas</option><option value="processing">Diproses</option><option value="success">Berhasil</option><option value="failed">Gagal</option><option value="cancelled">Dibatalkan</option></select></div><div class="table-scroll"><table class="admin-table"><thead><tr><th>Kode</th><th>Game / Produk</th><th>Tujuan</th><th>Tagihan</th><th>Status</th><th>Dibuat</th></tr></thead><tbody id="adminOrderRows"><tr><td colspan="6">Belum dimuat</td></tr></tbody></table></div></section>
+<section class="panel admin-extra" id="adminOrders"><div class="toolbar"><div><h2>Semua pesanan</h2><p class="muted">Riwayat pesanan terbaru dari database SKIEESTORE.</p></div><button class="btn secondary" id="loadAdminOrders">Muat ulang</button></div><div class="filterbar"><input id="adminOrderSearch" placeholder="Cari kode, game, produk, atau ID tujuan"><select id="adminOrderStatus"><option value="">Semua status</option><option value="pending_payment">Menunggu pembayaran</option><option value="paid">Lunas</option><option value="processing">Diproses</option><option value="success">Berhasil</option><option value="failed">Gagal</option><option value="cancelled">Dibatalkan</option></select></div><div class="table-scroll"><table class="admin-table"><thead><tr><th>Kode</th><th>Game / Produk</th><th>Tujuan</th><th>Tagihan</th><th>Status</th><th>Dibuat</th></tr></thead><tbody id="adminOrderRows"><tr><td colspan="6">Belum dimuat</td></tr></tbody></table></div></section>
 <section class="panel admin-extra" id="adminCatalog"><div class="toolbar"><div><h2>Katalog produk VIPayment</h2><p class="muted">Daftar produk aktif yang tersedia untuk dibaca melalui akses saat ini.</p></div><button class="btn secondary" id="loadAdminCatalog">Muat ulang</button></div><div class="filterbar"><input id="adminCatalogSearch" placeholder="Cari produk atau SKU"></div><div class="catalog-grid" id="adminCatalogRows"><div class="empty">Tekan muat ulang untuk melihat katalog.</div></div></section>
 
-<section class="panel admin-extra" id="adminVipayment"><div class="toolbar"><div><h2>VIPayment · Sinkron & pilih produk</h2><p class="muted">Tarik katalog terbaru dari supplier, pilih produk yang ingin dijual, lalu publikasikan ke toko XPAYPOINT.</p></div><button class="btn" id="syncVipayment">Sinkron dari VIPayment</button></div><div class="vip-stats"><div class="vip-stat"><small>Produk di katalog supplier</small><strong id="vipStageCount">9.942</strong></div><div class="vip-stat"><small>Dipilih untuk dijual</small><strong id="vipSelectedCount">0</strong></div><div class="vip-stat"><small>Produk aktif di toko</small><strong id="vipLiveCount">—</strong></div></div><div class="vip-tools"><select id="vipGameSelect" aria-label="Pilih game"><option value="">Semua game</option></select><input id="vipSearch" placeholder="Opsional: cari nama produk atau SKU"><button class="btn secondary" id="vipSearchBtn">Cari produk</button><button class="btn secondary" id="vipRefreshBtn">Muat ulang</button></div><div class="vip-hint">Pilih produk satu per satu. Harga rekomendasi memakai margin bertingkat dan bisa diedit sebelum dipublikasikan. Sinkron katalog tidak otomatis mengubah produk yang sedang dijual.</div><div class="vip-list" id="vipCatalogList"><div class="empty">Tekan “Muat halaman” untuk melihat produk VIPayment.</div></div><div class="vip-pagination"><button class="btn secondary" id="vipPrev" disabled>Sebelumnya</button><span id="vipPageLabel">Halaman 1</span><button class="btn secondary" id="vipNext">Berikutnya</button></div><div class="actions"><button class="btn secondary" id="vipSaveSelection">Simpan pilihan & harga</button><button class="btn" id="vipPublishSelection">Publikasikan produk terpilih ke toko</button></div><div class="status" id="vipStatus" role="status"></div></section>
+<section class="panel admin-extra" id="adminVipayment"><div class="toolbar"><div><h2>VIPayment · Sinkron & pilih produk</h2><p class="muted">Tarik katalog terbaru dari supplier, pilih produk yang ingin dijual, lalu publikasikan ke toko SKIEESTORE.</p></div><button class="btn" id="syncVipayment">Sinkron dari VIPayment</button></div><div class="vip-stats"><div class="vip-stat"><small>Produk di katalog supplier</small><strong id="vipStageCount">9.942</strong></div><div class="vip-stat"><small>Dipilih untuk dijual</small><strong id="vipSelectedCount">0</strong></div><div class="vip-stat"><small>Produk aktif di toko</small><strong id="vipLiveCount">—</strong></div></div><div class="vip-tools"><select id="vipGameSelect" aria-label="Pilih game"><option value="">Semua game</option></select><input id="vipSearch" placeholder="Opsional: cari nama produk atau SKU"><button class="btn secondary" id="vipSearchBtn">Cari produk</button><button class="btn secondary" id="vipRefreshBtn">Muat ulang</button></div><div class="vip-hint">Pilih produk satu per satu. Harga rekomendasi memakai margin bertingkat dan bisa diedit sebelum dipublikasikan. Sinkron katalog tidak otomatis mengubah produk yang sedang dijual.</div><div class="vip-list" id="vipCatalogList"><div class="empty">Tekan “Muat halaman” untuk melihat produk VIPayment.</div></div><div class="vip-pagination"><button class="btn secondary" id="vipPrev" disabled>Sebelumnya</button><span id="vipPageLabel">Halaman 1</span><button class="btn secondary" id="vipNext">Berikutnya</button></div><div class="actions"><button class="btn secondary" id="vipSaveSelection">Simpan pilihan & harga</button><button class="btn" id="vipPublishSelection">Publikasikan produk terpilih ke toko</button></div><div class="status" id="vipStatus" role="status"></div></section>
 <section class="panel admin-extra" id="adminWallet"><div class="toolbar"><div><h2>XPAYCOIN · Dompet member</h2><p class="muted">Ringkasan saldo deposit, rewards, dan aktivitas top-up. Saldo tidak diedit langsung.</p></div><button class="btn secondary" id="loadAdminWallet">Muat ulang</button></div><div class="kpis kpis-four"><div class="kpi"><div class="kpi-label">Dompet member</div><div class="kpi-value" id="adminWalletCount">—</div></div><div class="kpi"><div class="kpi-label">Total Deposit</div><div class="kpi-value" id="adminDepositTotal">—</div></div><div class="kpi"><div class="kpi-label">Total Rewards</div><div class="kpi-value" id="adminRewardsTotal">—</div></div><div class="kpi"><div class="kpi-label">Mutasi ledger</div><div class="kpi-value" id="adminLedgerCount">—</div></div></div><h3 style="font-size:14px;margin:22px 0 10px">Permintaan top-up terbaru</h3><div class="table-scroll"><table class="admin-table"><thead><tr><th>Member ID</th><th>Nominal</th><th>Metode</th><th>Status</th><th>Dibuat</th></tr></thead><tbody id="adminTopupRows"><tr><td colspan="5">Belum dimuat</td></tr></tbody></table></div><p class="notice">Penambahan atau pengurangan saldo harus melalui transaksi ledger yang tercatat. Panel ini hanya menampilkan data dan tidak mengubah saldo member.</p></section>
 <div class="status" id="dashboardStatus" role="status"></div>
 </section>
@@ -97,10 +97,10 @@ body{background:radial-gradient(1000px 420px at 90% -15%,#ffe6ea 0,transparent 6
  let currentUser=null;
  function status(id,msg,type=""){const el=$(id);el.textContent=msg;el.className="status "+type}
  async function checkAdmin(user){
-  if(user?.email?.toLowerCase()!=="xpaybantuan@gmail.com")throw Error("Akun ini bukan admin utama XPAYPOINT.");
+  if(user?.email?.toLowerCase()!=="xpaybantuan@gmail.com")throw Error("Akun ini bukan admin utama SKIEESTORE.");
   const {data,error}=await sb.from("xpaypoint_admins").select("user_id").eq("user_id",user.id).maybeSingle();
   if(error)throw error;
-  if(!data)throw Error("Akun ini belum memiliki akses admin XPAYPOINT.");
+  if(!data)throw Error("Akun ini belum memiliki akses admin SKIEESTORE.");
  }
  async function showDashboard(user){
   await checkAdmin(user);currentUser=user;
@@ -287,7 +287,7 @@ body{background:radial-gradient(1000px 420px at 90% -15%,#ffe6ea 0,transparent 6
   finally{btn.disabled=false}
  }
  async function publishVipSelection(){
-  if(!confirm("Publikasikan semua produk VIPayment yang sudah dipilih ke katalog toko XPAYPOINT? Produk valid akan aktif dan harga jual mengikuti pilihan yang tersimpan."))return;
+  if(!confirm("Publikasikan semua produk VIPayment yang sudah dipilih ke katalog toko SKIEESTORE? Produk valid akan aktif dan harga jual mengikuti pilihan yang tersimpan."))return;
   const saved=await saveVipSelection();if(!saved)return;
   const btn=$("vipPublishSelection");btn.disabled=true;vipStatus("Memvalidasi game, SKU, harga modal, dan pilihan produk…");
   try{const {data,error}=await sb.functions.invoke("vipayment-publish-selection",{body:{}});if(error)throw error;if(!data?.success)throw new Error(data?.error||"Publikasi gagal.");vipStatus("Publikasi selesai: "+Number(data.published||0).toLocaleString("id-ID")+" produk masuk toko; "+Number(data.skipped||0).toLocaleString("id-ID")+" dilewati. "+(data.message||""),"success");await loadVipStats();await loadAdminCatalog()}
