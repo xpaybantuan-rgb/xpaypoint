@@ -1,4 +1,4 @@
-# XPAYPOINT Payment Listener (Android)
+# SKIEESTORE Payment Listener (Android)
 
 Prototype Android notification listener for DANA Bisnis and GoPay Merchant.
 
@@ -6,12 +6,12 @@ Prototype Android notification listener for DANA Bisnis and GoPay Merchant.
 This app forwards notification text as an **unverified payment candidate**. It must never be treated as proof of payment and must never trigger VIPayment fulfillment by itself. Notifications can be duplicated, delayed, edited, or spoofed by other apps. Only an official signed provider callback or a separately verified merchant transaction record may mark an order paid.
 
 ## Build
-A GitHub Actions workflow builds a debug APK when files in this folder change. Open the repository Actions tab, run **Build XPAYPOINT Payment Listener APK**, then download the `xpaypoint-payment-listener-debug` artifact. This is a debug build, not a Play Store release.
+A GitHub Actions workflow builds a debug APK when files in this folder change. Open the repository Actions tab, run **Build SKIEESTORE Payment Listener APK**, then download the `skieestore-payment-listener-debug` artifact. This is a debug build, not a Play Store release.
 
 ## Setup
 1. Install the app on the Android phone that receives merchant notifications.
-2. Open XPAYPOINT Listener. The backend URL is prefilled: `https://xpayway-payment-engine.xpaybantuan.workers.dev/v1/payment/listener/notification`. Enter the device token supplied by the XPAYPOINT administrator.
-3. Enable notification access for XPAYPOINT Listener in Android Settings.
+2. Open SKIEESTORE Listener. The backend URL is prefilled: `https://xpayway-payment-engine.xpaybantuan.workers.dev/v1/payment/listener/notification`. Enter the device token supplied by the SKIEESTORE administrator.
+3. Enable notification access for SKIEESTORE Listener in Android Settings.
 4. Enable transaction notifications in DANA Bisnis and GoPay Merchant.
 5. Make a small test payment and inspect the received notification fields in the app/backend logs.
 
