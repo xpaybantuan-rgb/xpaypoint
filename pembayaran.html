@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#ffffff">
-<title>Pembayaran QRIS GoPay · XPAYPOINT</title>
+<title>Pembayaran QRIS GoPay · SKIEESTORE</title>
 <link rel="icon" href="assets/xpaypoint-logo.svg">
 <style>
 :root{color-scheme:light;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;color:#171923;background:#f7f8fa}
@@ -36,14 +36,14 @@ h1{text-align:center;font-size:23px;letter-spacing:-.6px;margin:9px 0 5px}
 </head>
 <body>
 <main class="wrap">
-<a class="brand" href="index.html" aria-label="XPAYPOINT"><img src="assets/xpaypoint-logo.svg" alt="XPAYPOINT"></a>
+<a class="brand" href="index.html" aria-label="SKIEESTORE"><img src="assets/xpaypoint-logo.svg" alt="SKIEESTORE"></a>
 <section class="card">
-<div class="kicker">PEMBAYARAN XPAYPOINT</div>
+<div class="kicker">PEMBAYARAN SKIEESTORE</div>
 <h1>QRIS GoPay Merchant</h1>
 <p class="sub">Selesaikan pembayaran menggunakan QRIS yang dibuat khusus untuk pesanan ini.</p>
 <div class="amount"><small>TOTAL PEMBAYARAN</small><strong id="amount">Memuat…</strong></div>
-<div class="waiting" id="waiting"><strong>Menyiapkan QRIS untuk pesananmu</strong>Admin XPAYPOINT sedang membuat QRIS dinamis melalui GoPay Merchant. Halaman ini akan memperbarui otomatis.</div>
-<div class="qr-wrap" id="qrWrap"><img id="qrImage" alt="QRIS GoPay untuk pembayaran XPAYPOINT"></div>
+<div class="waiting" id="waiting"><strong>Menyiapkan QRIS untuk pesananmu</strong>Admin SKIEESTORE sedang membuat QRIS dinamis melalui GoPay Merchant. Halaman ini akan memperbarui otomatis.</div>
+<div class="qr-wrap" id="qrWrap"><img id="qrImage" alt="QRIS GoPay untuk pembayaran SKIEESTORE"></div>
 <p class="hint" id="hint" hidden>Pastikan nominal dan nama merchant sesuai sebelum menekan bayar di aplikasi bank atau e-wallet.</p>
 <div class="details">
 <div class="row"><span>Kode pesanan</span><strong id="orderCode">—</strong></div>
@@ -59,7 +59,7 @@ h1{text-align:center;font-size:23px;letter-spacing:-.6px;margin:9px 0 5px}
 <a class="primary wide" id="payLink" href="#" target="_blank" rel="noopener" hidden>Buka invoice GoPay</a>
 </div>
 </section>
-<p class="foot">© 2026 XPAYPOINT · Pembayaran GoPay Merchant</p>
+<p class="foot">© 2026 SKIEESTORE · Pembayaran GoPay Merchant</p>
 </main>
 <script>
 (()=>{
@@ -100,9 +100,9 @@ h1{text-align:center;font-size:23px;letter-spacing:-.6px;margin:9px 0 5px}
    if(p.checkout_url){$("payLink").href=p.checkout_url;$("payLink").hidden=false}
    if(p.admin_note){$("state").textContent=p.admin_note}
    if(p.status==="paid"){
-    done=true;$("statusText").textContent="Lunas";$("state").className="state success";$("state").textContent="Pembayaran telah diverifikasi oleh admin XPAYPOINT. Pesanan sedang diteruskan ke supplier."; $("timer").textContent="Pembayaran terkonfirmasi";clearInterval(pollHandle);clearInterval(timerHandle)
+    done=true;$("statusText").textContent="Lunas";$("state").className="state success";$("state").textContent="Pembayaran telah diverifikasi oleh admin SKIEESTORE. Pesanan sedang diteruskan ke supplier."; $("timer").textContent="Pembayaran terkonfirmasi";clearInterval(pollHandle);clearInterval(timerHandle)
    }else if(p.status==="expired"||p.status==="failed"){
-    done=true;$("statusText").textContent=p.status==="expired"?"Kedaluwarsa":"Gagal";$("state").className="state error";$("state").textContent="Invoice ini sudah tidak aktif. Silakan hubungi bantuan XPAYPOINT." ;clearInterval(pollHandle);clearInterval(timerHandle)
+    done=true;$("statusText").textContent=p.status==="expired"?"Kedaluwarsa":"Gagal";$("state").className="state error";$("state").textContent="Invoice ini sudah tidak aktif. Silakan hubungi bantuan SKIEESTORE." ;clearInterval(pollHandle);clearInterval(timerHandle)
    }else{
     $("statusText").textContent=p.qr_ready?"Menunggu pembayaran":"Menunggu QRIS dari admin";
    }
