@@ -10,7 +10,7 @@ A GitHub Actions workflow builds a debug APK when files in this folder change. O
 
 ## Setup
 1. Install the app on the Android phone that receives merchant notifications.
-2. Open SKIEESTORE Listener. The backend URL is prefilled: `https://xpayway-payment-engine.xpaybantuan.workers.dev/v1/payment/listener/notification`. Enter the device token supplied by the SKIEESTORE administrator.
+2. Open SKIEESTORE Listener. The backend URL is prefilled: `https://skieestore-payment-engine.xpaybantuan.workers.dev/v1/payment/listener/notification`. Enter the device token supplied by the SKIEESTORE administrator.
 3. Enable notification access for SKIEESTORE Listener in Android Settings.
 4. Enable transaction notifications in DANA Bisnis and GoPay Merchant.
 5. Make a small test payment and inspect the received notification fields in the app/backend logs.
