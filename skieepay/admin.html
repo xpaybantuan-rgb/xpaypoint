@@ -60,17 +60,42 @@ tbody tr:hover{background:#ffffff05}
 @media(max-width:950px){.app{grid-template-columns:205px 1fr}.main{padding-top:24px}}
 @media(max-width:650px){.side{padding:10px 12px;gap:8px}.nav{gap:3px}.nav a{padding:9px 10px;font-size:10px}.main{padding:18px 12px 34px}.top{margin-bottom:26px}.stats{gap:9px}.stat{padding:14px 12px;border-radius:14px}.stat strong{font-size:20px;margin:11px 0 4px}.panel{padding:14px;border-radius:15px}.hero h1{font-size:28px}.tag{padding:7px 9px}.login{padding:27px 23px}}
 
+
+/* XPAYPOINT brand theme */
+:root{color-scheme:light;--bg:#f6f7fb;--panel:#fff;--panel2:#fff5f6;--line:#e8e9ee;--text:#191b22;--muted:#707887;--mint:#e9364c;--blue:#c92f49;--red:#e9364c;--amber:#b7791f}
+body{background:radial-gradient(900px 440px at 90% -12%,#ffe5e9 0,transparent 65%),var(--bg);color:var(--text)}
+.login{background:#fff;border-color:#ececf1;box-shadow:0 24px 80px #252b4218}.logo,.login .logo{background:linear-gradient(135deg,#e9364c,#c92f49);color:#fff;box-shadow:0 8px 24px #e9364c30}
+.login .sub,.sub{color:#737987}.field label{color:#555d6b}.field input{background:#fff;border-color:#e1e3e9;color:#191b22}.field input:focus{border-color:#e9364c;box-shadow:0 0 0 3px #e9364c18}
+.btn{background:#e9364c;color:#fff}.btn.secondary{background:#fff;color:#3b414d;border-color:#e2e4ea}
+.side{background:#fff;border-color:#ececf1}.brand small{color:#8b909b}.nav a{color:#666e7c}.nav a.active,.nav a:hover{background:#fff0f2;border-color:#ffd5db;color:#d52d43}
+.sideinfo{background:#fff5f6;border-color:#ffd5db;color:#707887}.sideinfo b,.eyebrow{color:#e9364c}
+.tag{background:#fff0f2;border-color:#ffd2d9;color:#d52d43}.avatar{background:#fff0f2;border-color:#ffd2d9;color:#d52d43}
+.stat,.panel{background:#fff;border-color:#e9eaf0;box-shadow:0 8px 26px #20283b08}.stat:after{background:#e9364c0c}
+.stat small,.muted{color:#858b98}th{color:#777f8d;border-color:#eceef2}td{border-bottom-color:#f0f1f4}tbody tr:hover{background:#fff8f9}
+.pill{background:#f0f1f4;color:#626a77}.pill.success{background:#e8f8ef;color:#18794e}.pill.pending{background:#fff5df;color:#986600}.pill.failed{background:#fff0f0;color:#c52b37}
+.module{background:#fff;border-color:#eceef2}.notice{background:#fff5f6;border-color:#ffd9de;color:#6f5360}.notice b{color:#d52d43}
+.bizbar,.bizform{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.bizbar select,.bizform input{font:inherit;border:1px solid #e1e3e9;border-radius:11px;padding:12px;background:#fff;color:#191b22;min-width:180px}.bizform input{min-width:130px}.bizlist{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.bizchip{border:1px solid #f1cbd1;background:#fff7f8;color:#b82c40;border-radius:999px;padding:7px 11px;font-size:11px;font-weight:750}
+@media(max-width:650px){.bizbar select,.bizform input{width:100%}.bizform button{width:100%}}
 </style></head><body>
-<div id="loginView" class="loginwrap"><form class="login" id="loginForm"><div class="logo">S</div><h1>SkieePay Admin</h1><p class="sub">Masuk menggunakan akun admin yang telah terdaftar. Dashboard ini hanya memberi akses baca ke data transaksi.</p><div class="field"><label for="email">EMAIL ADMIN</label><input id="email" type="email" autocomplete="username" required value="xpaybantuan@gmail.com"></div><div class="field"><label for="password">PASSWORD</label><input id="password" type="password" autocomplete="current-password" required placeholder="Masukkan password"></div><button class="btn full" id="loginBtn">Masuk ke dashboard</button><div id="loginMsg" class="msg" role="status"></div></form></div>
-<div id="appView" class="app hidden"><aside class="side"><div class="brand"><div class="logo">S</div><div>SkieePay<small>ADMIN CONSOLE</small></div></div><nav class="nav"><a class="active" href="#overview">◫ Overview</a><a href="#transactions">↔ Transaksi</a><a href="#events">⌘ Callback</a></nav><div class="sideinfo"><b>Mode aman aktif</b><br>Dashboard hanya membaca data. Tidak tersedia tombol untuk memalsukan pembayaran sukses.</div></aside>
+<div id="loginView" class="loginwrap"><form class="login" id="loginForm"><div class="logo">S</div><h1>SkieePay Admin</h1><p class="sub">Masuk menggunakan akun admin yang telah terdaftar. Kelola bisnis milikmu dan pantau transaksi dari satu dashboard privat.</p><div class="field"><label for="email">EMAIL ADMIN</label><input id="email" type="email" autocomplete="username" required value="xpaybantuan@gmail.com"></div><div class="field"><label for="password">PASSWORD</label><input id="password" type="password" autocomplete="current-password" required placeholder="Masukkan password"></div><button class="btn full" id="loginBtn">Masuk ke dashboard</button><div id="loginMsg" class="msg" role="status"></div></form></div>
+<div id="appView" class="app hidden"><aside class="side"><div class="brand"><div class="logo">S</div><div>SkieePay<small>ADMIN CONSOLE</small></div></div><nav class="nav"><a class="active" href="#overview">◫ Overview</a><a href="#businesses">▣ Bisnis</a><a href="#transactions">↔ Transaksi</a><a href="#events">⌘ Callback</a></nav><div class="sideinfo"><b>Mode aman aktif</b><br>Dashboard hanya membaca data. Tidak tersedia tombol untuk memalsukan pembayaran sukses.</div></aside>
 <main class="main" id="overview"><header class="top"><div class="crumb">SkieePay / Admin / Overview</div><div class="topright"><span class="tag">OWNER ACCESS</span><div class="avatar">X</div><button class="btn secondary" id="logoutBtn">Keluar</button></div></header>
 <section class="hero"><div><div class="eyebrow">PAYMENT CONTROL CENTER</div><h1>Ringkasan transaksi.</h1><p>Data langsung dari Supabase. Perbarui untuk mengambil status terbaru.</p></div><div class="actions"><button class="btn" id="refreshBtn">↻ Perbarui data</button></div></section>
 <section class="stats"><div class="stat"><div class="stathead">Total invoice</div><strong id="totalInvoices">—</strong><small>Semua invoice tersimpan</small></div><div class="stat"><div class="stathead">Pembayaran sukses</div><strong id="paidInvoices">—</strong><small>Status pembayaran terverifikasi</small></div><div class="stat"><div class="stathead">Menunggu pembayaran</div><strong id="pendingInvoices">—</strong><small>Invoice belum lunas</small></div><div class="stat"><div class="stathead">Nilai lunas · 50 terbaru</div><strong id="paidValue">—</strong><small>Akumulasi dari daftar invoice terbaru</small></div></section>
+<section class="panel" id="businesses" style="margin:0 0 16px">
+<div class="panelhead"><div><h2>Bisnis milikmu</h2><span class="muted">Private business workspace · bukan merchant publik</span></div><span class="tag" id="businessCount">— BISNIS</span></div>
+<div class="bizbar"><label for="businessSelect" class="muted">Lihat data bisnis:</label><select id="businessSelect" aria-label="Pilih bisnis"><option value="">Semua bisnis</option></select></div>
+<div class="bizlist" id="businessList"><span class="muted">Memuat daftar bisnis…</span></div>
+<div style="height:1px;background:#eceef2;margin:17px 0"></div>
+<div class="panelhead" style="margin-bottom:8px"><h2>Tambah bisnis milik sendiri</h2><span class="muted">Tidak membuka pendaftaran umum</span></div>
+<form class="bizform" id="businessForm"><input id="businessName" maxlength="80" required placeholder="Nama bisnis baru"><input id="businessCode" maxlength="40" required pattern="[a-z0-9][a-z0-9_-]{1,39}" placeholder="kode-bisnis"><button class="btn" id="addBusinessBtn">+ Tambah bisnis</button></form>
+<div class="msg" id="businessMsg" role="status"></div></section>
 <section class="layout"><div class="panel" id="transactions"><div class="panelhead"><h2>Invoice terbaru</h2><span class="muted" id="invoiceMeta">Memuat…</span></div><div class="tablewrap"><table><thead><tr><th>KODE / ID</th><th>NOMINAL</th><th>PEMBAYARAN</th><th>FULFILLMENT</th><th>DIBUAT</th></tr></thead><tbody id="invoiceRows"><tr><td colspan="5" class="emptycell">Memuat data invoice…</td></tr></tbody></table></div><div class="notice"><b>Aturan keamanan:</b> status pembayaran dan status pemenuhan VIPayment terpisah. Callback VIPayment tidak boleh mengubah pembayaran pelanggan menjadi lunas.</div></div>
 <div class="panel" id="events"><div class="panelhead"><h2>Callback VIPayment</h2><span class="muted" id="eventMeta">—</span></div><div class="tablewrap"><table><thead><tr><th>TRX ID</th><th>STATUS</th><th>WAKTU</th></tr></thead><tbody id="eventRows"><tr><td colspan="3" class="emptycell">Memuat callback…</td></tr></tbody></table></div><div class="notice">Callback real akan tampil di sini setelah VIPayment mengirim notifikasi ke Worker dan transaksi cocok dengan invoice.</div></div></section>
 <section class="panel" style="margin-top:13px"><div class="panelhead"><h2>Komponen SkieePay</h2><span class="muted">Status integrasi</span></div><div class="modules"><div class="module"><span class="muted">01 / CORE</span><b>Invoice Engine</b><small>Pembuatan invoice melalui Cloudflare Worker.</small></div><div class="module"><span class="muted">02 / DATABASE</span><b>Supabase</b><small>RLS aktif; data dashboard dibatasi ke akun pemilik.</small></div><div class="module"><span class="muted">03 / WEBHOOK</span><b>VIPayment</b><small>Callback fulfillment terpisah dari status pembayaran.</small></div><div class="module"><span class="muted">04 / PAYMENT</span><b>Payment Provider</b><small>Belum aktif sampai jalur penerimaan dana pelanggan terhubung.</small></div></div><div id="dataMsg" class="msg" role="status"></div></section><footer class="foot">SkieePay · Independent payment platform · Built for XPAYPOINT</footer></main></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+let selectedBusinessId="";
 const SUPABASE_URL='https://rjgeitbkpcyymgemcztx.supabase.co';
 const SUPABASE_KEY='sb_publishable_1b6C4q5vgbX0XfP_EV5yjQ_Qk9Cq4lR';
 const OWNER_EMAIL='xpaybantuan@gmail.com';
@@ -90,9 +115,49 @@ function pill(v){const s=String(v||'unknown').toLowerCase();const cls=['paid','s
 function val(o,keys){for(const k of keys)if(o[k]!==undefined&&o[k]!==null)return o[k];return null}
 function date(v){if(!v)return '—';const d=new Date(v);return isNaN(d)?'—':d.toLocaleString('id-ID',{dateStyle:'short',timeStyle:'short'})}
 async function exactCount(filter=''){const r=await fetch(SUPABASE_URL+'/rest/v1/skieepay_invoices?select=id'+filter,{method:'HEAD',headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+accessToken,Prefer:'count=exact'}});if(!r.ok)throw new Error('Gagal menghitung invoice (HTTP '+r.status+')');const range=r.headers.get('content-range')||'';return Number(range.split('/')[1]||0)}
-async function loadData(){setMsg('dataMsg','Mengambil data dari Supabase…');$('refreshBtn').disabled=true;try{const [inv,events,totalCount,paidCount,pendingCount]=await Promise.all([api('/rest/v1/skieepay_invoices?select=*&order=created_at.desc&limit=50'),api('/rest/v1/skieepay_vipayment_events?select=*&order=received_at.desc&limit=20'),exactCount(),exactCount('&status=eq.paid'),exactCount('&status=eq.pending')]);const invoices=Array.isArray(inv)?inv:[];const callbacks=(Array.isArray(events)?events:[]).filter(x=>String(val(x,['trxid'])||'')!=='TEST-SKIEEPAY-20261113-0833'&&!(x.payload&&x.payload.test===true));const paid=invoices.filter(x=>String(val(x,['status'])||'').toLowerCase()==='paid');$('totalInvoices').textContent=totalCount;$('paidInvoices').textContent=paidCount;$('pendingInvoices').textContent=pendingCount;$('paidValue').textContent=money(paid.reduce((a,x)=>a+Number(val(x,['amount'])||0),0));$('invoiceMeta').textContent=invoices.length+' data terbaru';$('eventMeta').textContent=callbacks.length+' event';$('invoiceRows').innerHTML=invoices.length?invoices.map(x=>'<tr><td><b>'+esc(val(x,['invoice_code','invoice_number','id']))+'</b></td><td>'+money(val(x,['amount','amount_idr','total_amount']))+'</td><td>'+pill(val(x,['payment_status','status']))+'</td><td>'+pill(val(x,['fulfillment_status']))+'</td><td>'+date(val(x,['created_at']))+'</td></tr>').join(''):'<tr><td colspan="5" class="emptycell">Belum ada invoice tersimpan.</td></tr>';$('eventRows').innerHTML=callbacks.length?callbacks.map(x=>'<tr><td>'+esc(val(x,['trxid','vipayment_trxid']))+'</td><td>'+pill(val(x,['status']))+'</td><td>'+date(val(x,['received_at','created_at']))+'</td></tr>').join(''):'<tr><td colspan="3" class="emptycell">Belum ada callback VIPayment.</td></tr>';setMsg('dataMsg','Data berhasil diperbarui. Terakhir: '+new Date().toLocaleTimeString('id-ID'),'successmsg')}catch(e){setMsg('dataMsg','Gagal membaca data: '+e.message+' — pastikan akun admin sudah login dan izin baca Supabase aktif.','error')}finally{$('refreshBtn').disabled=false}}
-$('loginForm').addEventListener('submit',async e=>{e.preventDefault();const b=$('loginBtn');b.disabled=true;b.textContent='Memverifikasi…';setMsg('loginMsg','');try{await signIn($('email').value.trim(),$('password').value);sessionStorage.setItem('skieepay_admin_session',JSON.stringify({access_token:accessToken,refresh_token:refreshToken}));showApp();await loadData()}catch(err){setMsg('loginMsg',err.message,'error')}finally{b.disabled=false;b.textContent='Masuk ke dashboard'}});
-$('refreshBtn').addEventListener('click',loadData);
+async function loadBusinesses(){
+ const rows=await api('/rest/v1/skieepay_businesses?select=id,code,name,status,created_at&order=created_at.asc');
+ const businesses=Array.isArray(rows)?rows:[];const select=$('businessSelect');const keep=selectedBusinessId;
+ select.innerHTML='<option value="">Semua bisnis</option>'+businesses.map(b=>'<option value="'+esc(b.id)+'">'+esc(b.name)+' · '+esc(b.code)+'</option>').join('');
+ if(businesses.some(b=>b.id===keep))select.value=keep;else{selectedBusinessId='';select.value=''}
+ $('businessCount').textContent=businesses.length+' BISNIS';
+ $('businessList').innerHTML=businesses.length?businesses.map(b=>'<span class="bizchip">'+esc(b.name)+' · '+esc(b.code)+'</span>').join(''):'<span class="muted">Belum ada bisnis terdaftar.</span>';
+}
+async function loadData(){
+ setMsg('dataMsg','Mengambil data dari Supabase…');$('refreshBtn').disabled=true;
+ try{
+  const filter=selectedBusinessId?'&business_id=eq.'+encodeURIComponent(selectedBusinessId):'';
+  const [inv,events,totalCount,paidCount,pendingCount]=await Promise.all([
+   api('/rest/v1/skieepay_invoices?select=*&order=created_at.desc&limit=50'+filter),
+   api('/rest/v1/skieepay_vipayment_events?select=*&order=received_at.desc&limit=20'),
+   exactCount(filter),exactCount(filter+'&status=eq.paid'),exactCount(filter+'&status=eq.pending')
+  ]);
+  const invoices=Array.isArray(inv)?inv:[];const callbacks=(Array.isArray(events)?events:[]).filter(x=>String(val(x,['trxid'])||'')!=='TEST-SKIEEPAY-20261113-0833'&&!(x.payload&&x.payload.test===true));
+  const paid=invoices.filter(x=>String(val(x,['status'])||'').toLowerCase()==='paid');
+  $('totalInvoices').textContent=totalCount;$('paidInvoices').textContent=paidCount;$('pendingInvoices').textContent=pendingCount;$('paidValue').textContent=money(paid.reduce((a,x)=>a+Number(val(x,['amount'])||0),0));
+  $('invoiceMeta').textContent=invoices.length+' data terbaru';$('eventMeta').textContent=callbacks.length+' event';
+  $('invoiceRows').innerHTML=invoices.length?invoices.map(x=>'<tr><td><b>'+esc(val(x,['invoice_code','invoice_number','id']))+'</b></td><td>'+money(val(x,['amount','amount_idr','total_amount']))+'</td><td>'+pill(val(x,['payment_status','status']))+'</td><td>'+pill(val(x,['fulfillment_status']))+'</td><td>'+date(val(x,['created_at']))+'</td></tr>').join(''):'<tr><td colspan="5" class="emptycell">Belum ada invoice tersimpan untuk bisnis ini.</td></tr>';
+  $('eventRows').innerHTML=callbacks.length?callbacks.map(x=>'<tr><td>'+esc(val(x,['trxid','vipayment_trxid']))+'</td><td>'+pill(val(x,['status']))+'</td><td>'+date(val(x,['received_at','created_at']))+'</td></tr>').join(''):'<tr><td colspan="3" class="emptycell">Belum ada callback VIPayment.</td></tr>';
+  setMsg('dataMsg','Data berhasil diperbarui. Terakhir: '+new Date().toLocaleTimeString('id-ID'),'successmsg');
+ }catch(e){setMsg('dataMsg','Gagal membaca data: '+e.message+' — pastikan akun admin sudah login dan izin baca Supabase aktif.','error')}
+ finally{$('refreshBtn').disabled=false}
+}
+async function addBusiness(e){
+ e.preventDefault();const btn=$('addBusinessBtn');btn.disabled=true;
+ try{
+  const name=$('businessName').value.trim();const code=$('businessCode').value.trim().toLowerCase();
+  if(!/^[a-z0-9][a-z0-9_-]{1,39}$/.test(code))throw new Error('Kode harus 2–40 karakter: huruf kecil, angka, _ atau -.');
+  const created=await api('/rest/v1/skieepay_businesses',{method:'POST',headers:{Prefer:'return=representation'},body:JSON.stringify({name,code,status:'active'})});
+  if(!Array.isArray(created)||!created.length)throw new Error('Bisnis tidak berhasil dibuat.');
+  $('businessForm').reset();await loadBusinesses();selectedBusinessId=created[0].id;$('businessSelect').value=selectedBusinessId;await loadData();
+  setMsg('businessMsg','Bisnis '+name+' berhasil ditambahkan.','successmsg');
+ }catch(e){setMsg('businessMsg','Gagal menambah bisnis: '+e.message,'error')}
+ finally{btn.disabled=false}
+}
+$('loginForm').addEventListener('submit',async e=>{e.preventDefault();const b=$('loginBtn');b.disabled=true;b.textContent='Memverifikasi…';setMsg('loginMsg','');try{await signIn($('email').value.trim(),$('password').value);sessionStorage.setItem('skieepay_admin_session',JSON.stringify({access_token:accessToken,refresh_token:refreshToken}));showApp();await loadBusinesses();await loadData()}catch(err){setMsg('loginMsg',err.message,'error')}finally{b.disabled=false;b.textContent='Masuk ke dashboard'}});
+$('refreshBtn').addEventListener('click',async()=>{try{await loadBusinesses()}catch(e){setMsg('businessMsg',e.message,'error')}await loadData()});
+$('businessSelect').addEventListener('change',e=>{selectedBusinessId=e.target.value;loadData()});
+$('businessForm').addEventListener('submit',addBusiness);
 $('logoutBtn').addEventListener('click',()=>{accessToken=null;refreshToken=null;sessionStorage.removeItem('skieepay_admin_session');$('password').value='';showLogin()});
 (async()=>{if(await restore()){showApp();await loadData()}})();
 </script></body></html>
