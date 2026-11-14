@@ -1,6 +1,6 @@
 import { Agent, routeAgentRequest } from "agents";
 interface Env {
-  XPayPointCTOAgent: DurableObjectNamespace; REPO_OWNER: string; REPO_NAME: string;
+  SkieeStoreCTOAgent: DurableObjectNamespace; REPO_OWNER: string; REPO_NAME: string;
   SITE_URL: string; AUTOPILOT_ENABLED: string; GEMINI_API_KEY?: string;
   GEMINI_MODEL?: string; GITHUB_TOKEN?: string; ADMIN_TOKEN?: string;
 }
@@ -12,7 +12,7 @@ interface State {
 }
 const initialState:State={lastCheckAt:null,siteStatus:"unknown",latestWorkflow:null,openPullRequests:0,lastAlertSignature:null,lastAuditAt:null,lastAgentRunAt:null,lastAgentRunStatus:null,lastAgentRunSummary:null,lastError:null};
 const instructions=[
-"You are XPAYPOINT's autonomous CTO coding agent under Founder-authorized Level 2 governance.",
+"You are SKIEESTORE's autonomous CTO coding agent under Founder-authorized Level 2 governance.",
 "Inspect repository, PRs, review feedback and CI. You may create autopilot/* branches, commit narrow fixes to allowed files, and open PRs targeting main.",
 "Never merge, deploy, release, rollback, write to main, or change production databases, Supabase schema/records, payment/checkout/fulfillment, customer transactions, balances, wallets, XPAYCOIN, deposits, withdrawals, cashback, rewards, ledgers, refunds, secrets, credentials, GitHub/Cloudflare settings, Worker bindings, or deployment configuration.",
 "Server-side tools enforce branch and path restrictions. Never bypass them. Never request, reveal, or include secrets. Do not claim tests passed unless CI reports success.",
@@ -27,7 +27,7 @@ function pathGuard(p:string){
  const bad=/(^|\/)(\.env|\.dev\.vars|secrets?)(\.|\/|$)/i.test(p)||/(^|\/)(index|topup|profil|cek-pesanan|admin-vipayment)\.html$/i.test(p)||/(^|\/)(supabase|database|migrations)(\/|$)/i.test(p)||p.startsWith(".github/")||p==="cto-agent/wrangler.jsonc"||p==="cto-agent/package.json"||p==="cto-agent/tsconfig.json";
  if(!ok||bad)throw Error("Protected or unsupported path: "+p);
 }
-function ghHeaders(e:Env):Record<string,string>{const h:Record<string,string>={Accept:"application/vnd.github+json","X-GitHub-Api-Version":"2022-11-28","User-Agent":"XPAYPOINT-Autonomous-CTO"};if(e.GITHUB_TOKEN)h.Authorization="Bearer "+e.GITHUB_TOKEN;return h;}
+function ghHeaders(e:Env):Record<string,string>{const h:Record<string,string>={Accept:"application/vnd.github+json","X-GitHub-Api-Version":"2022-11-28","User-Agent":"SKIEESTORE-Autonomous-CTO"};if(e.GITHUB_TOKEN)h.Authorization="Bearer "+e.GITHUB_TOKEN;return h;}
 async function gh<T>(e:Env,p:string,init:RequestInit={}):Promise<T>{
  const r=await fetch("https://api.github.com/repos/"+e.REPO_OWNER+"/"+e.REPO_NAME+p,{...init,headers:{...ghHeaders(e),...(init.headers as Record<string,string>|undefined)}});
  if(!r.ok)throw Error("GitHub API "+r.status+": "+(await r.text()).slice(0,300));return r.json() as Promise<T>;
@@ -61,12 +61,12 @@ async function tool(e:Env,n:string,a:any):Promise<unknown>{
   const out=[];for(const f of a.files){const p=String(f.path||""),v=String(f.content||"");pathGuard(p);if(v.length>200000)throw Error("File too large.");
    const q=p.split("/").map(encodeURIComponent).join("/");let sha:string|undefined;
    try{sha=(await gh<any>(e,"/contents/"+q+"?ref="+encodeURIComponent(b))).sha;}catch(err){if(!String(err).includes("404"))throw err;}
-   const r=await gh<any>(e,"/contents/"+q,{method:"PUT",headers:{"content-type":"application/json"},body:JSON.stringify({message:String(a.message||"chore: XPAYPOINT autopilot update").slice(0,160),content:enc(v),branch:b,...(sha?{sha}:{})})});out.push({path:p,sha:r.commit?.sha});
+   const r=await gh<any>(e,"/contents/"+q,{method:"PUT",headers:{"content-type":"application/json"},body:JSON.stringify({message:String(a.message||"chore: SKIEESTORE autopilot update").slice(0,160),content:enc(v),branch:b,...(sha?{sha}:{})})});out.push({path:p,sha:r.commit?.sha});
   }return {branch:b,commits:out};
  }
  if(n==="open_pull_request"){
   const b=String(a.head||"");branchGuard(b);if(!e.GITHUB_TOKEN)throw Error("GitHub token missing.");
-  const r=await gh<any>(e,"/pulls",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({title:String(a.title||"XPAYPOINT autopilot fix").slice(0,120),head:b,base:"main",body:String(a.body||"").slice(0,9000)+"\n\nAutopilot safety: not merged or deployed. Founder review required."})});
+  const r=await gh<any>(e,"/pulls",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({title:String(a.title||"SKIEESTORE autopilot fix").slice(0,120),head:b,base:"main",body:String(a.body||"").slice(0,9000)+"\n\nAutopilot safety: not merged or deployed. Founder review required."})});
   return {number:r.number,url:r.html_url,state:r.state,merged:r.merged};
  }
  throw Error("Tool not allowed: "+n);
@@ -92,13 +92,13 @@ async function runGemini(e:Env,task:string):Promise<string>{
   contents.push({role:"user",parts:responses});
  }throw Error("Gemini agent reached 12 tool calls.");
 }
-export class XPayPointCTOAgent extends Agent<Env,State>{
+export class SkieeStoreCTOAgent extends Agent<Env,State>{
  initialState=initialState;
  async onStart():Promise<void>{
   await this.scheduleEvery(300,"runCycle",{}, {retry:{maxAttempts:3,baseDelayMs:1000,maxDelayMs:15000}});
   await this.schedule("0 2 * * *","runDailyAudit",{}, {idempotent:true,retry:{maxAttempts:2,baseDelayMs:5000,maxDelayMs:30000}});
  }
- async onRequest():Promise<Response>{await this.runCycle();return json({service:"XPAYPOINT Autonomous CTO",mode:"Level 2",intervalSeconds:300,state:this.state});}
+ async onRequest():Promise<Response>{await this.runCycle();return json({service:"SKIEESTORE Autonomous CTO",mode:"Level 2",intervalSeconds:300,state:this.state});}
  async runDailyAudit():Promise<void>{
   if(this.env.AUTOPILOT_ENABLED!=="true")return;
   try{const s=await runGemini(this.env,"Daily audit: inspect open PRs, review feedback, CI, code health and docs. Fix one safe narrow issue if justified, then open a PR. Do not touch protected areas.");const now=new Date().toISOString();this.setState({...this.state,lastAuditAt:now,lastAgentRunAt:now,lastAgentRunStatus:"success",lastAgentRunSummary:s,lastError:null});}
