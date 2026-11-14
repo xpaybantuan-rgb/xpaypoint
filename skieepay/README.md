@@ -25,17 +25,24 @@ Set these in Cloudflare → Workers & Pages → `skieepay-api` → Settings → 
 | `SUPABASE_URL` | Variable | `https://rjgeitbkpcyymgemcztx.supabase.co` |
 | `SUPABASE_SERVICE_ROLE_KEY` | Secret | Supabase service-role key |
 | `SKIEEPAY_API_KEY` | Secret | A long random server API key |
-| `VIPAYMENT_CALLBACK_SIGNATURE` | Secret | MD5 of your VIPayment API ID immediately followed by API key |
+| `VIPAYMENT_API_ID` | Secret | VIPayment API ID |
+| `VIPAYMENT_API_KEY` | Secret | VIPayment API key; Worker calculates the callback signature server-side |
 | `VIPAYMENT_ENFORCE_IP` | Variable (optional) | Keep unset or set `true` to enforce the documented source IP |
 
 Never put service-role keys, API keys, or callback secrets in frontend code or GitHub.
 
 ## API
 - `GET /health`
+- `GET /public/invoices/:invoice_code` — public, read-only invoice status; invoice code is an unguessable public reference
 - `POST /v1/invoices` — requires `X-SkieePay-Key`
 - `GET /v1/invoices/:uuid` — requires `X-SkieePay-Key`
 - `POST /v1/invoices/:uuid/vipayment` — requires `X-SkieePay-Key`; stores the VIPayment `trxid` on the invoice
 - `POST /webhooks/vipayment` — validates VIPayment callback signature and source IP
+
+## Customer invoice page
+- Static page: `invoice.html?code=SKP...`.
+- The page reads only a small allowlist of public invoice fields and refreshes status automatically.
+- New invoice codes use 128-bit random values. Existing 64-bit invoice codes remain supported.
 
 ## Payment QR and proof of funds
 VIPayment is the game/top-up supplier, not the merchant payment-acquiring rail. Its callback reports the fulfillment status of a VIPayment order; it does not prove that the buyer paid SkieePay. The generic payment webhook intentionally remains disabled until a real payment provider/merchant QRIS source is connected.
