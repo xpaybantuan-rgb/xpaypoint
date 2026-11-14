@@ -29,6 +29,7 @@ class MainActivity : Activity() {
     private lateinit var statusView: TextView
     private lateinit var updateView: TextView
     private var openedInstallSettings = false
+    private var updateCheckInProgress = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -163,6 +164,8 @@ class MainActivity : Activity() {
     }
 
     private fun checkForUpdate() {
+        if (updateCheckInProgress) return
+        updateCheckInProgress = true
         updateView.text = "Memeriksa versi terbaru..."
         Thread {
             var releaseConnection: HttpURLConnection? = null
@@ -199,14 +202,20 @@ class MainActivity : Activity() {
                 }
                 val assets = release.getJSONArray("assets")
                 var downloadUrl: String? = null
+                var expectedDigest: String? = null
                 for (i in 0 until assets.length()) {
                     val asset = assets.getJSONObject(i)
                     if (asset.optString("name") == "xpaypoint-payment-listener.apk") {
                         downloadUrl = asset.optString("browser_download_url")
+                        expectedDigest = asset.optString("digest").takeIf { it.isNotBlank() && it != "null" }
                         break
                     }
                 }
                 val apkUrl = downloadUrl ?: throw IllegalStateException("File APK belum tersedia pada rilis terbaru.")
+                val digest = expectedDigest ?: throw IllegalStateException("Checksum APK dari GitHub tidak tersedia; update dibatalkan demi keamanan.")
+                if (!digest.matches(Regex("sha256:[a-fA-F0-9]{64}"))) {
+                    throw IllegalStateException("Format checksum APK dari GitHub tidak valid.")
+                }
                 runOnUiThread { updateView.text = "Update versi $latestCode ditemukan. Mengunduh..." }
                 val apkConnection = (URL(apkUrl).openConnection() as HttpURLConnection).apply {
                     connectTimeout = 15000
@@ -215,10 +224,20 @@ class MainActivity : Activity() {
                     setRequestProperty("User-Agent", "XPAYPOINT-Payment-Listener")
                 }
                 val apk = File(cacheDir, "xpaypoint-payment-listener-update.apk")
-                apkConnection.inputStream.use { input -> apk.outputStream().use { output -> input.copyTo(output) } }
-                apkConnection.disconnect()
+                try {
+                    apkConnection.inputStream.use { input -> apk.outputStream().use { output -> input.copyTo(output) } }
+                } finally {
+                    apkConnection.disconnect()
+                }
                 if (!apk.exists() || apk.length() < 500_000) {
                     throw IllegalStateException("Unduhan APK tidak lengkap.")
+                }
+                val actualDigest = java.security.MessageDigest.getInstance("SHA-256")
+                    .digest(apk.readBytes())
+                    .joinToString("") { "%02x".format(it) }
+                if (!actualDigest.equals(digest.removePrefix("sha256:"), ignoreCase = true)) {
+                    apk.delete()
+                    throw IllegalStateException("Checksum APK tidak cocok. File update ditolak.")
                 }
                 prefs.edit()
                     .putString("pending_update_apk", apk.absolutePath)
@@ -232,6 +251,7 @@ class MainActivity : Activity() {
                 runOnUiThread { updateView.text = "Gagal memeriksa update: ${e.message ?: "koneksi bermasalah"}" }
             } finally {
                 releaseConnection?.disconnect()
+                runOnUiThread { updateCheckInProgress = false }
             }
         }.start()
     }
